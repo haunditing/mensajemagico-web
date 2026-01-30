@@ -29,50 +29,16 @@ export const generateMessage = async (
 
   if (isPensamiento) {
     systemInstruction =
-      "Escritor minimalista. Pensamientos breves, profundos y completos.";
-
-    prompt = `
-Tema: ${safeRel}.
-Estado: ${config.tone}.
-
-Escribe un pensamiento completo y cerrado.
-No escribas fragmentos.
-Máx 25 palabras.
-Solo el texto.
-`.trim();
-
+      "Escritor minimalista. Solo pensamientos breves y profundos.";
+    prompt = `Tema: ${safeRel}. Estado: ${config.tone}. Máx 25 palabras. Solo el texto.`;
     taskMaxTokens = Math.min(60, globalMax);
   } else if (isReply) {
     systemInstruction = "Asistente de mensajería social. Redacción natural.";
-
-    prompt = `
-Responder a: "${safeText || config.receivedMessageType}".
-Para: ${safeRel}.
-Tono: ${config.tone}.
-
-Escribe una respuesta natural y completa.
-Debe tener al menos 2 frases.
-No respondas con una sola frase.
-Máx 50 palabras.
-Solo el mensaje.
-`.trim();
-
+    prompt = `Responder a: "${safeText || config.receivedMessageType}". Para: ${safeRel}. Tono: ${config.tone}. Máx 50 palabras. Solo el mensaje.`;
     taskMaxTokens = Math.min(120, globalMax);
   } else {
     systemInstruction = "Experto en redacción emocional y social.";
-
-    prompt = `
-Ocasión: ${config.occasion}.
-Destinatario: ${safeRel}.
-Tono: ${config.tone}.
-
-Escribe un mensaje completo y cerrado.
-Debe tener al menos 2 frases.
-No respondas con una sola frase.
-Máx 80 palabras.
-Sin etiquetas.
-`.trim();
-
+    prompt = `Ocasión: ${config.occasion}. Destinatario: ${safeRel}. Tono: ${config.tone}. Máx 80 palabras. Sin etiquetas.`;
     taskMaxTokens = Math.min(200, globalMax);
   }
 
@@ -86,7 +52,7 @@ Sin etiquetas.
         prompt,
         systemInstruction,
         temperature: isPensamiento ? 0.9 : CONFIG.AI.TEMPERATURE,
-        maxTokens: taskMaxTokens,
+        maxOutputTokens: taskMaxTokens,
       }),
     });
 
