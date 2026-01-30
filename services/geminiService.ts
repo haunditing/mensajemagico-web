@@ -25,7 +25,7 @@ export const generateMessage = async (
   // Calculamos el límite de tokens basándonos en el máximo global definido
   // para asegurar que nunca excedemos lo que el arquitecto configuró.
   const globalMax = CONFIG.AI.MAX_TOKENS;
-  let taskMaxTokens = 200;
+  let taskMaxTokens = 260;
 
   if (isPensamiento) {
     systemInstruction =
