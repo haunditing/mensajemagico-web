@@ -25,18 +25,14 @@ export const generateMessage = async (
   let taskMaxTokens = 260;
 
   if (isPensamiento) {
-    systemInstruction =
-      "Escritor minimalista. Solo pensamientos breves y profundos.";
-    prompt = `Tema: ${safeRel}. Estado: ${config.tone}. Máx 25 palabras. Solo el texto.`;
-    taskMaxTokens = Math.min(60, globalMax);
+    systemInstruction = "Eres un escritor de reflexiones minimalistas. Creas pensamientos breves pero con gran carga emocional y filosófica.";
+    prompt = `Genera un pensamiento inspirador sobre ${safeRel}. El tono debe ser ${config.tone}. Debe ser una sola frase impactante de longitud media. Solo devuelve el texto del pensamiento.`;
   } else if (isReply) {
-    systemInstruction = "Asistente de mensajería social. Redacción natural.";
-    prompt = `Responder a: "${safeText || config.receivedMessageType}". Para: ${safeRel}. Tono: ${config.tone}. Máx 50 palabras. Solo el mensaje.`;
-    taskMaxTokens = Math.min(120, globalMax);
+    systemInstruction = "Eres un experto en comunicación social y mensajería instantánea. Tu objetivo es ayudar a las personas a responder de forma natural y efectiva.";
+    prompt = `Ayúdame a responder un mensaje. Me enviaron: "${safeText || config.receivedMessageType}". El destinatario es mi ${safeRel} y quiero sonar ${config.tone}. Genera una respuesta natural y fluida. Solo devuelve el texto del mensaje.`;
   } else {
-    systemInstruction = "Experto en redacción emocional y social.";
-    prompt = `Ocasión: ${config.occasion}. Destinatario: ${safeRel}. Tono: ${config.tone}. Máx 80 palabras. Sin etiquetas.`;
-    taskMaxTokens = Math.min(200, globalMax);
+    systemInstruction = "Eres un redactor experto en cartas y mensajes emocionales. Sabes transmitir sentimientos con las palabras exactas.";
+    prompt = `Escribe un mensaje de ${config.occasion} para mi ${safeRel}. El tono debe ser ${config.tone}. Crea un mensaje cálido y bien redactado de longitud moderada. No uses etiquetas ni introducciones, solo el contenido del mensaje.`;
   }
 
   try {
