@@ -38,6 +38,7 @@ export const handler: Handler = async (event) => {
 
     const model = genAI.getGenerativeModel({
       model: modelName,
+      systemInstruction,
     });
 
     const result = await model.generateContent({
