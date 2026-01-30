@@ -1,8 +1,6 @@
 import { MessageConfig } from "../types";
 import { CONFIG } from "../config";
 
-// Caché simple para evitar duplicidad de costos en la misma sesión
-const generationCache: Record<string, string[]> = {};
 
 /**
  * Servicio de Generación de Mensajes Optimizado.
@@ -14,7 +12,6 @@ export const generateMessage = async (
   const isReply = config.occasion.toLowerCase().includes("responder");
   const isPensamiento = config.occasion.toLowerCase().includes("pensamiento");
 
-  const cacheKey = `${config.occasion}-${config.relationship}-${config.tone}-${config.receivedMessageType || "none"}`;
 
   const safeRel = (config.relationship || "").substring(0, 30);
   const safeText = (config.receivedText || "").substring(0, 200);
