@@ -19,7 +19,7 @@ const isTruthy = (val: any): boolean => {
 export const CONFIG = {
   // --- CONFIGURACIÓN DE IA ---
   AI: {
-    MODEL: getEnv('AI_MODEL', 'gemini-3-flash-preview'),
+    MODEL: getEnv('AI_MODEL', 'gemini-2.5-flash'),
     TEMPERATURE: Number(getEnv('AI_TEMP', 0.7)),
     MAX_TOKENS: Number(getEnv('AI_MAX_TOKENS', 300)),
   },
