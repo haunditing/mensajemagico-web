@@ -7,7 +7,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Variables de entorno (autoridad)
 const API_KEY = process.env.AI_API_KEY || "";
-const MODEL_NAME = process.env.AI_MODEL || "gemini-pro";
+const MODEL_NAME = process.env.AI_MODEL || "gemini-3-flash-preview";
 const ENV_MAX_TOKENS = Number(process.env.AI_MAX_TOKENS || 260);
 const ENV_TEMPERATURE = Number(process.env.AI_TEMP || 0.7);
 
