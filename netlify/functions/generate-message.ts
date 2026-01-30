@@ -35,8 +35,7 @@ export const handler: Handler = async (event) => {
     }
 
     const model = genAI.getGenerativeModel({
-      model: 'gemini-1.5-flash',
-      systemInstruction,
+      model: 'gemini-pro',
     });
 
     const result = await model.generateContent({
