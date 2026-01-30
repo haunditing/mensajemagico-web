@@ -40,7 +40,7 @@ export const handler: Handler = async (event) => {
   try {
     const body = JSON.parse(event.body || "{}");
 
-    const { prompt, systemInstruction, temperature, maxTokens } = body;
+    const { prompt, systemInstruction, temperature, maxOutputTokens } = body;
 
     // Validación prompt
     if (!prompt || typeof prompt !== "string") {
@@ -55,7 +55,7 @@ export const handler: Handler = async (event) => {
        ========================= */
 
     // --- TOKENS ---
-    const requestedTokens = Number(maxTokens) || 0;
+    const requestedTokens = Number(maxOutputTokens) || 0;
 
     const safeMaxTokens = Math.min(
       ENV_MAX_TOKENS,
