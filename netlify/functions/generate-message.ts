@@ -1,5 +1,5 @@
 import type { Handler } from "@netlify/functions";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 /* =========================
    CONFIGURACIÓN SEGURA
@@ -7,7 +7,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Variables de entorno (autoridad)
 const API_KEY = process.env.AI_API_KEY || "";
-const MODEL_NAME = process.env.AI_MODEL || "gemini-3-flash-preview";
+const MODEL_NAME = process.env.AI_MODEL || "gemini-2.5-flash";
 const ENV_MAX_TOKENS = Number(process.env.AI_MAX_TOKENS || 260);
 const ENV_TEMPERATURE = Number(process.env.AI_TEMP || 0.7);
 
@@ -15,9 +15,6 @@ const ENV_TEMPERATURE = Number(process.env.AI_TEMP || 0.7);
 const MIN_SAFE_TOKENS = 220;
 const MIN_TEMP = 0.2;
 const MAX_TEMP = 0.95;
-
-// Inicialización IA
-const genAI = new GoogleGenerativeAI(API_KEY);
 
 /* =========================
    HANDLER
@@ -43,12 +40,7 @@ export const handler: Handler = async (event) => {
   try {
     const body = JSON.parse(event.body || "{}");
 
-    const {
-      prompt,
-      systemInstruction,
-      temperature,
-      maxTokens,
-    } = body;
+    const { prompt, systemInstruction, temperature, maxTokens } = body;
 
     // Validación prompt
     if (!prompt || typeof prompt !== "string") {
@@ -67,7 +59,7 @@ export const handler: Handler = async (event) => {
 
     const safeMaxTokens = Math.min(
       ENV_MAX_TOKENS,
-      Math.max(requestedTokens, MIN_SAFE_TOKENS)
+      Math.max(requestedTokens, MIN_SAFE_TOKENS),
     );
 
     // --- TEMPERATURA ---
@@ -88,33 +80,30 @@ export const handler: Handler = async (event) => {
     /* =========================
        GENERACIÓN
        ========================= */
+    const ai = new GoogleGenAI({ apiKey: API_KEY });
 
-    const model = genAI.getGenerativeModel({
+    const response = await ai.models.generateContent({
       model: MODEL_NAME,
-    });
-
-    const result = await model.generateContent({
       contents: [
         {
           role: "user",
           parts: [{ text: finalPrompt }],
         },
       ],
-      generationConfig: {
+      config: {
         temperature: safeTemperature,
         maxOutputTokens: safeMaxTokens,
       },
     });
 
-    const text =
-      result.response.text()?.trim() ||
-      "No se pudo generar el mensaje en este momento.";
+    const text = response.text?.trim();
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ text }),
+      body: JSON.stringify({
+        text: text || "No se pudo generar el mensaje en este momento.",
+      }),
     };
-
   } catch (error) {
     console.error("Gemini error:", error);
     return {
