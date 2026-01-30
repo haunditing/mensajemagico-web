@@ -1,4 +1,3 @@
-
 import { MessageConfig } from "../types";
 import { aiFactory } from "./ai/factory";
 import { CONFIG } from "../config";
@@ -10,25 +9,28 @@ const generationCache: Record<string, string[]> = {};
  * Servicio de Generación de Mensajes Optimizado.
  * Utiliza prompts comprimidos y respeta los límites globales de CONFIG.
  */
-export const generateMessage = async (config: MessageConfig): Promise<string> => {
-  const isReply = config.occasion.toLowerCase().includes('responder');
-  const isPensamiento = config.occasion.toLowerCase().includes('pensamiento');
-  
-  const cacheKey = `${config.occasion}-${config.relationship}-${config.tone}-${config.receivedMessageType || 'none'}`;
-  
+export const generateMessage = async (
+  config: MessageConfig,
+): Promise<string> => {
+  const isReply = config.occasion.toLowerCase().includes("responder");
+  const isPensamiento = config.occasion.toLowerCase().includes("pensamiento");
+
+  const cacheKey = `${config.occasion}-${config.relationship}-${config.tone}-${config.receivedMessageType || "none"}`;
+
   const safeRel = (config.relationship || "").substring(0, 30);
   const safeText = (config.receivedText || "").substring(0, 200);
 
   let prompt = "";
   let systemInstruction = "";
-  
+
   // Calculamos el límite de tokens basándonos en el máximo global definido
   // para asegurar que nunca excedemos lo que el arquitecto configuró.
   const globalMax = CONFIG.AI.MAX_TOKENS;
   let taskMaxTokens = 200;
 
   if (isPensamiento) {
-    systemInstruction = "Escritor minimalista. Solo pensamientos breves y profundos.";
+    systemInstruction =
+      "Escritor minimalista. Solo pensamientos breves y profundos.";
     prompt = `Tema: ${safeRel}. Estado: ${config.tone}. Máx 25 palabras. Solo el texto.`;
     taskMaxTokens = Math.min(60, globalMax);
   } else if (isReply) {
@@ -42,21 +44,25 @@ export const generateMessage = async (config: MessageConfig): Promise<string> =>
   }
 
   try {
-    const aiProvider = aiFactory.getProvider();
-    
-    const response = await aiProvider.generateText({
-      prompt,
-      systemInstruction,
-      temperature: isPensamiento ? 0.9 : CONFIG.AI.TEMPERATURE,
-      maxTokens: taskMaxTokens
+    const response = await fetch("/.netlify/functions/generate-message", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        prompt,
+        systemInstruction,
+        temperature: isPensamiento ? 0.9 : CONFIG.AI.TEMPERATURE,
+        maxTokens: taskMaxTokens,
+      }),
     });
 
-    const result = response.text || "";
-    
-    if (!generationCache[cacheKey]) generationCache[cacheKey] = [];
-    generationCache[cacheKey].push(result);
+    if (!response.ok) {
+      throw new Error("Error al generar el mensaje");
+    }
 
-    return result;
+    const data = await response.json();
+    return data.text || "";
   } catch (error: any) {
     console.error("AI Efficiency Error:", error);
     return "No pudimos conectar con la inspiración. Reintenta pronto.";

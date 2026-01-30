@@ -1,7 +1,9 @@
 import type { Handler } from '@netlify/functions';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.AI_API_KEY || '');
 
 export const handler: Handler = async (event) => {
-  // Solo permitimos POST
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -10,11 +12,14 @@ export const handler: Handler = async (event) => {
   }
 
   try {
-    // Parseo seguro del body
     const body = JSON.parse(event.body || '{}');
-    const { prompt, systemInstruction, temperature, maxTokens } = body;
+    const {
+      prompt,
+      systemInstruction,
+      temperature = 0.7,
+      maxTokens = 200,
+    } = body;
 
-    // Validación mínima
     if (!prompt || typeof prompt !== 'string') {
       return {
         statusCode: 400,
@@ -22,30 +27,46 @@ export const handler: Handler = async (event) => {
       };
     }
 
-    /**
-     * ⚠️ IMPORTANTE
-     * Por ahora NO llamamos a ningún proveedor de IA real.
-     * Devolvemos una respuesta mock para validar infraestructura.
-     */
+    if (!process.env.AI_API_KEY) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'API key no configurada' }),
+      };
+    }
 
-    const mockText = `✨ Mensaje generado (mock):
-${prompt.slice(0, 120)}${prompt.length > 120 ? '...' : ''}`;
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-1.5-flash',
+      systemInstruction,
+    });
+
+    const result = await model.generateContent({
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt }],
+        },
+      ],
+      generationConfig: {
+        temperature,
+        maxOutputTokens: maxTokens,
+      },
+    });
+
+    const text =
+      result.response.text()?.trim() ||
+      'No se pudo generar el mensaje en este momento.';
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        text: mockText,
-        meta: {
-          temperature,
-          maxTokens,
-          mocked: true,
-        },
-      }),
+      body: JSON.stringify({ text }),
     };
   } catch (error) {
+    console.error('Gemini error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Error interno en la función' }),
+      body: JSON.stringify({
+        error: 'Error al generar el mensaje con IA',
+      }),
     };
   }
 };
