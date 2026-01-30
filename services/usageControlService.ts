@@ -1,0 +1,51 @@
+
+import { CONFIG } from '../config';
+
+export const canGenerate = (): { allowed: boolean; message?: string; delay?: number } => {
+  const now = Date.now();
+  
+  const lastRequest = Number(sessionStorage.getItem('last_request_time') || 0);
+  const timeSinceLast = now - lastRequest;
+
+  if (timeSinceLast < CONFIG.USAGE.MIN_INTERVAL_MS) {
+    return { allowed: true, delay: 1000 }; 
+  }
+
+  const sessionCount = Number(sessionStorage.getItem('usage_session_count') || 0);
+  if (sessionCount >= CONFIG.USAGE.SESSION_LIMIT) {
+    return { 
+      allowed: false, 
+      message: "Límite de sesión alcanzado. Descansa un momento y vuelve a intentar." 
+    };
+  }
+
+  const dailyKey = `usage_daily_${new Date().toISOString().split('T')[0]}`;
+  const dailyCount = Number(localStorage.getItem(dailyKey) || 0);
+  
+  if (dailyCount >= CONFIG.USAGE.DAILY_LIMIT) {
+    return { 
+      allowed: false, 
+      message: "Has agotado tus créditos mágicos diarios. ¡Vuelve mañana!" 
+    };
+  }
+
+  return { allowed: true };
+};
+
+export const recordGeneration = () => {
+  const now = Date.now();
+  const dailyKey = `usage_daily_${new Date().toISOString().split('T')[0]}`;
+
+  const sessionCount = Number(sessionStorage.getItem('usage_session_count') || 0);
+  sessionStorage.setItem('usage_session_count', (sessionCount + 1).toString());
+  sessionStorage.setItem('last_request_time', now.toString());
+
+  const dailyCount = Number(localStorage.getItem(dailyKey) || 0);
+  localStorage.setItem(dailyKey, (dailyCount + 1).toString());
+
+  Object.keys(localStorage).forEach(key => {
+    if (key.startsWith('usage_daily_') && key !== dailyKey) {
+      localStorage.removeItem(key);
+    }
+  });
+};

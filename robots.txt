@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /private/
+
+# Enlace absoluto al Sitemap
+Sitemap: https://mensajemagico.com/sitemap.xml

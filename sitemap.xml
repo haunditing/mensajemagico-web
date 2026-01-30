@@ -1,0 +1,30 @@
+
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Páginas Principales -->
+  <url>
+    <loc>https://mensajemagico.com/#/</loc>
+    <lastmod>2025-02-14</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://mensajemagico.com/#/privacidad</loc>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://mensajemagico.com/#/contacto</loc>
+    <priority>0.5</priority>
+  </url>
+
+  <!-- Ocasiones Base -->
+  <url><loc>https://mensajemagico.com/#/mensajes/amor</loc><priority>0.9</priority></url>
+  <url><loc>https://mensajemagico.com/#/mensajes/no-me-dejes-en-visto</loc><priority>0.9</priority></url>
+  <url><loc>https://mensajemagico.com/#/mensajes/perdoname</loc><priority>0.9</priority></url>
+  <url><loc>https://mensajemagico.com/#/mensajes/dia-de-la-madre</loc><priority>0.9</priority></url>
+  <url><loc>https://mensajemagico.com/#/mensajes/cumpleanos</loc><priority>0.8</priority></url>
+  
+  <!-- Nichos de Amor (Combinaciones) -->
+  <url><loc>https://mensajemagico.com/#/mensajes/amor/pareja</loc><priority>0.8</priority></url>
+  <url><loc>https://mensajemagico.com/#/mensajes/amor/amor-secreto</loc><priority>0.7</priority></url>
+</urlset>
