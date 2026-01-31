@@ -27,7 +27,7 @@ const HomePage: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link to="/mensajes/responder-un-mensaje" className="h-14 px-8 rounded-xl bg-blue-600 text-white font-bold flex items-center justify-center shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95 gap-3">
             <OccasionIcon slug="responder-un-mensaje" className="w-6 h-6 text-white" />
-            <span>💬 Qué responder a...</span>
+            <span>Qué responder a...</span>
           </Link>
           <Link to="/mensajes/no-me-dejes-en-visto" className="h-14 px-8 rounded-xl bg-green-600 text-white font-bold flex items-center justify-center shadow-lg shadow-green-600/20 hover:bg-green-700 transition-all active:scale-95 gap-3">
             <OccasionIcon slug="no-me-dejes-en-visto" className="w-6 h-6 text-white" />
