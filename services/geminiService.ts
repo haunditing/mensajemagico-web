@@ -74,8 +74,10 @@ export const generateMessage = async (
       }),
     });
 
-    const result = await response.text();
+    const data = await response.json();
 
+    const result = data?.text?.trim();
+    
     if (!result) {
       throw new Error("El modelo no devolvió contenido.");
     }
