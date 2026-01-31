@@ -1,3 +1,4 @@
+import { GoogleGenAI } from "@google/genai";
 import { MessageConfig } from "../types";
 import { CONFIG } from "../config";
 
@@ -37,7 +38,7 @@ export const generateMessage = async (
     prompt = `Escribe un mensaje de ${config.occasion} para mi ${safeRel} con tono ${config.tone}. Sé muy breve, máximo 3 frases cortas. No uses introducciones, ve al grano. Solo devuelve el texto.`;
   }
 
-  try {
+  /*try {
     const response = await fetch("/.netlify/functions/generate-message", {
       method: "POST",
       headers: {
@@ -49,9 +50,39 @@ export const generateMessage = async (
         temperature: isPensamiento ? 0.9 : CONFIG.AI.TEMPERATURE,
         maxOutputTokens: taskMaxTokens,
       }),
+    });*/
+// Esto es agregado para usar el SDK oficial de Gemini en lugar de la función Netlify
+      try {
+    // Inicialización directa del SDK
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
+    const response = await ai.models.generateContent({
+      model: CONFIG.AI.MODEL,
+      contents: [{ parts: [{ text: prompt }] }],
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: isPensamiento ? 0.9 : 0.7,
+        topP: 0.8,
+      },
     });
 
-    if (!response.ok) {
+    const result = response.text || "";
+    
+    if (!result) {
+      throw new Error("El modelo no devolvió contenido.");
+    }
+
+
+    return result;
+  } catch (error: any) {
+    console.error("Gemini SDK Error:", error);
+    return "Lo siento, la inspiración está tomando un café. Por favor, intenta de nuevo.";
+  }
+};
+
+// aqui termina el nuevo codigo
+
+   /* if (!response.ok) {
       throw new Error("Error al generar el mensaje");
     }
 
@@ -61,4 +92,4 @@ export const generateMessage = async (
     console.error("AI Efficiency Error:", error);
     return "No pudimos conectar con la inspiración. Reintenta pronto.";
   }
-};
+};*/
