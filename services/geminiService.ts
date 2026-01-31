@@ -47,6 +47,7 @@ export const generateMessage = async (
         prompt,
         systemInstruction,
         temperature: isPensamiento ? 0.9 : CONFIG.AI.TEMPERATURE,
+        topP: 0.8,
         //maxOutputTokens: taskMaxTokens,
       }),
     });
