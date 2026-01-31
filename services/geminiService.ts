@@ -54,7 +54,7 @@ export const generateMessage = async (
 // Esto es agregado para usar el SDK oficial de Gemini en lugar de la función Netlify
       try {
     // Inicialización directa del SDK
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    const ai = new GoogleGenAI({ apiKey: process.env.AT_API_KEY });
     
     const response = await ai.models.generateContent({
       model: CONFIG.AI.MODEL,
