@@ -92,7 +92,7 @@ export const handler: Handler = async (event) => {
       ],
       config: {
         temperature: safeTemperature,
-        maxOutputTokens: safeMaxTokens,
+        //maxOutputTokens: safeMaxTokens,
       },
     });
 
