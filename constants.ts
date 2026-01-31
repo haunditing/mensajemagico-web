@@ -132,7 +132,7 @@ export const OCCASIONS: Occasion[] = [
   {
     id: 'fathers_day',
     name: 'Día del Padre',
-    slug: 'dia-de-la-padre',
+    slug: 'dia-del-padre',
     icon: '👔',
     description: 'Frases de agradecimiento y cariño para el mejor papá del mundo.',
     h1: 'Mensajes para el Día del Padre: Inspiración y Cariño',

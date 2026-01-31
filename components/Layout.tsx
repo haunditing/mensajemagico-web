@@ -74,24 +74,23 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           {/* Navegación Móvil Horizontal */}
           <div className="lg:hidden border-t border-slate-50 nav-mask">
-            <nav className="flex gap-2.5 overflow-x-auto no-scrollbar py-3.5 px-4 snap-x items-center">
+            <nav className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-4 snap-x items-center">
               {OCCASIONS.map(o => {
                 const localized = getLocalizedOccasion(o, currentCountry);
                 const isActive = location.pathname.startsWith(`/mensajes/${o.slug}`);
-                const shortName = localized.name.split(' ').slice(0, 2).join(' ');
                 
                 return (
                   <Link 
                     key={o.id}
                     to={`/mensajes/${o.slug}`}
-                    className={`whitespace-nowrap px-5 py-2.5 rounded-full border transition-all duration-300 snap-start flex items-center gap-2.5
+                    aria-label={localized.name}
+                    className={`shrink-0 p-3.5 rounded-2xl border transition-all duration-300 snap-center flex items-center justify-center
                       ${isActive
-                        ? 'bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-600/30 scale-105 text-sm font-extrabold'
-                        : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300 text-[13px] font-bold'
+                        ? 'bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-600/30 scale-105'
+                        : 'bg-white text-slate-500 border-slate-200 hover:border-slate-300'
                       }`}
                   >
-                    <OccasionIcon slug={o.slug} className="w-4 h-4" isActive={isActive} />
-                    {shortName}
+                    <OccasionIcon slug={o.slug} className="w-6 h-6" isActive={isActive} />
                   </Link>
                 );
               })}

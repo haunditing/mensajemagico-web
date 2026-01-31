@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Occasion, Relationship, Tone, GeneratedMessage } from '../types';
 import { RELATIONSHIPS, TONES, RECEIVED_MESSAGE_TYPES, PENSAMIENTO_THEMES, EMOTIONAL_STATES } from '../constants';
-import { generateMessage } from '../services/geminiService';
+import { generateMessage, AI_ERROR_FALLBACK } from '../services/geminiService';
 import { containsOffensiveWords, SAFETY_ERROR_MESSAGE } from '../services/safetyService';
 import { canGenerate, recordGeneration } from '../services/usageControlService';
 import { incrementGlobalCounter } from '../services/metricsService';
@@ -202,34 +202,38 @@ const Generator: React.FC<GeneratorProps> = ({ occasion, initialRelationship, on
         </button>
       </div>
 
-      {/* Inventario Valioso: El AdBanner intermedio solo se muestra si hay al menos 1 mensaje generado */}
       <AdBanner position="middle" hasContent={messages.length > 0} />
 
       <div id="results-section" className="mt-6 space-y-6">
-        {messages.map((msg) => (
-          <div key={msg.id} className={`bg-white border border-slate-200 rounded-2xl p-6 md:p-8 animate-fade-in-up shadow-sm relative overflow-hidden ${isPensamiento ? 'text-center border-blue-200' : ''}`}>
-            <p className={`text-slate-800 leading-relaxed font-medium mb-8 relative z-10 ${isPensamiento ? 'text-xl md:text-2xl italic' : 'text-base md:text-lg'}`}>
-              {msg.content}
-            </p>
-            
-            <div className="pt-6 border-t border-slate-100 relative z-10">
-              <ShareBar 
-                content={msg.content} 
-                platforms={occasion.allowedPlatforms}
-                className="animate-fade-in-up"
-              />
+        {messages.map((msg) => {
+          const isError = msg.content === AI_ERROR_FALLBACK;
+          
+          return (
+            <div key={msg.id} className={`bg-white border border-slate-200 rounded-2xl p-6 md:p-8 animate-fade-in-up shadow-sm relative overflow-hidden ${isPensamiento ? 'text-center border-blue-200' : ''}`}>
+              <p className={`text-slate-800 leading-relaxed font-medium mb-8 relative z-10 ${isPensamiento ? 'text-xl md:text-2xl italic' : 'text-base md:text-lg'} ${isError ? 'text-red-500 italic text-sm' : ''}`}>
+                {msg.content}
+              </p>
               
-              {!isPensamiento && (
-                <div className="mt-6 flex flex-col gap-1 w-full text-left">
-                   <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Aviso legal</span>
-                   <p className="text-[10px] text-slate-300 leading-tight">
-                     Tú decides cómo usar este mensaje. No somos responsables de las consecuencias sociales de su envío.
-                   </p>
-                </div>
-              )}
+              <div className="pt-6 border-t border-slate-100 relative z-10">
+                <ShareBar 
+                  content={msg.content} 
+                  platforms={occasion.allowedPlatforms}
+                  disabled={isError || isLoading}
+                  className="animate-fade-in-up"
+                />
+                
+                {!isPensamiento && (
+                  <div className="mt-6 flex flex-col gap-1 w-full text-left">
+                     <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">Aviso legal</span>
+                     <p className="text-[10px] text-slate-300 leading-tight">
+                       Tú decides cómo usar este mensaje. No somos responsables de las consecuencias sociales de su envío.
+                     </p>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

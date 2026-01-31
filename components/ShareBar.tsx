@@ -1,7 +1,6 @@
-
-import React, { useState } from 'react';
-import { SharePlatform } from '../types';
-import { executeShare, isNativeShareSupported } from '../services/shareService';
+import React, { useState } from "react";
+import { SharePlatform } from "../types";
+import { executeShare, isNativeShareSupported } from "../services/shareService";
 
 // Componentes SVG para los logos reales de las plataformas
 const Icons = {
@@ -11,7 +10,15 @@ const Icons = {
     </svg>
   ),
   Instagram: () => (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+    >
       <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
       <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
@@ -33,59 +40,145 @@ const Icons = {
     </svg>
   ),
   Copy: () => (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+    >
       <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
       <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
     </svg>
   ),
   Mail: () => (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+    >
       <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
       <polyline points="22,6 12,13 2,6"></polyline>
     </svg>
   ),
   SMS: () => (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+    >
       <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
     </svg>
   ),
   Share: () => (
-    <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+    <svg
+      className="w-6 h-6"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+    >
       <circle cx="18" cy="5" r="3"></circle>
       <circle cx="6" cy="12" r="3"></circle>
       <circle cx="18" cy="19" r="3"></circle>
       <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
       <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
     </svg>
-  )
+  ),
 };
 
 interface ShareBarProps {
   content: string;
   platforms?: SharePlatform[];
   className?: string;
+  disabled?: boolean;
 }
 
-const ShareBar: React.FC<ShareBarProps> = ({ content, platforms, className = "" }) => {
+const ShareBar: React.FC<ShareBarProps> = ({
+  content,
+  platforms,
+  className = "",
+  disabled = false,
+}) => {
   const [activeAction, setActiveAction] = useState<SharePlatform | null>(null);
 
-  // Configuraciones visuales por plataforma (solo se mantiene el label para accesibilidad)
-  const platformConfig: Record<SharePlatform, { icon: React.ReactNode; label: string; color: string; bg: string }> = {
-    [SharePlatform.WHATSAPP]: { icon: <Icons.WhatsApp />, label: 'Compartir por WhatsApp', color: 'text-[#25D366]', bg: 'bg-[#25D366]/10 hover:bg-[#25D366]/20' },
-    [SharePlatform.INSTAGRAM]: { icon: <Icons.Instagram />, label: 'Compartir en Instagram', color: 'text-[#E4405F]', bg: 'bg-[#E4405F]/10 hover:bg-[#E4405F]/20' },
-    [SharePlatform.FACEBOOK]: { icon: <Icons.Facebook />, label: 'Compartir en Facebook', color: 'text-[#1877F2]', bg: 'bg-[#1877F2]/10 hover:bg-[#1877F2]/20' },
-    [SharePlatform.TELEGRAM]: { icon: <Icons.Telegram />, label: 'Compartir por Telegram', color: 'text-[#24A1DE]', bg: 'bg-[#24A1DE]/10 hover:bg-[#24A1DE]/20' },
-    [SharePlatform.X]: { icon: <Icons.X />, label: 'Compartir en X', color: 'text-slate-900', bg: 'bg-slate-100 hover:bg-slate-200' },
-    [SharePlatform.EMAIL]: { icon: <Icons.Mail />, label: 'Enviar por Email', color: 'text-slate-500', bg: 'bg-slate-100 hover:bg-slate-200' },
-    [SharePlatform.SMS]: { icon: <Icons.SMS />, label: 'Enviar por SMS', color: 'text-indigo-500', bg: 'bg-indigo-50 hover:bg-indigo-100' },
-    [SharePlatform.COPY]: { icon: <Icons.Copy />, label: 'Copiar al portapapeles', color: 'text-slate-700', bg: 'bg-slate-100 hover:bg-slate-200' },
-    [SharePlatform.NATIVE]: { icon: <Icons.Share />, label: 'Otras opciones de envío', color: 'text-blue-600', bg: 'bg-blue-50 hover:bg-blue-100' },
+  // Configuraciones visuales por plataforma
+  const platformConfig: Record<
+    SharePlatform,
+    { icon: React.ReactNode; label: string; color: string; bg: string }
+  > = {
+    [SharePlatform.WHATSAPP]: {
+      icon: <Icons.WhatsApp />,
+      label: "Compartir por WhatsApp",
+      color: "text-[#25D366]",
+      bg: "bg-[#25D366]/10 hover:bg-[#25D366]/20",
+    },
+    [SharePlatform.INSTAGRAM]: {
+      icon: <Icons.Instagram />,
+      label: "Compartir en Instagram",
+      color: "text-[#E4405F]",
+      bg: "bg-[#E4405F]/10 hover:bg-[#E4405F]/20",
+    },
+    [SharePlatform.FACEBOOK]: {
+      icon: <Icons.Facebook />,
+      label: "Compartir en Facebook",
+      color: "text-[#1877F2]",
+      bg: "bg-[#1877F2]/10 hover:bg-[#1877F2]/20",
+    },
+    [SharePlatform.TELEGRAM]: {
+      icon: <Icons.Telegram />,
+      label: "Compartir por Telegram",
+      color: "text-[#24A1DE]",
+      bg: "bg-[#24A1DE]/10 hover:bg-[#24A1DE]/20",
+    },
+    [SharePlatform.X]: {
+      icon: <Icons.X />,
+      label: "Compartir en X",
+      color: "text-slate-900",
+      bg: "bg-slate-100 hover:bg-slate-200",
+    },
+    [SharePlatform.EMAIL]: {
+      icon: <Icons.Mail />,
+      label: "Enviar por Email",
+      color: "text-slate-500",
+      bg: "bg-slate-100 hover:bg-slate-200",
+    },
+    [SharePlatform.SMS]: {
+      icon: <Icons.SMS />,
+      label: "Enviar por SMS",
+      color: "text-indigo-500",
+      bg: "bg-indigo-50 hover:bg-indigo-100",
+    },
+    [SharePlatform.COPY]: {
+      icon: <Icons.Copy />,
+      label: "Copiar al portapapeles",
+      color: "text-slate-700",
+      bg: "bg-slate-100 hover:bg-slate-200",
+    },
+    [SharePlatform.NATIVE]: {
+      icon: <Icons.Share />,
+      label: "Otras opciones de envío",
+      color: "text-blue-600",
+      bg: "bg-blue-50 hover:bg-blue-100",
+    },
   };
 
   const defaultPlatforms = [
     SharePlatform.WHATSAPP,
     SharePlatform.TELEGRAM,
-    SharePlatform.COPY
+    SharePlatform.COPY,
   ];
 
   if (isNativeShareSupported()) {
@@ -95,15 +188,18 @@ const ShareBar: React.FC<ShareBarProps> = ({ content, platforms, className = "" 
   const activePlatforms = platforms || defaultPlatforms;
 
   const handleAction = async (platform: SharePlatform) => {
+    if (disabled) return;
     setActiveAction(platform);
     await executeShare(platform, content);
     setTimeout(() => setActiveAction(null), 2000);
   };
 
   return (
-    <div className={`w-full ${className}`}>
+    <div
+      className={`w-full ${className} ${disabled ? "opacity-40 grayscale pointer-events-none" : ""}`}
+    >
       <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 text-center sm:text-left">
-        Enviar Mensaje
+        {disabled ? "Opciones desactivadas" : "Enviar Mensaje"}
       </p>
       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
         {activePlatforms.map((platform) => {
@@ -115,10 +211,12 @@ const ShareBar: React.FC<ShareBarProps> = ({ content, platforms, className = "" 
           return (
             <button
               key={platform}
+              disabled={disabled}
               onClick={() => handleAction(platform)}
               className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all active:scale-90 border border-transparent shrink-0
                 ${config.bg} ${config.color} 
-                ${isProcessing ? 'ring-2 ring-offset-1 ring-current scale-105' : ''}
+                ${isProcessing ? "ring-2 ring-offset-1 ring-current scale-105" : ""}
+                ${disabled ? "cursor-not-allowed" : ""}
               `}
               title={config.label}
               aria-label={config.label}
@@ -126,7 +224,9 @@ const ShareBar: React.FC<ShareBarProps> = ({ content, platforms, className = "" 
               {isProcessing && platform === SharePlatform.COPY ? (
                 <span className="text-lg animate-bounce">✅</span>
               ) : (
-                <span className="flex items-center justify-center">{config.icon}</span>
+                <span className="flex items-center justify-center">
+                  {config.icon}
+                </span>
               )}
             </button>
           );

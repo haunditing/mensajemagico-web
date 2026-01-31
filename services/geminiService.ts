@@ -1,6 +1,15 @@
 import { MessageConfig } from "../types";
 import { CONFIG } from "../config";
 
+export const AI_ERROR_FALLBACK =
+  "Lo siento, la inspiración está tomando un café. Por favor, intenta de nuevo.";
+
+/**
+ * Caché de sesión para optimizar costos y velocidad.
+ * Estructura: { 'slug-relacion-tono': ['mensaje1', 'mensaje2'] }
+ */
+const generationCache: Record<string, string[]> = {};
+
 /**
  * Servicio de Generación de Mensajes Optimizado.
  * Utiliza prompts comprimidos y respeta los límites globales de CONFIG.
@@ -11,6 +20,20 @@ export const generateMessage = async (
   const isReply = config.occasion.toLowerCase().includes("responder");
   const isPensamiento = config.occasion.toLowerCase().includes("pensamiento");
 
+  // 1. Generar Llave de Caché
+  const cacheKey =
+    `${config.occasion}-${config.relationship}-${config.tone}-${config.receivedMessageType || "none"}`
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+  // 2. Lógica de recuperación (Short-circuit)
+  // Si ya generamos algo igual en esta sesión, lo devolvemos aleatoriamente de los resultados previos
+
+  if (generationCache[cacheKey] && generationCache[cacheKey].length > 0) {
+    const cachedResults = generationCache[cacheKey];
+    // Retornamos uno aleatorio de la caché para dar variedad sin gastar tokens
+    return cachedResults[Math.floor(Math.random() * cachedResults.length)];
+  }
   const safeRel = (config.relationship || "").substring(0, 30);
   const safeText = (config.receivedText || "").substring(0, 200);
 
@@ -21,7 +44,6 @@ export const generateMessage = async (
   // Calculamos el límite de tokens basándonos en el máximo global definido
   // para asegurar que nunca excedemos lo que el arquitecto configuró.
   const globalMax = CONFIG.AI.MAX_TOKENS;
-  let taskMaxTokens = 260;
 
   if (isPensamiento) {
     systemInstruction +=
@@ -52,14 +74,19 @@ export const generateMessage = async (
       }),
     });
 
-    if (!response.ok) {
-      throw new Error("Error al generar el mensaje");
+    const result = await response.text();
+
+    if (!result) {
+      throw new Error("El modelo no devolvió contenido.");
     }
 
-    const data = await response.json();
-    return data.text || "";
+    // 3. Almacenamiento en Caché
+    if (!generationCache[cacheKey]) generationCache[cacheKey] = [];
+    generationCache[cacheKey].push(result);
+
+    return result;
   } catch (error: any) {
     console.error("AI Efficiency Error:", error);
-    return "No pudimos conectar con la inspiración. Reintenta pronto.";
+    return AI_ERROR_FALLBACK;
   }
 };
