@@ -1,7 +1,6 @@
 import { MessageConfig } from "../types";
 import { CONFIG } from "../config";
 
-
 /**
  * Servicio de Generación de Mensajes Optimizado.
  * Utiliza prompts comprimidos y respeta los límites globales de CONFIG.
@@ -12,12 +11,12 @@ export const generateMessage = async (
   const isReply = config.occasion.toLowerCase().includes("responder");
   const isPensamiento = config.occasion.toLowerCase().includes("pensamiento");
 
-
   const safeRel = (config.relationship || "").substring(0, 30);
   const safeText = (config.receivedText || "").substring(0, 200);
 
   let prompt = "";
-  let systemInstruction = "";
+  let systemInstruction =
+    "Eres un experto en comunicación breve. Tu estilo es minimalista, humano y directo. Evitas los párrafos largos y el lenguaje excesivamente formal o robótico.";
 
   // Calculamos el límite de tokens basándonos en el máximo global definido
   // para asegurar que nunca excedemos lo que el arquitecto configuró.
@@ -25,14 +24,17 @@ export const generateMessage = async (
   let taskMaxTokens = 260;
 
   if (isPensamiento) {
-    systemInstruction = "Eres un escritor de reflexiones minimalistas. Creas pensamientos breves pero con gran carga emocional y filosófica.";
-    prompt = `Genera un pensamiento inspirador sobre ${safeRel}. El tono debe ser ${config.tone}. Debe ser una sola frase impactante de longitud media. Solo devuelve el texto del pensamiento.`;
+    systemInstruction +=
+      " Creas micro-reflexiones impactantes de una sola línea.";
+    prompt = `Genera un pensamiento inspirador sobre ${safeRel} en tono ${config.tone}. Debe ser una sola frase corta y potente (máximo 15 palabras). Solo devuelve el texto.`;
   } else if (isReply) {
-    systemInstruction = "Eres un experto en comunicación social y mensajería instantánea. Tu objetivo es ayudar a las personas a responder de forma natural y efectiva.";
-    prompt = `Ayúdame a responder un mensaje. Me enviaron: "${safeText || config.receivedMessageType}". El destinatario es mi ${safeRel} y quiero sonar ${config.tone}. Genera una respuesta natural y fluida. Solo devuelve el texto del mensaje.`;
+    systemInstruction +=
+      " Generas respuestas de chat naturales, como las que enviaría un amigo.";
+    prompt = `Ayúdame a responder este mensaje: "${safeText || config.receivedMessageType}". Es para mi ${safeRel} y quiero sonar ${config.tone}. Genera una respuesta de máximo 2 frases cortas. Solo devuelve el texto del mensaje.`;
   } else {
-    systemInstruction = "Eres un redactor experto en cartas y mensajes emocionales. Sabes transmitir sentimientos con las palabras exactas.";
-    prompt = `Escribe un mensaje de ${config.occasion} para mi ${safeRel}. El tono debe ser ${config.tone}. Crea un mensaje cálido y bien redactado de longitud moderada. No uses etiquetas ni introducciones, solo el contenido del mensaje.`;
+    systemInstruction +=
+      " Escribes mensajes cálidos pero muy breves, ideales para WhatsApp.";
+    prompt = `Escribe un mensaje de ${config.occasion} para mi ${safeRel} con tono ${config.tone}. Sé muy breve, máximo 3 frases cortas. No uses introducciones, ve al grano. Solo devuelve el texto.`;
   }
 
   try {
