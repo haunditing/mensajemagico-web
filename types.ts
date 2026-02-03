@@ -1,29 +1,38 @@
-
 export enum Tone {
-  ROMANTIC = 'romántico',
-  SHORT = 'corto',
-  FORMAL = 'formal',
-  FUNNY = 'divertido',
-  PROFOUND = 'profundo',
-  FLIRTY = 'coqueto',
-  DIRECT = 'directo',
-  SUBTLE = 'sutil',
-  SARCASTIC = 'sarcástico',
-  LIGHT_DESPERATION = 'desesperado-light'
+  ROMANTIC = "romántico",
+  SHORT = "corto",
+  FORMAL = "formal",
+  FUNNY = "divertido",
+  PROFOUND = "profundo",
+  FLIRTY = "coqueto",
+  DIRECT = "directo",
+  SUBTLE = "sutil",
+  SARCASTIC = "sarcástico",
+  LIGHT_DESPERATION = "desesperado-light",
+  BELATED = "atrasado",
 }
 
-export type CountryCode = 'AR' | 'CO' | 'MX' | 'PE' | 'CL' | 'EC' | 'UY' | 'VE' | 'GENERIC';
+export type CountryCode =
+  | "AR"
+  | "CO"
+  | "MX"
+  | "PE"
+  | "CL"
+  | "EC"
+  | "UY"
+  | "VE"
+  | "GENERIC";
 
 export enum SharePlatform {
-  WHATSAPP = 'whatsapp',
-  INSTAGRAM = 'instagram',
-  FACEBOOK = 'facebook',
-  TELEGRAM = 'telegram',
-  EMAIL = 'email',
-  SMS = 'sms',
-  X = 'x',
-  COPY = 'copy',
-  NATIVE = 'native'
+  WHATSAPP = "whatsapp",
+  INSTAGRAM = "instagram",
+  FACEBOOK = "facebook",
+  TELEGRAM = "telegram",
+  EMAIL = "email",
+  SMS = "sms",
+  X = "x",
+  COPY = "copy",
+  NATIVE = "native",
 }
 
 export interface Relationship {
@@ -34,7 +43,7 @@ export interface Relationship {
 
 export interface Occasion {
   id: string;
-  name: string; 
+  name: string;
   slug: string;
   icon: string;
   description: string;
