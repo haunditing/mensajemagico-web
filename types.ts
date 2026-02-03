@@ -76,6 +76,7 @@ export interface MessageConfig {
   tone: Tone;
   receivedMessageType?: string;
   receivedText?: string;
+  contextWords?: string[];
 }
 
 export interface GeneratedMessage {

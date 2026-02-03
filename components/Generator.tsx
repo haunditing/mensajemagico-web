@@ -14,6 +14,7 @@ import {
 } from "../services/safetyService";
 import { canGenerate, recordGeneration } from "../services/usageControlService";
 import { incrementGlobalCounter } from "../services/metricsService";
+import { CONFIG } from "../config";
 import ShareBar from "./ShareBar";
 import AdBanner from "./AdBanner";
 
@@ -50,12 +51,18 @@ const Generator: React.FC<GeneratorProps> = ({
     RECEIVED_MESSAGE_TYPES[0].label,
   );
   const [receivedText, setReceivedText] = useState("");
+
+  // Estado para palabras de contexto
+  const [contextWords, setContextWords] = useState<string[]>([]);
+  const [currentWord, setCurrentWord] = useState("");
+
   const [messages, setMessages] = useState<GeneratedMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [safetyError, setSafetyError] = useState<string | null>(null);
   const [usageMessage, setUsageMessage] = useState<string | null>(null);
 
   const MAX_CHARS = 400;
+  const MAX_CONTEXT = CONFIG.USAGE.MAX_CONTEXT_WORDS;
 
   // Si cambiamos de ocasión y el tono actual ya no está disponible, lo reseteamos
   useEffect(() => {
@@ -85,6 +92,34 @@ const Generator: React.FC<GeneratorProps> = ({
     const newId = e.target.value;
     setRelationshipId(newId);
     if (onRelationshipChange) onRelationshipChange(newId);
+  };
+
+  const addContextWord = () => {
+    const word = currentWord.trim();
+    if (
+      word &&
+      contextWords.length < MAX_CONTEXT &&
+      !contextWords.includes(word)
+    ) {
+      if (containsOffensiveWords(word)) {
+        setSafetyError("La palabra de contexto no es permitida.");
+        return;
+      }
+      setContextWords([...contextWords, word]);
+      setCurrentWord("");
+      setSafetyError(null);
+    }
+  };
+
+  const removeContextWord = (wordToRemove: string) => {
+    setContextWords(contextWords.filter((w) => w !== wordToRemove));
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      addContextWord();
+    }
   };
 
   const handleGenerate = async () => {
@@ -122,6 +157,7 @@ const Generator: React.FC<GeneratorProps> = ({
         : tone,
       receivedMessageType: isResponder ? receivedMessageType : undefined,
       receivedText: isResponder ? receivedText : undefined,
+      contextWords: contextWords,
     });
 
     const newMessage: GeneratedMessage = {
@@ -208,6 +244,55 @@ const Generator: React.FC<GeneratorProps> = ({
             </div>
           </div>
 
+          {/* Sección de Palabras de Contexto */}
+          <div className="animate-fade-in-up">
+            <label className="block text-sm font-bold text-slate-700 mb-2">
+              Añade detalles o palabras clave (Máx {MAX_CONTEXT})
+            </label>
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={currentWord}
+                onChange={(e) => setCurrentWord(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Ej: playa, pizza, 5 años..."
+                disabled={contextWords.length >= MAX_CONTEXT}
+                className="flex-grow h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <button
+                onClick={addContextWord}
+                disabled={
+                  !currentWord.trim() || contextWords.length >= MAX_CONTEXT
+                }
+                className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-200 transition-colors disabled:opacity-50"
+                title="Añadir palabra"
+              >
+                <span className="text-xl font-bold">+</span>
+              </button>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {contextWords.map((word, idx) => (
+                <div
+                  key={idx}
+                  className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in-up shadow-sm"
+                >
+                  <span>{word}</span>
+                  <button
+                    onClick={() => removeContextWord(word)}
+                    className="hover:text-blue-200 transition-colors"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+              {contextWords.length === 0 && (
+                <span className="text-[10px] text-slate-400 font-medium italic">
+                  Opcional: añade palabras para personalizar el mensaje.
+                </span>
+              )}
+            </div>
+          </div>
           {isResponder && (
             <div className="animate-fade-in-up space-y-4">
               <div>
@@ -237,18 +322,19 @@ const Generator: React.FC<GeneratorProps> = ({
                   🔐 Respetamos tu privacidad: no almacenamos el contenido que
                   pegas.
                 </p>
-                {safetyError && (
-                  <div className="mt-3 p-3 bg-red-50 border border-red-100 rounded-lg animate-fade-in-up">
-                    <p className="text-xs font-bold text-red-600 flex items-start gap-2">
-                      <span className="text-sm">🚫</span>
-                      <span>{safetyError}</span>
-                    </p>
-                  </div>
-                )}
               </div>
             </div>
           )}
         </div>
+
+        {safetyError && (
+          <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg animate-fade-in-up">
+            <p className="text-xs font-bold text-red-600 flex items-start gap-2">
+              <span className="text-sm">🚫</span>
+              <span>{safetyError}</span>
+            </p>
+          </div>
+        )}
 
         {usageMessage && (
           <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in-up">

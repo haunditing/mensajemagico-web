@@ -21,6 +21,8 @@ export const generateMessage = async (
   const isPensamiento = config.occasion.toLowerCase().includes("pensamiento");
 
   // 1. Generar Llave de Caché
+  const contextKey = config.contextWords?.join("-") || "no-context";
+
   const cacheKey =
     `${config.occasion}-${config.relationship}-${config.tone}-${config.receivedMessageType || "none"}`
       .toLowerCase()
@@ -37,9 +39,14 @@ export const generateMessage = async (
   const safeRel = (config.relationship || "").substring(0, 30);
   const safeText = (config.receivedText || "").substring(0, 200);
 
+  const contextInstruction =
+    config.contextWords && config.contextWords.length > 0
+      ? ` Es MUY IMPORTANTE que integres de forma natural estas palabras o conceptos: ${config.contextWords.join(", ")}.`
+      : "";
+
   let prompt = "";
   let systemInstruction =
-    "Eres un experto en comunicación breve. Tu estilo es minimalista, humano y directo. Evitas los párrafos largos y el lenguaje excesivamente formal o robótico.";
+    "Eres un experto en comunicación breve y humana. Tu estilo es minimalista y directo. No uses lenguaje robótico.";
 
   // Calculamos el límite de tokens basándonos en el máximo global definido
   // para asegurar que nunca excedemos lo que el arquitecto configuró.
@@ -48,15 +55,13 @@ export const generateMessage = async (
   if (isPensamiento) {
     systemInstruction +=
       " Creas micro-reflexiones impactantes de una sola línea.";
-    prompt = `Genera un pensamiento inspirador sobre ${safeRel} en tono ${config.tone}. Debe ser una sola frase corta y potente (máximo 15 palabras). Solo devuelve el texto.`;
+    prompt = `Genera un pensamiento inspirador sobre ${safeRel} en tono ${config.tone}.${contextInstruction} Debe ser una sola frase corta y potente (máximo 15 palabras). Solo devuelve el texto.`;
   } else if (isReply) {
-    systemInstruction +=
-      " Generas respuestas de chat naturales, como las que enviaría un amigo.";
-    prompt = `Ayúdame a responder este mensaje: "${safeText || config.receivedMessageType}". Es para mi ${safeRel} y quiero sonar ${config.tone}. Genera una respuesta de máximo 2 frases cortas. Solo devuelve el texto del mensaje.`;
+    systemInstruction += " Generas respuestas de chat naturales.";
+    prompt = `Ayúdame a responder este mensaje: "${safeText || config.receivedMessageType}". Es para mi ${safeRel} y quiero sonar ${config.tone}.${contextInstruction} Genera una respuesta de máximo 2 frases cortas. Solo devuelve el texto del mensaje.`;
   } else {
-    systemInstruction +=
-      " Escribes mensajes cálidos pero muy breves, ideales para WhatsApp.";
-    prompt = `Escribe un mensaje de ${config.occasion} para mi ${safeRel} con tono ${config.tone}. Sé muy breve, máximo 3 frases cortas. No uses introducciones, ve al grano. Solo devuelve el texto.`;
+    systemInstruction += " Escribes mensajes cálidos pero muy breves.";
+    prompt = `Escribe un mensaje de ${config.occasion} para mi ${safeRel} con tono ${config.tone}.${contextInstruction} Sé muy breve, máximo 3 frases cortas. No uses introducciones, ve al grano. Solo devuelve el texto.`;
   }
 
   try {
@@ -77,7 +82,7 @@ export const generateMessage = async (
     const data = await response.json();
 
     const result = data?.text?.trim();
-    
+
     if (!result) {
       throw new Error("El modelo no devolvió contenido.");
     }
