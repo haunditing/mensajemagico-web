@@ -166,7 +166,17 @@ const Generator: React.FC<GeneratorProps> = ({
     // Inyectamos instrucción para formato JSON y regalos si está activo
     let augmentedContext = [...contextWords];
     if (showGifts) {
-      const jsonInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: { "message": "texto del mensaje", "gift_suggestions": [{ "title": "nombre corto", "search_term": "termino busqueda generico", "reason": "breve explicacion", "price_range": "rango precio" }] }. Máximo 3 regalos. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
+      const currencyMap: Record<string, string> = {
+        'CO': 'Pesos Colombianos',
+        'MX': 'Pesos Mexicanos',
+        'AR': 'Pesos Argentinos',
+        'CL': 'Pesos Chilenos',
+        'PE': 'Soles',
+        'UY': 'Pesos Uruguayos',
+        'VE': 'Bolívares',
+      };
+      const localCurrency = currencyMap[country] || 'Dólares';
+      const jsonInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: { "message": "texto del mensaje", "gift_suggestions": [{ "title": "nombre corto", "search_term": "termino busqueda generico", "reason": "breve explicacion", "price_range": "rango precio en ${localCurrency}" }] }. Máximo 3 regalos. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
       augmentedContext.push(jsonInstruction);
     }
 
