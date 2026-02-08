@@ -7,6 +7,7 @@ import AdBanner from "../components/AdBanner";
 import OccasionIcon from "../components/OccasionIcon";
 import FallingParticles from "../components/FallingParticles";
 import ValentineCountdown from "../components/ValentineCountdown";
+import ChristmasCountdown from "../components/ChristmasCountdown";
 import ValentineBanner from '../components/ValentineBanner';
 
 const HomePage: React.FC = () => {
@@ -16,17 +17,18 @@ const HomePage: React.FC = () => {
   }, []);
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
+  const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
 
-  console.log(`[HomePage] Renderizado. Tema San Valentín: ${isValentine}`);
+  console.log(`[HomePage] Renderizado. San Valentín: ${isValentine}, Navidad: ${isChristmas}`);
 
   return (
     <div className="animate-fade-in-up">
       {/* Hero Section */}
       <section className="text-center mb-16 md:mb-24 relative">
-        {isValentine && (
+        {(isValentine || isChristmas) && (
           <FallingParticles
             count={20}
-            emojis={["❤️", "💖", "💘", "💝", "🌹"]}
+            emojis={isValentine ? ["❤️", "💖", "💘", "💝", "🌹"] : ["❄️", "❅", "🌨️", "☃️"]}
           />
         )}
 
@@ -40,6 +42,13 @@ const HomePage: React.FC = () => {
                 en San Valentín.
               </span>
             </>
+          ) : isChristmas ? (
+            <>
+              Mensajes llenos de magia, <br className="hidden md:block" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-red-600 to-green-600">
+                en esta Navidad.
+              </span>
+            </>
           ) : (
             <>
               Escribe lo que sientes, <br className="hidden md:block" />
@@ -49,26 +58,29 @@ const HomePage: React.FC = () => {
         </h1>
 
         {isValentine && <ValentineCountdown />}
+        {isChristmas && <ChristmasCountdown />}
 
         <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
           {isValentine
             ? "Sorprende a tu pareja o crush con mensajes únicos creados por IA. La inspiración perfecta para este 14 de febrero."
+            : isChristmas
+            ? "Comparte tus mejores deseos de paz y alegría. Crea felicitaciones navideñas únicas con nuestra IA en segundos."
             : "Nuestra IA redacta cartas, mensajes y respuestas personalizadas en segundos. La solución perfecta para cuando las palabras no fluyen."}
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link
             to={
-              isValentine ? "/mensajes/amor" : "/mensajes/responder-un-mensaje"
+              isValentine ? "/mensajes/amor" : isChristmas ? "/mensajes/navidad" : "/mensajes/responder-un-mensaje"
             }
-            className={`h-14 px-8 rounded-xl ${isValentine ? "bg-rose-600 shadow-rose-600/20 hover:bg-rose-700" : "bg-blue-600 shadow-blue-600/20 hover:bg-blue-700"} text-white font-bold flex items-center justify-center shadow-lg transition-all active:scale-95 gap-3`}
+            className={`h-14 px-8 rounded-xl ${isValentine ? "bg-rose-600 shadow-rose-600/20 hover:bg-rose-700" : isChristmas ? "bg-red-600 shadow-red-600/20 hover:bg-red-700" : "bg-blue-600 shadow-blue-600/20 hover:bg-blue-700"} text-white font-bold flex items-center justify-center shadow-lg transition-all active:scale-95 gap-3`}
           >
             <OccasionIcon
-              slug={isValentine ? "amor" : "responder-un-mensaje"}
+              slug={isValentine ? "amor" : isChristmas ? "navidad" : "responder-un-mensaje"}
               className="w-6 h-6 text-white"
             />
             <span>
-              {isValentine ? "Crear mensaje de Amor" : "Qué responder a..."}
+              {isValentine ? "Crear mensaje de Amor" : isChristmas ? "Crear mensaje de Navidad" : "Qué responder a..."}
             </span>
           </Link>
           <Link

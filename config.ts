@@ -22,11 +22,26 @@ const VALENTINE_SEASON = {
   END_DAY: 14,
 };
 
-const isValentineSeason = () => {
+const CHRISTMAS_SEASON = {
+  MONTH: 11, // Diciembre (0-indexado)
+  START_DAY: 18,
+  END_DAY: 25,
+};
+
+const getActiveSeason = () => {
   const now = new Date();
-  return now.getMonth() === VALENTINE_SEASON.MONTH && 
-         now.getDate() >= VALENTINE_SEASON.START_DAY && 
-         now.getDate() <= VALENTINE_SEASON.END_DAY;
+  const month = now.getMonth();
+  const day = now.getDate();
+
+  if (month === VALENTINE_SEASON.MONTH && day >= VALENTINE_SEASON.START_DAY && day <= VALENTINE_SEASON.END_DAY) {
+    return "valentine";
+  }
+
+  if (month === CHRISTMAS_SEASON.MONTH && day >= CHRISTMAS_SEASON.START_DAY && day <= CHRISTMAS_SEASON.END_DAY) {
+    return "christmas";
+  }
+
+  return null;
 };
 
 export const CONFIG = {
@@ -72,7 +87,9 @@ export const CONFIG = {
 
   // --- TEMAS Y APARIENCIA ---
   THEME: {
-    IS_VALENTINE: isValentineSeason(),
+    ACTIVE_SEASON: getActiveSeason(),
+    IS_VALENTINE: getActiveSeason() === "valentine",
+    IS_CHRISTMAS: getActiveSeason() === "christmas",
   },
 
   // --- MÉTRICAS ---
