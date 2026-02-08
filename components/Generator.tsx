@@ -180,7 +180,7 @@ const Generator: React.FC<GeneratorProps> = ({
     }
 
     // Inyectamos instrucción para formato JSON y regalos si está activo
-    let augmentedContext = [...contextWords];
+    let formatInstruction = "";
     if (showGifts) {
       const currencyMap: Record<string, string> = {
         CO: "Pesos Colombianos",
@@ -192,8 +192,7 @@ const Generator: React.FC<GeneratorProps> = ({
         VE: "Bolívares",
       };
       const localCurrency = currencyMap[country] || "Dólares";
-      const jsonInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: { "message": "texto del mensaje", "gift_suggestions": [{ "title": "nombre corto", "search_term": "termino busqueda generico", "reason": "breve explicacion", "price_range": "rango precio en ${localCurrency}" }] }. Máximo 3 regalos. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
-      augmentedContext.push(jsonInstruction);
+      formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: { "message": "texto del mensaje", "gift_suggestions": [{ "title": "nombre corto", "search_term": "termino busqueda generico", "reason": "breve explicacion", "price_range": "rango precio en ${localCurrency}" }] }. Máximo 3 regalos. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
     }
 
     let text = "";
@@ -208,7 +207,8 @@ const Generator: React.FC<GeneratorProps> = ({
             : tone,
           receivedMessageType: isResponder ? receivedMessageType : undefined,
           receivedText: isResponder ? receivedText : undefined,
-          contextWords: augmentedContext,
+          contextWords: contextWords,
+          formatInstruction: formatInstruction,
         },
         user?._id,
       );

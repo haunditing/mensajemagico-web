@@ -40,7 +40,8 @@ export const generateMessage = async (
       relationship: config.relationship,
       tone: config.tone,
       receivedText: config.receivedText, // Para respuestas
-      contextWords: config.contextWords,
+      contextWords: config.contextWords ? config.contextWords.join(" ") : "",
+      formatInstruction: config.formatInstruction,
     });
 
     // Validamos que el backend responda con el campo esperado

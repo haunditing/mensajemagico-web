@@ -77,6 +77,7 @@ export interface MessageConfig {
   receivedMessageType?: string;
   receivedText?: string;
   contextWords?: string[];
+  formatInstruction?: string;
 }
 
 export interface GeneratedMessage {
