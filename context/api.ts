@@ -9,10 +9,11 @@ const getHeaders = (): HeadersInit => {
   return headers;
 };
 
-// En local forzamos el puerto 3000 para ver la petición directa al backend.
-// En producción usamos rutas relativas ('') para que funcione en el mismo dominio.
-const BASE_URL =
-  window.location.hostname === "web-production-e736.up.railway.app" ? "" : "";
+// En local usamos el proxy de Vite (ruta relativa) para evitar problemas de CORS.
+// En producción apuntamos directamente al backend en Railway.
+const BASE_URL = window.location.hostname === 'localhost' 
+  ? '' 
+  : 'https://web-production-e736.up.railway.app';
 
 async function handleResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get("content-type");

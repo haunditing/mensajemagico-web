@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => {
       host: "0.0.0.0",
       proxy: {
         "/api": {
-          target: "web-production-e736.up.railway.app",
+          target: "https://web-production-e736.up.railway.app",
           changeOrigin: true,
           secure: false,
         },
