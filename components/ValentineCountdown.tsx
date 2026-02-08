@@ -49,11 +49,8 @@ const ValentineCountdown: React.FC = () => {
   }, []);
 
   if (isToday) {
-    return (
-      <Link to="/mensajes/amor" className="mb-8 animate-bounce text-2xl font-bold text-rose-600 bg-white/80 backdrop-blur-sm inline-block px-6 py-2 rounded-full shadow-sm border border-rose-100 hover:scale-105 transition-transform">
-        ¡Feliz San Valentín! 💘
-      </Link>
-    );
+    // El día 14 mostramos el ValentineBanner en su lugar
+    return null;
   }
 
   if (!timeLeft) return null;

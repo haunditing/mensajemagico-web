@@ -7,6 +7,7 @@ import AdBanner from "../components/AdBanner";
 import OccasionIcon from "../components/OccasionIcon";
 import FallingParticles from "../components/FallingParticles";
 import ValentineCountdown from "../components/ValentineCountdown";
+import ValentineBanner from '../components/ValentineBanner';
 
 const HomePage: React.FC = () => {
   useEffect(() => {
@@ -28,6 +29,9 @@ const HomePage: React.FC = () => {
             emojis={["❤️", "💖", "💘", "💝", "🌹"]}
           />
         )}
+
+        {isValentine && <ValentineBanner />}
+
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1]">
           {isValentine ? (
             <>

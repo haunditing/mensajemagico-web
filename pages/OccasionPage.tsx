@@ -2,11 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { OCCASIONS, RELATIONSHIPS } from '../constants';
+import { CONFIG } from '../config';
 import { updateSeoTags } from '../services/seoService';
 import { getLocalizedOccasion } from '../services/localizationService';
 import Generator from '../components/Generator';
 import AdBanner from '../components/AdBanner';
 import OccasionIcon from '../components/OccasionIcon';
+import FallingParticles from '../components/FallingParticles';
 import { Relationship, LocalizedContent } from '../types';
 import { useLocalization } from '../context/LocalizationContext';
 
@@ -16,6 +18,8 @@ const OccasionPage: React.FC = () => {
   const rawOccasion = OCCASIONS.find(o => o.slug === slug);
   const [selectedRel, setSelectedRel] = useState<Relationship | undefined>(undefined);
   const [localized, setLocalized] = useState<LocalizedContent | null>(null);
+
+  const isValentine = CONFIG.THEME.IS_VALENTINE;
 
   useEffect(() => {
     if (rawOccasion) {
@@ -65,6 +69,9 @@ const OccasionPage: React.FC = () => {
       </nav>
 
       <header className="mb-12 relative">
+        {isValentine && (
+          <FallingParticles count={15} emojis={['❤️', '💖', '💘', '💝', '🌹']} />
+        )}
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8 mb-8">
           <div className="relative group">
             <div className={`absolute -inset-2 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-500 ${isVisto ? 'bg-green-500' : 'bg-gradient-to-tr from-blue-500 to-indigo-500'}`}></div>
@@ -78,7 +85,7 @@ const OccasionPage: React.FC = () => {
                 const isLastWord = i === arr.length - 1;
                 const isVistoWord = isVisto && (word.toLowerCase() === 'visto');
                 return (
-                  <span key={i} className={(isLastWord || isVistoWord) ? (isVisto ? 'text-green-600' : 'text-gradient') : ''}>
+                  <span key={i} className={(isLastWord || isVistoWord) ? (isVisto ? 'text-green-600' : (isValentine ? 'text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-pink-600' : 'text-gradient')) : ''}>
                     {word}{' '}
                   </span>
                 );

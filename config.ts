@@ -16,6 +16,12 @@ const isTruthy = (val: any): boolean => {
   return s === "true" || s === "1" || s === "yes" || s === "on";
 };
 
+const isValentineSeason = () => {
+  const now = new Date();
+  // Febrero es el mes 1 (0-indexado). Se activa del 7 al 14.
+  return now.getMonth() === 1 && now.getDate() >= 7 && now.getDate() <= 14;
+};
+
 export const CONFIG = {
   // --- CONFIGURACIÓN DE IA ---
   AI: {
@@ -32,8 +38,7 @@ export const CONFIG = {
     CLIENT_ID: getEnv("ADSENSE_CLIENT_ID", "ca-pub-0000000000000000"),
     DEBUG_MODE:
       // @ts-ignore
-      import.meta.env.DEV ||
-      window.location.search.includes("debug=true"),
+      import.meta.env.DEV || window.location.search.includes("debug=true"),
     SLOTS: {
       TOP: getEnv("ADS_SLOT_TOP", "0000000001"),
       MIDDLE: getEnv("ADS_SLOT_MIDDLE", "0000000002"),
@@ -60,7 +65,7 @@ export const CONFIG = {
 
   // --- TEMAS Y APARIENCIA ---
   THEME: {
-    IS_VALENTINE: isTruthy(getEnv("VALENTINE_THEME", "false")),
+    IS_VALENTINE: isTruthy(getEnv("VALENTINE_THEME", isValentineSeason())),
   },
 
   // --- MÉTRICAS ---
