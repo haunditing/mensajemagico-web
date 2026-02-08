@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Occasion, Relationship, Tone, GeneratedMessage } from "../types";
 import {
   RELATIONSHIPS,
@@ -18,7 +19,14 @@ import { CONFIG } from "../config";
 import ShareBar from "./ShareBar";
 import AdBanner from "./AdBanner";
 import { useLocalization } from "../context/LocalizationContext";
+import { useAuth } from "../context/AuthContext";
 import { generateAmazonLink } from "../services/amazonService";
+import FeatureGuard from "./FeatureGuard";
+import { useUpsell } from "../context/UpsellContext";
+import { useFavorites } from "../context/FavoritesContext";
+import LoadingSpinner from "./LoadingSpinner";
+import { useFeature } from "@/hooks/useFeature";
+import PlanManager from "@/services/PlanManager";
 
 interface GeneratorProps {
   occasion: Occasion;
@@ -35,6 +43,8 @@ interface GiftSuggestion {
 
 interface ExtendedGeneratedMessage extends GeneratedMessage {
   gifts?: GiftSuggestion[];
+  occasionName?: string;
+  toneLabel?: string;
 }
 
 const Generator: React.FC<GeneratorProps> = ({
@@ -42,6 +52,9 @@ const Generator: React.FC<GeneratorProps> = ({
   initialRelationship,
   onRelationshipChange,
 }) => {
+  const { user, remainingCredits } = useAuth();
+  const { triggerUpsell } = useUpsell();
+  const { addFavorite, isFavorite, removeFavorite, favorites } = useFavorites();
   const { country } = useLocalization();
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
@@ -76,8 +89,10 @@ const Generator: React.FC<GeneratorProps> = ({
   const [usageMessage, setUsageMessage] = useState<string | null>(null);
   const [showGifts, setShowGifts] = useState(true);
 
+  const contextLimit = useFeature("access.context_words_limit", 0);
+  const isContextLocked = contextLimit === 0;
   const MAX_CHARS = 400;
-  const MAX_CONTEXT = CONFIG.USAGE.MAX_CONTEXT_WORDS;
+  const MAX_CONTEXT = isContextLocked ? 0 : contextLimit;
 
   // Si cambiamos de ocasión y el tono actual ya no está disponible, lo reseteamos
   useEffect(() => {
@@ -113,6 +128,7 @@ const Generator: React.FC<GeneratorProps> = ({
     const word = currentWord.trim();
     if (
       word &&
+      !isContextLocked &&
       contextWords.length < MAX_CONTEXT &&
       !contextWords.includes(word)
     ) {
@@ -167,43 +183,58 @@ const Generator: React.FC<GeneratorProps> = ({
     let augmentedContext = [...contextWords];
     if (showGifts) {
       const currencyMap: Record<string, string> = {
-        'CO': 'Pesos Colombianos',
-        'MX': 'Pesos Mexicanos',
-        'AR': 'Pesos Argentinos',
-        'CL': 'Pesos Chilenos',
-        'PE': 'Soles',
-        'UY': 'Pesos Uruguayos',
-        'VE': 'Bolívares',
+        CO: "Pesos Colombianos",
+        MX: "Pesos Mexicanos",
+        AR: "Pesos Argentinos",
+        CL: "Pesos Chilenos",
+        PE: "Soles",
+        UY: "Pesos Uruguayos",
+        VE: "Bolívares",
       };
-      const localCurrency = currencyMap[country] || 'Dólares';
+      const localCurrency = currencyMap[country] || "Dólares";
       const jsonInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: { "message": "texto del mensaje", "gift_suggestions": [{ "title": "nombre corto", "search_term": "termino busqueda generico", "reason": "breve explicacion", "price_range": "rango precio en ${localCurrency}" }] }. Máximo 3 regalos. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
       augmentedContext.push(jsonInstruction);
     }
 
-    const text = await generateMessage({
-      occasion: occasion.name,
-      relationship: relLabel,
-      tone: isPensamiento
-        ? (EMOTIONAL_STATES.find((s) => s.id === relationshipId)
-            ?.label as any) || tone
-        : tone,
-      receivedMessageType: isResponder ? receivedMessageType : undefined,
-      receivedText: isResponder ? receivedText : undefined,
-      contextWords: augmentedContext,
-    });
+    let text = "";
+    try {
+      text = await generateMessage(
+        {
+          occasion: occasion.name,
+          relationship: relLabel,
+          tone: isPensamiento
+            ? (EMOTIONAL_STATES.find((s) => s.id === relationshipId)
+                ?.label as any) || tone
+            : tone,
+          receivedMessageType: isResponder ? receivedMessageType : undefined,
+          receivedText: isResponder ? receivedText : undefined,
+          contextWords: augmentedContext,
+        },
+        user?._id,
+      );
+    } catch (error: any) {
+      setIsLoading(false);
+      if (error.upsell) {
+        triggerUpsell(error.upsell);
+      }
+      return; // Detener ejecución si hubo error de upsell
+    }
 
     let content = text;
     let gifts: GiftSuggestion[] = [];
 
     try {
       // Intentar limpiar y parsear JSON
-      const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      if (cleanText.startsWith('{')) {
-         const parsed = JSON.parse(cleanText);
-         if (parsed.message) {
-           content = parsed.message;
-           gifts = parsed.gift_suggestions || [];
-         }
+      const cleanText = text
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+      if (cleanText.startsWith("{")) {
+        const parsed = JSON.parse(cleanText);
+        if (parsed.message) {
+          content = parsed.message;
+          gifts = parsed.gift_suggestions || [];
+        }
       }
     } catch (e) {
       // Si falla, asumimos que es texto plano (fallback)
@@ -213,7 +244,9 @@ const Generator: React.FC<GeneratorProps> = ({
       id: Math.random().toString(36).substr(2, 9),
       content: content,
       timestamp: Date.now(),
-      gifts: gifts
+      gifts: gifts,
+      occasionName: occasion.name,
+      toneLabel: availableTones.find((t) => t.value === tone)?.label || tone,
     };
 
     setMessages((prev) => [newMessage, ...prev]);
@@ -230,6 +263,23 @@ const Generator: React.FC<GeneratorProps> = ({
     }
   };
 
+  const handleToggleFavorite = (msg: ExtendedGeneratedMessage) => {
+    if (!user) {
+      triggerUpsell("Regístrate para guardar tus mensajes favoritos.");
+      return;
+    }
+    if (isFavorite(msg.content)) {
+      // Encontrar el ID del favorito para eliminarlo (opcional, o solo mostrar toast)
+      // Por simplicidad en la UI del generador, a veces solo permitimos guardar.
+    } else {
+      addFavorite(
+        msg.content,
+        msg.occasionName || occasion.name,
+        msg.toneLabel || "Normal",
+      );
+    }
+  };
+
   return (
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>
       <div
@@ -238,16 +288,12 @@ const Generator: React.FC<GeneratorProps> = ({
         <div className="space-y-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label
-                htmlFor="rel-select"
-                className="block text-sm font-bold text-slate-700 mb-2"
-              >
+              <label className="block text-sm font-bold text-slate-700 mb-2">
                 {isPensamiento
                   ? "¿Sobre qué quieres reflexionar?"
                   : "Destinatario"}
               </label>
               <select
-                id="rel-select"
                 value={relationshipId}
                 onChange={handleRelChange}
                 className="w-full h-12 md:h-14 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
@@ -267,57 +313,99 @@ const Generator: React.FC<GeneratorProps> = ({
             </div>
 
             <div>
-              <label
-                htmlFor="tone-select"
-                className="block text-sm font-bold text-slate-700 mb-2"
-              >
+              <label className="block text-sm font-bold text-slate-700 mb-2">
                 {isPensamiento ? "Estado emocional" : "Tono"}
               </label>
-              <select
-                id="tone-select"
-                value={tone}
-                onChange={(e) => setTone(e.target.value as Tone)}
-                className="w-full h-12 md:h-14 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
-              >
+              <div className="flex flex-wrap gap-2">
                 {isPensamiento
                   ? EMOTIONAL_STATES.map((state) => (
-                      <option key={state.id} value={state.id}>
+                      <button
+                        key={state.id}
+                        onClick={() => setTone(state.id as any)}
+                        className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
+                          tone === state.id
+                            ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                            : "bg-white text-slate-600 border-slate-200 hover:border-blue-400"
+                        }`}
+                      >
                         {state.label}
-                      </option>
+                      </button>
                     ))
                   : availableTones.map((t) => (
-                      <option key={t.value} value={t.value}>
-                        {t.label}
-                      </option>
+                      <FeatureGuard
+                        key={t.value}
+                        featureKey={t.value}
+                        type="tone"
+                      >
+                        <button
+                          onClick={() => setTone(t.value)}
+                          className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
+                            tone === t.value
+                              ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                              : "bg-white text-slate-600 border-slate-200 hover:border-blue-400"
+                          }`}
+                        >
+                          {t.label}
+                        </button>
+                      </FeatureGuard>
                     ))}
-              </select>
+              </div>
             </div>
           </div>
 
           {/* Sección de Palabras de Contexto */}
           <div className="animate-fade-in-up">
             <label className="block text-sm font-bold text-slate-700 mb-2">
-              Añade detalles o palabras clave (Máx {MAX_CONTEXT})
+              Añade detalles o palabras clave{" "}
+              {isContextLocked ? (
+                <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full ml-2">
+                  Premium 💎
+                </span>
+              ) : (
+                `(Máx ${MAX_CONTEXT})`
+              )}
             </label>
             <div className="flex gap-2 mb-3">
-              <input
-                type="text"
-                value={currentWord}
-                onChange={(e) => setCurrentWord(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Ej: playa, pizza, 5 años..."
-                disabled={contextWords.length >= MAX_CONTEXT}
-                className="flex-grow h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              />
+              <div className="relative flex-grow">
+                <input
+                  type="text"
+                  value={currentWord}
+                  onChange={(e) => setCurrentWord(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={
+                    isContextLocked
+                      ? "Desbloquea palabras clave con Premium 🔒"
+                      : "Ej: playa, pizza, 5 años..."
+                  }
+                  disabled={
+                    contextWords.length >= MAX_CONTEXT || isContextLocked
+                  }
+                  className={`w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isContextLocked ? "bg-slate-100 text-slate-400" : ""}`}
+                />
+                {isContextLocked && (
+                  <div
+                    className="absolute inset-0 z-10 cursor-pointer"
+                    onClick={() =>
+                      triggerUpsell(
+                        PlanManager.getUpsellMessage("on_context_limit"),
+                      )
+                    }
+                  />
+                )}
+              </div>
               <button
                 onClick={addContextWord}
                 disabled={
-                  !currentWord.trim() || contextWords.length >= MAX_CONTEXT
+                  !currentWord.trim() ||
+                  contextWords.length >= MAX_CONTEXT ||
+                  isContextLocked
                 }
                 className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-200 transition-colors disabled:opacity-50"
                 title="Añadir palabra"
               >
-                <span className="text-xl font-bold">+</span>
+                <span className="text-xl font-bold">
+                  {isContextLocked ? "🔒" : "+"}
+                </span>
               </button>
             </div>
 
@@ -378,12 +466,28 @@ const Generator: React.FC<GeneratorProps> = ({
         </div>
 
         {/* Toggle Regalos */}
-        <div 
-          className="flex items-center gap-3 mb-6 cursor-pointer group w-fit mx-auto md:mx-0" 
+        <div
+          className="flex items-center gap-3 mb-6 cursor-pointer group w-fit mx-auto md:mx-0"
           onClick={() => setShowGifts(!showGifts)}
         >
-          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 ${showGifts ? 'bg-blue-600 border-blue-600' : 'border-slate-300 bg-white group-hover:border-blue-400'}`}>
-            {showGifts && <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+          <div
+            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 ${showGifts ? "bg-blue-600 border-blue-600" : "border-slate-300 bg-white group-hover:border-blue-400"}`}
+          >
+            {showGifts && (
+              <svg
+                className="w-3.5 h-3.5 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={3}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            )}
           </div>
           <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600 transition-colors select-none flex items-center gap-2">
             🎁 Ver sugerencias de regalos
@@ -410,17 +514,19 @@ const Generator: React.FC<GeneratorProps> = ({
 
         <button
           onClick={handleGenerate}
-          disabled={isLoading || !!safetyError}
+          disabled={
+            isLoading || !!safetyError || (!!user && remainingCredits <= 0)
+          }
           className={`w-full h-14 md:h-16 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all
             ${
-              isLoading || safetyError
+              isLoading || safetyError || (!!user && remainingCredits <= 0)
                 ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
                 : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-[0.98]"
             }`}
         >
           {isLoading ? (
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-600 rounded-full animate-spin"></div>
+              <LoadingSpinner size="sm" color="slate" />
               <span>
                 {isPensamiento
                   ? "Mezclando pensamientos..."
@@ -431,9 +537,11 @@ const Generator: React.FC<GeneratorProps> = ({
             <span>
               {safetyError
                 ? "Contenido bloqueado"
-                : isPensamiento
-                  ? "Obtener mi pensamiento"
-                  : "Generar Mensaje Mágico"}
+                : !!user && remainingCredits <= 0
+                  ? "Sin créditos hoy"
+                  : isPensamiento
+                    ? "Obtener mi pensamiento (1 crédito)"
+                    : "Generar Mensaje Mágico (1 crédito)"}
             </span>
           )}
         </button>
@@ -441,9 +549,37 @@ const Generator: React.FC<GeneratorProps> = ({
 
       <AdBanner position="middle" hasContent={messages.length > 0} />
 
+      {/* Banner de Registro para usuarios no logueados */}
+      {!user && messages.length > 0 && (
+        <div className="mt-8 mb-2 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-6 text-white shadow-xl shadow-indigo-200 relative overflow-hidden animate-fade-in-up">
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="text-center sm:text-left">
+              <h3 className="text-xl font-black mb-2">
+                ¿Te gustó el resultado? ✨
+              </h3>
+              <p className="text-indigo-100 font-medium text-sm max-w-md">
+                Crea una cuenta gratuita para acceder a tonos exclusivos,
+                guardar tus favoritos y eliminar límites diarios.
+              </p>
+            </div>
+            <Link
+              to="/signup"
+              className="bg-white text-indigo-600 px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-indigo-50 transition-all active:scale-95 whitespace-nowrap"
+            >
+              Crear cuenta gratis
+            </Link>
+          </div>
+
+          {/* Decoración de fondo */}
+          <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+          <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+        </div>
+      )}
+
       <div id="results-section" className="mt-6 space-y-6">
         {messages.map((msg) => {
           const isError = msg.content === AI_ERROR_FALLBACK;
+          const isFav = isFavorite(msg.content);
 
           return (
             <div
@@ -456,13 +592,29 @@ const Generator: React.FC<GeneratorProps> = ({
                 {msg.content}
               </p>
 
-              <div className="pt-6 border-t border-slate-100 relative z-10">
-                <ShareBar
-                  content={msg.content}
-                  platforms={occasion.allowedPlatforms}
-                  disabled={isError || isLoading}
-                  className="animate-fade-in-up"
-                />
+              <div className="pt-6 border-t border-slate-100 relative z-10 flex flex-col gap-4">
+                <div className="flex items-center justify-between gap-4">
+                  <ShareBar
+                    content={msg.content}
+                    platforms={occasion.allowedPlatforms}
+                    disabled={isError || isLoading}
+                    className="animate-fade-in-up flex-1"
+                  />
+
+                  {!isError && (
+                    <button
+                      onClick={() => handleToggleFavorite(msg)}
+                      className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${isFav ? "bg-red-50 text-red-500" : "bg-slate-50 text-slate-400 hover:text-red-400"}`}
+                      title="Guardar en favoritos"
+                    >
+                      <span
+                        className={`text-2xl ${isFav ? "scale-110" : "scale-100"}`}
+                      >
+                        {isFav ? "❤️" : "🤍"}
+                      </span>
+                    </button>
+                  )}
+                </div>
 
                 {!isPensamiento && (
                   <div className="mt-6 flex flex-col gap-1 w-full text-left">
@@ -484,15 +636,24 @@ const Generator: React.FC<GeneratorProps> = ({
                     </h4>
                     <div className="grid gap-3">
                       {msg.gifts.map((gift, idx) => (
-                        <div key={idx} className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between hover:border-blue-200 transition-colors">
+                        <div
+                          key={idx}
+                          className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between hover:border-blue-200 transition-colors"
+                        >
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className="font-bold text-slate-800 text-sm">{gift.title}</span>
-                              <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-medium">{gift.price_range}</span>
+                              <span className="font-bold text-slate-800 text-sm">
+                                {gift.title}
+                              </span>
+                              <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-medium">
+                                {gift.price_range}
+                              </span>
                             </div>
-                            <p className="text-xs text-slate-500 leading-relaxed">{gift.reason}</p>
+                            <p className="text-xs text-slate-500 leading-relaxed">
+                              {gift.reason}
+                            </p>
                           </div>
-                          <a 
+                          <a
                             href={generateAmazonLink(gift.search_term, country)}
                             target="_blank"
                             rel="noopener noreferrer sponsored"

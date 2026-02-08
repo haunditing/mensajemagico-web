@@ -2,6 +2,8 @@
  * Hub Central de Configuración - MensajeMágico
  */
 
+import { get } from "http";
+
 const getEnv = (key: string, defaultValue: any) => {
   // En Vite, usamos import.meta.env en lugar de process.env
   // @ts-ignore
@@ -33,11 +35,19 @@ const getActiveSeason = () => {
   const month = now.getMonth();
   const day = now.getDate();
 
-  if (month === VALENTINE_SEASON.MONTH && day >= VALENTINE_SEASON.START_DAY && day <= VALENTINE_SEASON.END_DAY) {
+  if (
+    month === VALENTINE_SEASON.MONTH &&
+    day >= VALENTINE_SEASON.START_DAY &&
+    day <= VALENTINE_SEASON.END_DAY
+  ) {
     return "valentine";
   }
 
-  if (month === CHRISTMAS_SEASON.MONTH && day >= CHRISTMAS_SEASON.START_DAY && day <= CHRISTMAS_SEASON.END_DAY) {
+  if (
+    month === CHRISTMAS_SEASON.MONTH &&
+    day >= CHRISTMAS_SEASON.START_DAY &&
+    day <= CHRISTMAS_SEASON.END_DAY
+  ) {
     return "christmas";
   }
 
@@ -55,7 +65,8 @@ export const CONFIG = {
   // --- AMAZON AFILIADOS ---
   AMAZON: {
     STORE_ID: getEnv("AMAZON_STORE_ID", "mensajemagico-20"),
-    DISCLAIMER: "Como Afiliado de Amazon, percibo dinero con las compras elegibles.",
+    DISCLAIMER:
+      "Como Afiliado de Amazon, percibo dinero con las compras elegibles.",
   },
 
   // --- MONETIZACIÓN (GOOGLE ADSENSE) ---
@@ -104,3 +115,8 @@ export const CONFIG = {
     REFRESH_RATE_MS: Number(getEnv("METRICS_REFRESH", 30000)),
   },
 };
+
+/**
+ * Feature Flags para activar/desactivar funcionalidades globalmente.
+ */
+export const ENABLE_UPGRADES = getEnv("ENABLE_UPGRADES", "true") === "true";

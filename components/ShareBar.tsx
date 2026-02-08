@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { SharePlatform } from "../types";
 import { executeShare, isNativeShareSupported } from "../services/shareService";
+import { useToast } from "../context/ToastContext";
 
 // Componentes SVG para los logos reales de las plataformas
 const Icons = {
@@ -113,6 +114,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
   disabled = false,
 }) => {
   const [activeAction, setActiveAction] = useState<SharePlatform | null>(null);
+  const { showToast } = useToast();
 
   // Configuraciones visuales por plataforma
   const platformConfig: Record<
@@ -191,6 +193,11 @@ const ShareBar: React.FC<ShareBarProps> = ({
     if (disabled) return;
     setActiveAction(platform);
     await executeShare(platform, content);
+
+    if (platform === SharePlatform.COPY) {
+      showToast("Enlace copiado al portapapeles", "success");
+    }
+
     setTimeout(() => setActiveAction(null), 2000);
   };
 

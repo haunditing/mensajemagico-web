@@ -1,6 +1,22 @@
 
 import { CONFIG } from '../config';
 
+// Límite dinámico que puede ser actualizado al iniciar sesión
+let currentDailyLimit = CONFIG.USAGE.DAILY_LIMIT;
+
+export const setDailyLimit = (limit: number) => {
+  currentDailyLimit = limit;
+};
+
+export const resetDailyLimit = () => {
+  currentDailyLimit = CONFIG.USAGE.DAILY_LIMIT;
+};
+
+export const syncUsage = (count: number) => {
+  const dailyKey = `usage_daily_${new Date().toISOString().split('T')[0]}`;
+  localStorage.setItem(dailyKey, count.toString());
+};
+
 export const canGenerate = (): { allowed: boolean; message?: string; delay?: number } => {
   const now = Date.now();
   
@@ -22,7 +38,7 @@ export const canGenerate = (): { allowed: boolean; message?: string; delay?: num
   const dailyKey = `usage_daily_${new Date().toISOString().split('T')[0]}`;
   const dailyCount = Number(localStorage.getItem(dailyKey) || 0);
   
-  if (dailyCount >= CONFIG.USAGE.DAILY_LIMIT) {
+  if (dailyCount >= currentDailyLimit) {
     return { 
       allowed: false, 
       message: "Has agotado tus créditos mágicos diarios. ¡Vuelve mañana!" 

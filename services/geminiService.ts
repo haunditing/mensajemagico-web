@@ -1,99 +1,73 @@
 import { MessageConfig } from "../types";
-import { CONFIG } from "../config";
+import { api } from "../context/api"; // Tu wrapper de fetch o axios
 
 export const AI_ERROR_FALLBACK =
   "Lo siento, la inspiración está tomando un café. Por favor, intenta de nuevo.";
 
 /**
- * Caché de sesión para optimizar costos y velocidad.
- * Estructura: { 'slug-relacion-tono': ['mensaje1', 'mensaje2'] }
+ * Caché local para evitar gastos innecesarios y dar velocidad.
  */
 const generationCache: Record<string, string[]> = {};
 
 /**
- * Servicio de Generación de Mensajes Optimizado.
- * Utiliza prompts comprimidos y respeta los límites globales de CONFIG.
+ * Servicio de Generación de Mensajes (Frontend)
+ * Este archivo ya NO construye el prompt, solo envía los parámetros al Backend.
  */
 export const generateMessage = async (
   config: MessageConfig,
+  userId?: string
 ): Promise<string> => {
-  const isReply = config.occasion.toLowerCase().includes("responder");
-  const isPensamiento = config.occasion.toLowerCase().includes("pensamiento");
+  
+  // 1. Generar Llave de Caché para optimización
+  const cacheKey = `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}`
+    .toLowerCase()
+    .replace(/\s+/g, "-");
 
-  // 1. Generar Llave de Caché
-  const contextKey = config.contextWords?.join("-") || "no-context";
-
-  const cacheKey =
-    `${config.occasion}-${config.relationship}-${config.tone}-${config.receivedMessageType || "none"}`
-      .toLowerCase()
-      .replace(/\s+/g, "-");
-
-  // 2. Lógica de recuperación (Short-circuit)
-  // Si ya generamos algo igual en esta sesión, lo devolvemos aleatoriamente de los resultados previos
-
+  // 2. Recuperación de Caché (Short-circuit)
   if (generationCache[cacheKey] && generationCache[cacheKey].length > 0) {
     const cachedResults = generationCache[cacheKey];
-    // Retornamos uno aleatorio de la caché para dar variedad sin gastar tokens
     return cachedResults[Math.floor(Math.random() * cachedResults.length)];
-  }
-  const safeRel = (config.relationship || "").substring(0, 30);
-  const safeText = (config.receivedText || "").substring(0, 200);
-
-  const contextInstruction =
-    config.contextWords && config.contextWords.length > 0
-      ? ` Es MUY IMPORTANTE que integres de forma natural estas palabras o conceptos: ${config.contextWords.join(", ")}.`
-      : "";
-
-  let prompt = "";
-  let systemInstruction =
-    "Eres un experto en comunicación breve y humana. Tu estilo es minimalista y directo. No uses lenguaje robótico.";
-
-  // Calculamos el límite de tokens basándonos en el máximo global definido
-  // para asegurar que nunca excedemos lo que el arquitecto configuró.
-  const globalMax = CONFIG.AI.MAX_TOKENS;
-
-  if (isPensamiento) {
-    systemInstruction +=
-      " Creas micro-reflexiones impactantes de una sola línea.";
-    prompt = `Genera un pensamiento inspirador sobre ${safeRel} en tono ${config.tone}.${contextInstruction} Debe ser una sola frase corta y potente (máximo 15 palabras). Solo devuelve el texto.`;
-  } else if (isReply) {
-    systemInstruction += " Generas respuestas de chat naturales.";
-    prompt = `Ayúdame a responder este mensaje: "${safeText || config.receivedMessageType}". Es para mi ${safeRel} y quiero sonar ${config.tone}.${contextInstruction} Genera una respuesta de máximo 2 frases cortas. Solo devuelve el texto del mensaje.`;
-  } else {
-    systemInstruction += " Escribes mensajes cálidos pero muy breves.";
-    prompt = `Escribe un mensaje de ${config.occasion} para mi ${safeRel} con tono ${config.tone}.${contextInstruction} Sé muy breve, máximo 3 frases cortas. No uses introducciones, ve al grano. Solo devuelve el texto.`;
   }
 
   try {
-    const response = await fetch("/.netlify/functions/generate-message", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        prompt,
-        systemInstruction,
-        temperature: isPensamiento ? 0.9 : CONFIG.AI.TEMPERATURE,
-        topP: 0.8,
-        //maxOutputTokens: taskMaxTokens,
-      }),
+    /**
+     * IMPORTANTE: Enviamos solo los datos crudos. 
+     * El Backend usará su `PlanService` para decidir el modelo y las instrucciones.
+     */
+    const response = await api.post("/api/magic/generate", {
+      userId,
+      occasion: config.occasion,
+      relationship: config.relationship,
+      tone: config.tone,
+      receivedText: config.receivedText, // Para respuestas
+      contextWords: config.contextWords,
     });
 
-    const data = await response.json();
-
-    const result = data?.text?.trim();
+    // Validamos que el backend responda con el campo esperado
+    const result = response?.text || response?.result;
 
     if (!result) {
-      throw new Error("El modelo no devolvió contenido.");
+      throw new Error("El oráculo no devolvió palabras esta vez.");
     }
 
-    // 3. Almacenamiento en Caché
+    // 3. Guardar en Caché para futuras peticiones iguales
     if (!generationCache[cacheKey]) generationCache[cacheKey] = [];
-    generationCache[cacheKey].push(result);
+    generationCache[cacheKey].push(result.trim());
 
-    return result;
+    return result.trim();
+
   } catch (error: any) {
-    console.error("AI Efficiency Error:", error);
+    /**
+     * Lógica de Patrón de Upgrade:
+     * Si el error viene del backend por falta de créditos o plan insuficiente,
+     * el error contendrá el mensaje de 'upsell' definido en plans.js.
+     */
+    if (error.status === 403 || error.message?.includes("límite")) {
+       // Re-lanzamos para que el componente Generator.tsx muestre el Modal de Compra
+       throw error; 
+    }
+
+    console.error("Error en flujo de generación:", error);
     return AI_ERROR_FALLBACK;
   }
 };

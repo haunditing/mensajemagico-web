@@ -3,6 +3,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { LocalizationProvider } from './context/LocalizationContext';
+import { AuthProvider } from './context/AuthContext';
 import './index.css';
 
 
@@ -14,8 +15,10 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <LocalizationProvider>
-      <App />
-    </LocalizationProvider>
+    <AuthProvider>
+      <LocalizationProvider>
+        <App />
+      </LocalizationProvider>
+    </AuthProvider>
   </React.StrictMode>
 );
