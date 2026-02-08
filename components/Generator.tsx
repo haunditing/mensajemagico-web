@@ -17,6 +17,8 @@ import { incrementGlobalCounter } from "../services/metricsService";
 import { CONFIG } from "../config";
 import ShareBar from "./ShareBar";
 import AdBanner from "./AdBanner";
+import { useLocalization } from "../context/LocalizationContext";
+import { generateAmazonLink } from "../services/amazonService";
 
 interface GeneratorProps {
   occasion: Occasion;
@@ -24,11 +26,23 @@ interface GeneratorProps {
   onRelationshipChange?: (relId: string) => void;
 }
 
+interface GiftSuggestion {
+  title: string;
+  search_term: string;
+  reason: string;
+  price_range: string;
+}
+
+interface ExtendedGeneratedMessage extends GeneratedMessage {
+  gifts?: GiftSuggestion[];
+}
+
 const Generator: React.FC<GeneratorProps> = ({
   occasion,
   initialRelationship,
   onRelationshipChange,
 }) => {
+  const { country } = useLocalization();
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
 
@@ -56,10 +70,11 @@ const Generator: React.FC<GeneratorProps> = ({
   const [contextWords, setContextWords] = useState<string[]>([]);
   const [currentWord, setCurrentWord] = useState("");
 
-  const [messages, setMessages] = useState<GeneratedMessage[]>([]);
+  const [messages, setMessages] = useState<ExtendedGeneratedMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [safetyError, setSafetyError] = useState<string | null>(null);
   const [usageMessage, setUsageMessage] = useState<string | null>(null);
+  const [showGifts, setShowGifts] = useState(true);
 
   const MAX_CHARS = 400;
   const MAX_CONTEXT = CONFIG.USAGE.MAX_CONTEXT_WORDS;
@@ -148,6 +163,13 @@ const Generator: React.FC<GeneratorProps> = ({
         RELATIONSHIPS.find((r) => r.id === relationshipId)?.label || "alguien";
     }
 
+    // Inyectamos instrucción para formato JSON y regalos si está activo
+    let augmentedContext = [...contextWords];
+    if (showGifts) {
+      const jsonInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: { "message": "texto del mensaje", "gift_suggestions": [{ "title": "nombre corto", "search_term": "termino busqueda generico", "reason": "breve explicacion", "price_range": "rango precio" }] }. Máximo 3 regalos. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
+      augmentedContext.push(jsonInstruction);
+    }
+
     const text = await generateMessage({
       occasion: occasion.name,
       relationship: relLabel,
@@ -157,13 +179,31 @@ const Generator: React.FC<GeneratorProps> = ({
         : tone,
       receivedMessageType: isResponder ? receivedMessageType : undefined,
       receivedText: isResponder ? receivedText : undefined,
-      contextWords: contextWords,
+      contextWords: augmentedContext,
     });
 
-    const newMessage: GeneratedMessage = {
+    let content = text;
+    let gifts: GiftSuggestion[] = [];
+
+    try {
+      // Intentar limpiar y parsear JSON
+      const cleanText = text.replace(/```json/g, '').replace(/```/g, '').trim();
+      if (cleanText.startsWith('{')) {
+         const parsed = JSON.parse(cleanText);
+         if (parsed.message) {
+           content = parsed.message;
+           gifts = parsed.gift_suggestions || [];
+         }
+      }
+    } catch (e) {
+      // Si falla, asumimos que es texto plano (fallback)
+    }
+
+    const newMessage: ExtendedGeneratedMessage = {
       id: Math.random().toString(36).substr(2, 9),
-      content: text,
+      content: content,
       timestamp: Date.now(),
+      gifts: gifts
     };
 
     setMessages((prev) => [newMessage, ...prev]);
@@ -327,6 +367,19 @@ const Generator: React.FC<GeneratorProps> = ({
           )}
         </div>
 
+        {/* Toggle Regalos */}
+        <div 
+          className="flex items-center gap-3 mb-6 cursor-pointer group w-fit mx-auto md:mx-0" 
+          onClick={() => setShowGifts(!showGifts)}
+        >
+          <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 ${showGifts ? 'bg-blue-600 border-blue-600' : 'border-slate-300 bg-white group-hover:border-blue-400'}`}>
+            {showGifts && <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+          </div>
+          <span className="text-sm font-bold text-slate-600 group-hover:text-blue-600 transition-colors select-none flex items-center gap-2">
+            🎁 Ver sugerencias de regalos
+          </span>
+        </div>
+
         {safetyError && (
           <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg animate-fade-in-up">
             <p className="text-xs font-bold text-red-600 flex items-start gap-2">
@@ -409,6 +462,39 @@ const Generator: React.FC<GeneratorProps> = ({
                     <p className="text-[10px] text-slate-300 leading-tight">
                       Tú decides cómo usar este mensaje. No somos responsables
                       de las consecuencias sociales de su envío.
+                    </p>
+                  </div>
+                )}
+
+                {/* Sección de Regalos */}
+                {msg.gifts && msg.gifts.length > 0 && (
+                  <div className="mt-8 pt-8 border-t border-slate-100">
+                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <span>🎁</span> Sugerencias para acompañar
+                    </h4>
+                    <div className="grid gap-3">
+                      {msg.gifts.map((gift, idx) => (
+                        <div key={idx} className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between hover:border-blue-200 transition-colors">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span className="font-bold text-slate-800 text-sm">{gift.title}</span>
+                              <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-medium">{gift.price_range}</span>
+                            </div>
+                            <p className="text-xs text-slate-500 leading-relaxed">{gift.reason}</p>
+                          </div>
+                          <a 
+                            href={generateAmazonLink(gift.search_term, country)}
+                            target="_blank"
+                            rel="noopener noreferrer sponsored"
+                            className="bg-[#FF9900] text-white text-xs font-bold px-4 py-2.5 rounded-lg hover:bg-[#ff8c00] transition-colors shadow-sm whitespace-nowrap flex items-center gap-2 w-full sm:w-auto justify-center"
+                          >
+                            Ver en Amazon <span>↗</span>
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-[9px] text-slate-400 mt-4 text-center italic">
+                      {CONFIG.AMAZON.DISCLAIMER}
                     </p>
                   </div>
                 )}

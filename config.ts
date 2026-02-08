@@ -52,6 +52,12 @@ export const CONFIG = {
     MAX_TOKENS: Number(getEnv("AI_MAX_TOKENS", 300)),
   },
 
+  // --- AMAZON AFILIADOS ---
+  AMAZON: {
+    STORE_ID: getEnv("AMAZON_STORE_ID", "mensajemagico-20"),
+    DISCLAIMER: "Como Afiliado de Amazon, percibo dinero con las compras elegibles.",
+  },
+
   // --- MONETIZACIÓN (GOOGLE ADSENSE) ---
   ADSENSE: {
     IS_ACTIVE:
