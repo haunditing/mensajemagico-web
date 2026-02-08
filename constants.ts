@@ -1,5 +1,7 @@
 import { Occasion, Relationship, Tone, SharePlatform } from "./types";
 
+const currentYear = new Date().getFullYear();
+
 export const RELATIONSHIPS: Relationship[] = [
   { id: "couple", label: "Pareja", slug: "pareja" },
   { id: "ligue", label: "Ligue/Crush", slug: "ligue" },
@@ -121,7 +123,7 @@ export const OCCASIONS: Occasion[] = [
     description:
       "Encuentra las palabras perfectas para expresar tus sentimientos en cualquier momento del año.",
     h1: "Mensajes de Amor para Enamorar",
-    metaTitle: "Mensajes de Amor 2025: Frases para Dedicar",
+    metaTitle: `Mensajes de Amor ${currentYear}: Frases para Dedicar`,
     metaDesc:
       "Genera mensajes únicos de amor. Frases románticas, cortas y profundas para tu pareja o amigos.",
     allowedPlatforms: [
@@ -193,7 +195,7 @@ export const OCCASIONS: Occasion[] = [
     description:
       "Frases de agradecimiento y cariño para el mejor papá del mundo.",
     h1: "Mensajes para el Día del Padre: Inspiración y Cariño",
-    metaTitle: "Día del Padre: Frases, Mensajes y Felicitaciones 2025",
+    metaTitle: `Día del Padre: Frases, Mensajes y Felicitaciones ${currentYear}`,
     metaDesc:
       "Los mejores mensajes para papá. Genera frases cortas o profundas para enviar hoy mismo.",
     allowedPlatforms: [
@@ -211,7 +213,7 @@ export const OCCASIONS: Occasion[] = [
     description:
       "Deseos de paz, amor y prosperidad para tus seres queridos en estas fiestas.",
     h1: "Frases y Mensajes de Navidad para Compartir",
-    metaTitle: "Mensajes de Navidad 2024: Frases de Paz y Amor",
+    metaTitle: `Mensajes de Navidad ${currentYear}: Frases de Paz y Amor`,
     metaDesc:
       "Genera felicitaciones navideñas personalizadas para familia y amigos. Listas para copiar y enviar.",
     allowedPlatforms: [

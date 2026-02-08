@@ -1,6 +1,8 @@
 
 import { CountryCode, LocalizedContent, Occasion, CulturalVariant } from '../types';
 
+const currentYear = new Date().getFullYear();
+
 const COUNTRY_STORAGE_KEY = 'user_preferred_country';
 
 const AMOR_VARIANTS: Record<CountryCode, CulturalVariant[]> = {
@@ -9,14 +11,14 @@ const AMOR_VARIANTS: Record<CountryCode, CulturalVariant[]> = {
       startMonth: 8,
       name: 'Amor y Amistad',
       h1: 'Mensajes de Amor y Amistad para Septiembre',
-      metaTitle: 'Amor y Amistad Colombia 2025: Frases y Mensajes Especiales',
+      metaTitle: `Amor y Amistad Colombia ${currentYear}: Frases y Mensajes Especiales`,
       metaDesc: 'Genera mensajes únicos para Amor y Amistad en Colombia. Frases románticas y de amistad para dedicar en septiembre.'
     },
     {
       startMonth: 1,
       name: 'San Valentín',
       h1: 'Mensajes de San Valentín para Enamorar',
-      metaTitle: 'San Valentín 2025: Mensajes de Amor para Enamorar',
+      metaTitle: `San Valentín ${currentYear}: Mensajes de Amor para Enamorar`,
       metaDesc: 'Las mejores frases de San Valentín en Colombia. Crea mensajes románticos personalizados para tu pareja.'
     },
     {
@@ -31,7 +33,7 @@ const AMOR_VARIANTS: Record<CountryCode, CulturalVariant[]> = {
       startMonth: 1,
       name: 'Día del Amor y la Amistad',
       h1: 'Mensajes para el Día del Amor y la Amistad',
-      metaTitle: 'Día del Amor y la Amistad 2025: Frases y Mensajes en México'
+      metaTitle: `Día del Amor y la Amistad ${currentYear}: Frases y Mensajes en México`
     },
     {
       name: 'Mensajes de Amor',
@@ -43,7 +45,7 @@ const AMOR_VARIANTS: Record<CountryCode, CulturalVariant[]> = {
       startMonth: 1,
       name: 'Día de los Enamorados',
       h1: 'Mensajes para el Día de los Enamorados',
-      metaTitle: 'Día de los Enamorados Argentina 2025: Frases y Poemas de Amor',
+      metaTitle: `Día de los Enamorados Argentina ${currentYear}: Frases y Poemas de Amor`,
       metaDesc: 'Genera los mejores mensajes para el Día de los Enamorados en Argentina.'
     },
     {
@@ -111,7 +113,7 @@ const AMOR_VARIANTS: Record<CountryCode, CulturalVariant[]> = {
       startMonth: 1,
       name: 'San Valentín',
       h1: 'Mensajes de San Valentín e Inspiración',
-      metaTitle: 'San Valentín 2025: Generador de Mensajes y Frases de Amor',
+      metaTitle: `San Valentín ${currentYear}: Generador de Mensajes y Frases de Amor`,
       metaDesc: 'Crea mensajes de San Valentín personalizados con IA.'
     },
     {
