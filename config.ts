@@ -3,8 +3,9 @@
  */
 
 const getEnv = (key: string, defaultValue: any) => {
-  // Intentamos leer con VITE_ y sin VITE_ por compatibilidad
-  const value = process.env[`VITE_${key}`] || process.env[key];
+  // En Vite, usamos import.meta.env en lugar de process.env
+  // @ts-ignore
+  const value = import.meta.env[`VITE_${key}`] || import.meta.env[key];
   if (value === undefined || value === "") return defaultValue;
   return value;
 };
@@ -30,7 +31,8 @@ export const CONFIG = {
       window.location.search.includes("ads=true"),
     CLIENT_ID: getEnv("ADSENSE_CLIENT_ID", "ca-pub-0000000000000000"),
     DEBUG_MODE:
-      process.env.NODE_ENV === "development" ||
+      // @ts-ignore
+      import.meta.env.DEV ||
       window.location.search.includes("debug=true"),
     SLOTS: {
       TOP: getEnv("ADS_SLOT_TOP", "0000000001"),
