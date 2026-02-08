@@ -16,10 +16,17 @@ const isTruthy = (val: any): boolean => {
   return s === "true" || s === "1" || s === "yes" || s === "on";
 };
 
+const VALENTINE_SEASON = {
+  MONTH: 1, // Febrero (0-indexado)
+  START_DAY: 7,
+  END_DAY: 14,
+};
+
 const isValentineSeason = () => {
   const now = new Date();
-  // Febrero es el mes 1 (0-indexado). Se activa del 7 al 14.
-  return now.getMonth() === 1 && now.getDate() >= 7 && now.getDate() <= 14;
+  return now.getMonth() === VALENTINE_SEASON.MONTH && 
+         now.getDate() >= VALENTINE_SEASON.START_DAY && 
+         now.getDate() <= VALENTINE_SEASON.END_DAY;
 };
 
 export const CONFIG = {
@@ -65,7 +72,7 @@ export const CONFIG = {
 
   // --- TEMAS Y APARIENCIA ---
   THEME: {
-    IS_VALENTINE: isTruthy(getEnv("VALENTINE_THEME", isValentineSeason())),
+    IS_VALENTINE: isValentineSeason(),
   },
 
   // --- MÉTRICAS ---
