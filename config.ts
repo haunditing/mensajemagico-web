@@ -56,6 +56,11 @@ export const CONFIG = {
     ),
   },
 
+  // --- TEMAS Y APARIENCIA ---
+  THEME: {
+    IS_VALENTINE: isTruthy(getEnv("VALENTINE_THEME", "false")),
+  },
+
   // --- MÉTRICAS ---
   METRICS: {
     GLOBAL_ESTIMATE_FACTOR: Number(getEnv("METRICS_FACTOR", 0.08)),

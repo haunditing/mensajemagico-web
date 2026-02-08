@@ -1,91 +1,146 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MensajeMágico - Generador de Cartas e Inspiración con IA</title>
-    <meta name="description" content="Genera mensajes y cartas personalizadas con IA. La solución perfecta para San Valentín, aniversarios y respuestas de WhatsApp.">
-    
+    <meta
+      name="description"
+      content="Genera mensajes y cartas personalizadas con IA. La solución perfecta para San Valentín, aniversarios y respuestas de WhatsApp."
+    />
+
     <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://mensajemagico.com/">
-    <meta property="og:title" content="MensajeMágico - Palabras que conectan">
-    <meta property="og:description" content="¿No sabes qué escribir? Nuestra IA redacta mensajes y respuestas perfectas en segundos.">
-    <meta property="og:image" content="https://mensajemagico.com/og-image.jpg">
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mensajemagico.com/" />
+    <meta property="og:title" content="MensajeMágico - Palabras que conectan" />
+    <meta
+      property="og:description"
+      content="¿No sabes qué escribir? Nuestra IA redacta mensajes y respuestas perfectas en segundos."
+    />
+    <meta
+      property="og:image"
+      content="https://mensajemagico.com/og-image.jpg"
+    />
 
     <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://mensajemagico.com/">
-    <meta property="twitter:title" content="MensajeMágico - Palabras que conectan">
-    <meta property="twitter:description" content="¿No sabes qué escribir? Nuestra IA redacta mensajes y respuestas perfectas en segundos.">
-    <meta property="twitter:image" content="https://mensajemagico.com/og-image.jpg">
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://mensajemagico.com/" />
+    <meta
+      property="twitter:title"
+      content="MensajeMágico - Palabras que conectan"
+    />
+    <meta
+      property="twitter:description"
+      content="¿No sabes qué escribir? Nuestra IA redacta mensajes y respuestas perfectas en segundos."
+    />
+    <meta
+      property="twitter:image"
+      content="https://mensajemagico.com/og-image.jpg"
+    />
 
-    <link rel="canonical" href="https://mensajemagico.com/">
-    
+    <link rel="canonical" href="https://mensajemagico.com/" />
+
     <!-- AdSense: Ahora se gestiona dinámicamente desde AdBanner.tsx y config.ts -->
-    
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8117082099604641"
-     crossorigin="anonymous"></script>
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
+    <script
+      async
+      src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8117082099604641"
+      crossorigin="anonymous"
+    ></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
-        :root { --font-main: 'Inter', sans-serif; }
-        body { font-family: var(--font-main); color: #0f172a; }
-        .text-gradient {
-            background: linear-gradient(135deg, #2563eb, #4f46e5);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+      :root {
+        --font-main: "Inter", sans-serif;
+      }
+      body {
+        font-family: var(--font-main);
+        color: #0f172a;
+      }
+      .text-gradient {
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      @keyframes fadeInUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
         }
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+        to {
+          opacity: 1;
+          transform: translateY(0);
         }
-        .animate-fade-in-up { animation: fadeInUp 0.4s ease-out forwards; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
+      }
+      @keyframes fall {
+        0% {
+          transform: translateY(-20%) rotate(0deg);
+          opacity: 0.8;
+        }
+        100% {
+          transform: translateY(100vh) rotate(360deg);
+          opacity: 0;
+        }
+      }
+      .animate-fall {
+        animation: fall linear infinite;
+      }
+      .animate-fade-in-up {
+        animation: fadeInUp 0.4s ease-out forwards;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
     </style>
 
     <script type="importmap">
-    {
-      "imports": {
-        "react": "https://esm.sh/react@^19.2.4",
-        "react/": "https://esm.sh/react@^19.2.4/",
-        "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-        "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
-        "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
+      {
+        "imports": {
+          "react": "https://esm.sh/react@^19.2.4",
+          "react/": "https://esm.sh/react@^19.2.4/",
+          "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+          "react-router-dom": "https://esm.sh/react-router-dom@^7.13.0",
+          "@google/genai": "https://esm.sh/@google/genai@^1.38.0"
+        }
       }
-    }
     </script>
-</head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-8BVTBB52L6"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  </head>
+  <!-- Google tag (gtag.js) -->
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-8BVTBB52L6"
+  ></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+    gtag("js", new Date());
 
-  gtag('config', 'G-8BVTBB52L6');
-</script>
-<body class="bg-slate-50">
+    gtag("config", "G-8BVTBB52L6");
+  </script>
+  <body class="bg-slate-50">
     <div id="root"></div>
     <script id="json-ld-data" type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "MensajeMágico",
-      "operatingSystem": "Web",
-      "applicationCategory": "CommunicationApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "MensajeMágico",
+        "operatingSystem": "Web",
+        "applicationCategory": "CommunicationApplication",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
       }
-    }
     </script>
-<script type="module" src="/index.tsx"></script>
-</body>
+    <script type="module" src="/index.tsx"></script>
+  </body>
 </html>
