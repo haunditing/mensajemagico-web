@@ -20,7 +20,7 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
     "pensamiento-del-dia": "text-indigo-500",
     "responder-un-mensaje": "text-sky-500",
     "no-me-dejes-en-visto": "text-emerald-500",
-    "un-saludo": "text-yellow-500",
+    "un-saludo": "text-orange-300",
     perdoname: "text-amber-500",
     amor: "text-rose-500",
     cumpleanos: "text-orange-500",
@@ -39,15 +39,32 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
 
   // WhatsApp Icon Especial
   if (icon === "whatsapp" || slug === "no-me-dejes-en-visto") {
+    const isVisto = slug === "no-me-dejes-en-visto";
     return (
-      <svg
-        viewBox="0 0 24 24"
-        className={`${sizeClass} ${iconColorClass} ${className}`}
-        fill="currentColor"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-      </svg>
+      <>
+        {isVisto && (
+          <style>
+            {`
+            @keyframes shake-no {
+              0%, 100% { transform: translateX(0); }
+              25% { transform: translateX(-3px); }
+              75% { transform: translateX(3px); }
+            }
+            .group:hover .animate-shake-no {
+              animation: shake-no 0.4s ease-in-out infinite;
+            }
+          `}
+          </style>
+        )}
+        <svg
+          viewBox="0 0 24 24"
+          className={`${sizeClass} ${iconColorClass} ${className} ${isVisto ? "animate-shake-no" : ""}`}
+          fill="currentColor"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+        </svg>
+      </>
     );
   }
 
@@ -55,17 +72,21 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
   const icons: Record<string, React.ReactNode> = {
     "pensamiento-del-dia": (
       <>
+        <g className="bulb-rays opacity-0">
+          <path d="M12 2V5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M4.93 4.93L7.05 7.05" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M19.07 4.93L16.95 7.05" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M2 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+          <path d="M19 12H22" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </g>
         <path
-          d="M12 3V4M12 20V21M21 12H20M4 12H3M18.364 18.364L17.6569 17.6569M6.34315 6.34315L5.63604 5.63604M18.364 5.63604L17.6569 6.34315M6.34315 17.6569L5.63604 18.364"
+          d="M9 21H15M10 18H14M12 7C9.23858 7 7 9.23858 7 12C7 13.5 7.8 14.8 9 15.5V18H15V15.5C16.2 14.8 17 13.5 17 12C17 9.23858 14.7614 7 12 7Z"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
-        />
-        <path
-          d="M12 8C9.79086 8 8 9.79086 8 12C8 14.2091 9.79086 16 12 16C14.2091 16 16 14.2091 16 12C16 9.79086 14.2091 8 12 8Z"
-          stroke="currentColor"
-          strokeWidth="2"
+          strokeLinejoin="round"
           fill="none"
+          className="bulb-body"
         />
       </>
     ),
@@ -89,14 +110,23 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
       />
     ),
     perdoname: (
-      <path
-        d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
+      <>
+        <path
+          d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+        <path
+          d="M12 6v7M9 8h6M9 11h6"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </>
     ),
     amor: (
       <path
@@ -110,6 +140,14 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
     ),
     cumpleanos: (
       <>
+        <g className="confetti-particles">
+          <circle cx="4" cy="4" r="1" className="text-blue-400" fill="currentColor" />
+          <circle cx="20" cy="4" r="1" className="text-green-400" fill="currentColor" />
+          <circle cx="2" cy="12" r="1" className="text-yellow-400" fill="currentColor" />
+          <circle cx="22" cy="12" r="1" className="text-purple-400" fill="currentColor" />
+          <circle cx="4" cy="20" r="1" className="text-red-400" fill="currentColor" />
+          <circle cx="20" cy="20" r="1" className="text-pink-400" fill="currentColor" />
+        </g>
         <path
           d="M20 12V22H4V12M18 12V7C18 4.79086 16.2091 3 14 3H10C7.79086 3 6 4.79086 6 7V12"
           stroke="currentColor"
@@ -128,29 +166,70 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
     ),
     anniversary: (
       <>
-        <circle
-          cx="9"
-          cy="15"
-          r="6"
+        <g className="glass-left">
+          <path
+            d="M7 4V9C7 10.1046 7.89543 11 9 11C10.1046 11 11 10.1046 11 9V4"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          <path
+            d="M9 11V19"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M6 19H12"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </g>
+        <g className="glass-right">
+          <path
+            d="M17 4V9C17 10.1046 16.1046 11 15 11C13.8954 11 13 10.1046 13 9V4"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            fill="none"
+          />
+          <path
+            d="M15 11V19"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <path
+            d="M12 19H18"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </g>
+        <path
+          d="M12 2L12 4"
           stroke="currentColor"
           strokeWidth="2"
-          fill="none"
+          strokeLinecap="round"
+          className="clink-spark opacity-0"
         />
-        <circle
-          cx="15"
-          cy="15"
-          r="6"
-          stroke="currentColor"
-          strokeWidth="2"
-          fill="none"
-        />
-        <path d="M12 9V5L14 7L12 9Z" fill="currentColor" />
       </>
     ),
     "dia-de-la-madre": (
       <>
         <path
-          d="M12 22V12M12 12C12 12 16 9 16 6C16 3 13 2 12 2C11 2 8 3 8 6C8 9 12 12 12 12Z"
+          d="M12 22V12"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path
+          className="flower-head"
+          d="M12 12C12 12 16 9 16 6C16 3 13 2 12 2C11 2 8 3 8 6C8 9 12 12 12 12Z"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinejoin="round"
@@ -178,6 +257,14 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
     ),
     navidad: (
       <>
+        <g className="snow-particles">
+          <circle cx="12" cy="2" r="1" className="text-sky-200" fill="currentColor" />
+          <circle cx="7" cy="6" r="0.8" className="text-sky-200" fill="currentColor" />
+          <circle cx="17" cy="6" r="0.8" className="text-sky-200" fill="currentColor" />
+          <circle cx="5" cy="11" r="0.6" className="text-sky-200" fill="currentColor" />
+          <circle cx="19" cy="11" r="0.6" className="text-sky-200" fill="currentColor" />
+          <circle cx="12" cy="16" r="0.6" className="text-sky-200" fill="currentColor" />
+        </g>
         <path
           d="M12 3L5 18H19L12 3Z"
           stroke="currentColor"
@@ -201,6 +288,12 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
     const isLove = slug === "amor";
     const isResponder = slug === "responder-un-mensaje";
     const isPensamiento = slug === "pensamiento-del-dia";
+    const isPerdoname = slug === "perdoname";
+    const isBirthday = slug === "cumpleanos";
+    const isAnniversary = slug === "anniversary";
+    const isChristmas = slug === "navidad";
+    const isFathersDay = slug === "dia-del-padre";
+    const isMothersDay = slug === "dia-de-la-madre";
 
     return (
       <>
@@ -260,12 +353,140 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
         {isPensamiento && (
           <style>
             {`
-            @keyframes levitate {
-              0%, 100% { transform: translateY(0); }
-              50% { transform: translateY(-6px); }
+            @keyframes glow {
+              0%, 100% { opacity: 0; transform: scale(0.8); }
+              50% { opacity: 1; transform: scale(1.1); }
             }
-            .group:hover .animate-levitate {
-              animation: levitate 2s ease-in-out infinite;
+            .group:hover .bulb-rays {
+              animation: glow 1.5s ease-in-out infinite;
+              transform-origin: 12px 12px;
+            }
+            .group:hover .bulb-body {
+              fill: currentColor;
+              fill-opacity: 0.2;
+              transition: fill-opacity 0.3s;
+            }
+          `}
+          </style>
+        )}
+        {isPerdoname && (
+          <style>
+            {`
+            @keyframes rock {
+              0%, 100% { transform: rotate(0deg); }
+              25% { transform: rotate(-10deg); }
+              75% { transform: rotate(10deg); }
+            }
+            .group:hover .animate-rock {
+              animation: rock 2s ease-in-out infinite;
+              transform-origin: bottom center;
+            }
+          `}
+          </style>
+        )}
+        {isBirthday && (
+          <style>
+            {`
+            @keyframes pop-confetti {
+              0% { transform: scale(0); opacity: 0; }
+              40% { opacity: 1; }
+              100% { transform: scale(2); opacity: 0; }
+            }
+            .confetti-particles circle {
+              opacity: 0;
+              transform-origin: center;
+            }
+            .group:hover .confetti-particles circle {
+              animation: pop-confetti 1.2s ease-out infinite;
+            }
+            .group:hover .confetti-particles circle:nth-child(1) { animation-delay: 0s; }
+            .group:hover .confetti-particles circle:nth-child(2) { animation-delay: 0.2s; }
+            .group:hover .confetti-particles circle:nth-child(3) { animation-delay: 0.4s; }
+            .group:hover .confetti-particles circle:nth-child(4) { animation-delay: 0.1s; }
+            .group:hover .confetti-particles circle:nth-child(5) { animation-delay: 0.3s; }
+            .group:hover .confetti-particles circle:nth-child(6) { animation-delay: 0.5s; }
+          `}
+          </style>
+        )}
+        {isAnniversary && (
+          <style>
+            {`
+            @keyframes clink-left {
+              0%, 100% { transform: rotate(0deg); }
+              50% { transform: rotate(15deg); }
+            }
+            @keyframes clink-right {
+              0%, 100% { transform: rotate(0deg); }
+              50% { transform: rotate(-15deg); }
+            }
+            @keyframes spark {
+              0%, 100% { opacity: 0; transform: scale(0); }
+              50% { opacity: 1; transform: scale(1.5); }
+            }
+            .group:hover .glass-left {
+              animation: clink-left 1s ease-in-out infinite;
+              transform-origin: 9px 19px;
+            }
+            .group:hover .glass-right {
+              animation: clink-right 1s ease-in-out infinite;
+              transform-origin: 15px 19px;
+            }
+            .group:hover .clink-spark {
+              animation: spark 1s ease-in-out infinite;
+              transform-origin: 12px 3px;
+            }
+          `}
+          </style>
+        )}
+        {isChristmas && (
+          <style>
+            {`
+            @keyframes snow {
+              0% { transform: translateY(-5px); opacity: 0; }
+              20% { opacity: 1; }
+              100% { transform: translateY(15px); opacity: 0; }
+            }
+            .snow-particles circle {
+              opacity: 0;
+            }
+            .group:hover .snow-particles circle {
+              animation: snow 2s linear infinite;
+            }
+            .group:hover .snow-particles circle:nth-child(1) { animation-delay: 0s; }
+            .group:hover .snow-particles circle:nth-child(2) { animation-delay: 0.8s; }
+            .group:hover .snow-particles circle:nth-child(3) { animation-delay: 0.4s; }
+            .group:hover .snow-particles circle:nth-child(4) { animation-delay: 1.2s; }
+            .group:hover .snow-particles circle:nth-child(5) { animation-delay: 0.6s; }
+            .group:hover .snow-particles circle:nth-child(6) { animation-delay: 1.0s; }
+          `}
+          </style>
+        )}
+        {isFathersDay && (
+          <style>
+            {`
+            @keyframes adjust-tie {
+              0%, 100% { transform: translateY(0) scale(1); }
+              25% { transform: translateY(-2px) scale(1.05); }
+              50% { transform: translateY(-2px) rotate(-3deg); }
+              75% { transform: translateY(-2px) rotate(3deg); }
+            }
+            .group:hover .animate-adjust-tie {
+              animation: adjust-tie 1s ease-in-out infinite;
+              transform-origin: top center;
+            }
+          `}
+          </style>
+        )}
+        {isMothersDay && (
+          <style>
+            {`
+            @keyframes bloom {
+              0%, 100% { transform: scale(1) rotate(0deg); }
+              50% { transform: scale(1.15) rotate(5deg); }
+            }
+            .group:hover .flower-head {
+              animation: bloom 2s ease-in-out infinite;
+              transform-origin: 12px 12px;
             }
           `}
           </style>
@@ -273,7 +494,7 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
         <svg
           viewBox="0 0 24 24"
           fill="none"
-          className={`${sizeClass} ${iconColorClass} ${className} ${isGreeting ? "animate-wave-hand" : ""} ${isLove ? "animate-heartbeat" : ""} ${isResponder ? "animate-ring" : ""} ${isPensamiento ? "animate-levitate" : ""}`}
+          className={`${sizeClass} ${iconColorClass} ${className} ${isGreeting ? "animate-wave-hand" : ""} ${isLove ? "animate-heartbeat" : ""} ${isResponder ? "animate-ring" : ""} ${isPerdoname ? "animate-rock" : ""} ${isBirthday ? "animate-pop-confetti" : ""} ${isChristmas ? "animate-snow" : ""} ${isFathersDay ? "animate-adjust-tie" : ""} ${isMothersDay ? "animate-bloom" : ""}`}
           xmlns="http://www.w3.org/2000/svg"
         >
           {icons[slug]}
