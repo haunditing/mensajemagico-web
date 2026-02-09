@@ -113,9 +113,11 @@ const Generator: React.FC<GeneratorProps> = ({
   const isContextLocked = contextLimit === 0;
   const MAX_CHARS = 400;
   const MAX_CONTEXT = isContextLocked ? 0 : contextLimit;
-  
+
   // Estado para la ubicación del usuario
-  const [userLocation, setUserLocation] = useState<string | undefined>(undefined);
+  const [userLocation, setUserLocation] = useState<string | undefined>(
+    undefined,
+  );
 
   // Detectar ubicación al montar el componente
   useEffect(() => {
@@ -368,6 +370,52 @@ const Generator: React.FC<GeneratorProps> = ({
       >
         {/* Barra de Uso de Créditos */}
         <UsageBar />
+
+        {/* Indicador de Ubicación */}
+        {userLocation && (
+          <div className="flex justify-end mb-4 -mt-2 animate-fade-in">
+            <div
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold border transition-colors cursor-help ${
+                planLevel === "premium"
+                  ? "bg-indigo-50 text-indigo-600 border-indigo-100"
+                  : "bg-slate-50 text-slate-400 border-slate-100"
+              }`}
+              title={
+                planLevel === "premium"
+                  ? "Modo Regional Activo"
+                  : "Ubicación detectada (Mejora a Premium para activar el modo regional)"
+              }
+              onClick={() =>
+                planLevel !== "premium" &&
+                triggerUpsell(
+                  "Mejora a Premium para activar el Tono Regional y personalizar tus mensajes según tu ciudad.",
+                )
+              }
+            >
+              <svg
+                className="w-3 h-3"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
+              <span>{userLocation}</span>
+              {planLevel === "premium" && <span>✨</span>}
+            </div>
+          </div>
+        )}
 
         <div className="space-y-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
