@@ -22,3 +22,24 @@ export const handleUpgrade = async (userId: string, interval: 'monthly' | 'yearl
     throw error; // Re-lanzamos el error para que el componente UI pueda mostrar una alerta o toast
   }
 };
+
+/**
+ * Cancela la suscripción del usuario al final del periodo actual.
+ */
+export const cancelSubscription = async (userId: string): Promise<any> => {
+  return await api.post('/api/payments/cancel-subscription', { userId });
+};
+
+/**
+ * Obtiene el estado actual de la suscripción desde Stripe.
+ */
+export const getSubscriptionStatus = async (userId: string): Promise<{ planLevel: string, subscription: any }> => {
+  return await api.get(`/api/payments/subscription-status?userId=${userId}`);
+};
+
+/**
+ * Reactiva una suscripción cancelada (pero aún no expirada).
+ */
+export const reactivateSubscription = async (userId: string): Promise<any> => {
+  return await api.post('/api/payments/reactivate-subscription', { userId });
+};

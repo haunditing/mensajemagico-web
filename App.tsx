@@ -48,6 +48,7 @@ import { FavoritesProvider } from "./context/FavoritesContext";
 import FavoritesPage from "./pages/FavoritesPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
+import ProfilePage from "./pages/ProfilePage";
 
 const { BrowserRouter: Router, Routes, Route } = ReactRouterDOM;
 
@@ -77,6 +78,7 @@ const App: React.FC = () => {
                 <Route path="/favoritos" element={<FavoritesPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+                <Route path="/perfil" element={<ProfilePage />} />
                 <Route path="*" element={<HomePage />} />
               </Routes>
             </Layout>
