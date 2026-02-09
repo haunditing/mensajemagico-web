@@ -573,9 +573,7 @@ const Generator: React.FC<GeneratorProps> = ({
         </button>
       </div>
 
-      {monetization.show_ads && (
-        <AdBanner position="middle" hasContent={messages.length > 0} />
-      )}
+      <AdBanner position="middle" hasContent={messages.length > 0} />
 
       {/* Banner de Registro para usuarios no logueados */}
       {!user && messages.length > 0 && (
