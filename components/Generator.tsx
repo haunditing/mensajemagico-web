@@ -52,7 +52,7 @@ const Generator: React.FC<GeneratorProps> = ({
   initialRelationship,
   onRelationshipChange,
 }) => {
-  const { user, remainingCredits } = useAuth();
+  const { user, remainingCredits, monetization } = useAuth();
   const { triggerUpsell } = useUpsell();
   const { addFavorite, isFavorite, removeFavorite, favorites } = useFavorites();
   const { country } = useLocalization();
@@ -93,6 +93,14 @@ const Generator: React.FC<GeneratorProps> = ({
   const isContextLocked = contextLimit === 0;
   const MAX_CHARS = 400;
   const MAX_CONTEXT = isContextLocked ? 0 : contextLimit;
+
+  // Verificar si la ocasión actual está permitida en el plan
+  const allowedOccasions = useFeature("access.occasions");
+  const isOccasionLocked =
+    allowedOccasions !== "all" &&
+    (!Array.isArray(allowedOccasions) ||
+      (!allowedOccasions.includes("all") &&
+        !allowedOccasions.includes(occasion.id)));
 
   // Si cambiamos de ocasión y el tono actual ya no está disponible, lo reseteamos
   useEffect(() => {
@@ -154,7 +162,7 @@ const Generator: React.FC<GeneratorProps> = ({
   };
 
   const handleGenerate = async () => {
-    if (safetyError || isLoading) return;
+    if (safetyError || isLoading || isOccasionLocked) return;
 
     const check = canGenerate();
     if (!check.allowed) {
@@ -199,7 +207,7 @@ const Generator: React.FC<GeneratorProps> = ({
     try {
       text = await generateMessage(
         {
-          occasion: occasion.name,
+          occasion: occasion.id,
           relationship: relLabel,
           tone: isPensamiento
             ? (EMOTIONAL_STATES.find((s) => s.id === relationshipId)
@@ -515,11 +523,17 @@ const Generator: React.FC<GeneratorProps> = ({
         <button
           onClick={handleGenerate}
           disabled={
-            isLoading || !!safetyError || (!!user && remainingCredits <= 0)
+            isLoading ||
+            !!safetyError ||
+            (!!user && remainingCredits <= 0) ||
+            isOccasionLocked
           }
           className={`w-full h-14 md:h-16 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all
             ${
-              isLoading || safetyError || (!!user && remainingCredits <= 0)
+              isLoading ||
+              safetyError ||
+              (!!user && remainingCredits <= 0) ||
+              isOccasionLocked
                 ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200"
                 : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-[0.98]"
             }`}
@@ -537,17 +551,21 @@ const Generator: React.FC<GeneratorProps> = ({
             <span>
               {safetyError
                 ? "Contenido bloqueado"
-                : !!user && remainingCredits <= 0
-                  ? "Sin créditos hoy"
-                  : isPensamiento
-                    ? "Obtener mi pensamiento (1 crédito)"
-                    : "Generar Mensaje Mágico (1 crédito)"}
+                : isOccasionLocked
+                  ? "Ocasión Premium 🔒"
+                  : !!user && remainingCredits <= 0
+                    ? "Sin créditos hoy"
+                    : isPensamiento
+                      ? "Obtener mi pensamiento (1 crédito)"
+                      : "Generar Mensaje Mágico (1 crédito)"}
             </span>
           )}
         </button>
       </div>
 
-      <AdBanner position="middle" hasContent={messages.length > 0} />
+      {monetization.show_ads && (
+        <AdBanner position="middle" hasContent={messages.length > 0} />
+      )}
 
       {/* Banner de Registro para usuarios no logueados */}
       {!user && messages.length > 0 && (

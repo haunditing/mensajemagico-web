@@ -1,5 +1,6 @@
 
 import { CONFIG } from '../config';
+import PlanManager from './PlanManager';
 
 // Límite dinámico que puede ser actualizado al iniciar sesión
 let currentDailyLimit = CONFIG.USAGE.DAILY_LIMIT;
@@ -41,7 +42,7 @@ export const canGenerate = (): { allowed: boolean; message?: string; delay?: num
   if (dailyCount >= currentDailyLimit) {
     return { 
       allowed: false, 
-      message: "Has agotado tus créditos mágicos diarios. ¡Vuelve mañana!" 
+      message: PlanManager.getUpsellMessage('on_limit_reached') || "Has agotado tus créditos mágicos diarios. ¡Vuelve mañana!" 
     };
   }
 

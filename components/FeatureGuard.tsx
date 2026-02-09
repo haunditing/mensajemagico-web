@@ -22,14 +22,14 @@ const FeatureGuard: React.FC<FeatureGuardProps> = ({ children, featureKey, type 
   } else {
     if (type === 'tone') {
       const allowedTones = PlanManager.getPlanFeature(planLevel, 'access.exclusive_tones');
-      if (allowedTones === 'all' || (Array.isArray(allowedTones) && allowedTones.includes(featureKey))) {
+      if (allowedTones === 'all' || (Array.isArray(allowedTones) && (allowedTones.includes('all') || allowedTones.includes(featureKey)))) {
         isAllowed = true;
       } else {
         upsellKey = 'on_locked_tone';
       }
     } else if (type === 'occasion') {
       const allowedOccasions = PlanManager.getPlanFeature(planLevel, 'access.occasions');
-      if (allowedOccasions === 'all' || (Array.isArray(allowedOccasions) && allowedOccasions.includes(featureKey))) {
+      if (allowedOccasions === 'all' || (Array.isArray(allowedOccasions) && (allowedOccasions.includes('all') || allowedOccasions.includes(featureKey)))) {
         isAllowed = true;
       } else {
         upsellKey = 'on_locked_occasion';
