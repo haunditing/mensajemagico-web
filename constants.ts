@@ -41,6 +41,24 @@ export const RECEIVED_MESSAGE_TYPES = [
   { id: "question", label: "Una pregunta directa" },
 ];
 
+// --- NUEVAS CONSTANTES PARA "UN SALUDO" ---
+export const GREETING_CATEGORIES = [
+  { id: "amanecer", label: "Amanecer (Buenos días)" },
+  { id: "ocaso", label: "Ocaso (Buenas noches)" },
+  { id: "trayecto", label: "Trayecto (En viaje)" },
+  { id: "arribo", label: "Arribo (Ya llegué)" },
+  { id: "estado", label: "Estado (¿Cómo estás?)" },
+];
+
+export const GREETING_TONES = [
+  { id: "dulce", label: "Dulce" },
+  { id: "atento", label: "Atento" },
+  { id: "fuerte", label: "Fuerte" },
+  { id: "fresco", label: "Fresco" },
+  { id: "sobrio", label: "Sobrio" },
+];
+// ------------------------------------------
+
 export const OCCASIONS: Occasion[] = [
   {
     id: "pensamiento",
@@ -58,6 +76,24 @@ export const OCCASIONS: Occasion[] = [
       SharePlatform.FACEBOOK,
       SharePlatform.WHATSAPP,
       SharePlatform.X,
+      SharePlatform.COPY,
+    ],
+  },
+  {
+    id: "saludo",
+    name: "Un Saludo",
+    slug: "un-saludo",
+    icon: "👋",
+    description:
+      "Saludos, despedidas y seguimientos para cualquier momento del día. Elige el momento y la intención para conectar.",
+    h1: "Generador de Saludos Originales",
+    metaTitle: "Un Saludo: Mensajes de Buenos Días, Noches y Más",
+    metaDesc:
+      "Crea saludos únicos para el amanecer, ocaso, trayectos o llegadas. Personaliza el tono y sorprende.",
+    allowedPlatforms: [
+      SharePlatform.WHATSAPP,
+      SharePlatform.TELEGRAM,
+      SharePlatform.SMS,
       SharePlatform.COPY,
     ],
   },

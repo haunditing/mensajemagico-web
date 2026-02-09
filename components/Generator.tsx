@@ -13,6 +13,8 @@ import {
   RECEIVED_MESSAGE_TYPES,
   PENSAMIENTO_THEMES,
   EMOTIONAL_STATES,
+  GREETING_CATEGORIES,
+  GREETING_TONES,
 } from "../constants";
 import { generateMessage, AI_ERROR_FALLBACK } from "../services/geminiService";
 import {
@@ -66,6 +68,7 @@ const Generator: React.FC<GeneratorProps> = ({
   const { country } = useLocalization();
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
+  const isGreeting = occasion.id === "saludo";
 
   // Filtrar tonos: 'Atrasado' solo para Cumpleaños y Aniversarios
   const availableTones = TONES.filter((t) => {
@@ -77,10 +80,18 @@ const Generator: React.FC<GeneratorProps> = ({
 
   const [relationshipId, setRelationshipId] = useState<string>(
     initialRelationship?.id ||
-      (isPensamiento ? PENSAMIENTO_THEMES[0].id : RELATIONSHIPS[0].id),
+      (isPensamiento
+        ? PENSAMIENTO_THEMES[0].id
+        : isGreeting
+          ? GREETING_CATEGORIES[0].id
+          : RELATIONSHIPS[0].id),
   );
   const [tone, setTone] = useState<Tone>(
-    isPensamiento ? Tone.PROFOUND : Tone.ROMANTIC,
+    isPensamiento
+      ? Tone.PROFOUND
+      : isGreeting
+        ? ("dulce" as any)
+        : Tone.ROMANTIC,
   );
   const [receivedMessageType, setReceivedMessageType] = useState<string>(
     RECEIVED_MESSAGE_TYPES[0].label,
@@ -112,7 +123,7 @@ const Generator: React.FC<GeneratorProps> = ({
 
   // Si cambiamos de ocasión y el tono actual ya no está disponible, lo reseteamos
   useEffect(() => {
-    if (!isPensamiento) {
+    if (!isPensamiento && !isGreeting) {
       const isCurrentToneAvailable = availableTones.some(
         (t) => t.value === tone,
       );
@@ -120,7 +131,7 @@ const Generator: React.FC<GeneratorProps> = ({
         setTone(Tone.ROMANTIC);
       }
     }
-  }, [occasion.id, availableTones, tone, isPensamiento]);
+  }, [occasion.id, availableTones, tone, isPensamiento, isGreeting]);
 
   useEffect(() => {
     if (isResponder && receivedText.trim() !== "") {
@@ -190,6 +201,10 @@ const Generator: React.FC<GeneratorProps> = ({
       relLabel =
         PENSAMIENTO_THEMES.find((t) => t.id === relationshipId)?.label ||
         "la vida";
+    } else if (isGreeting) {
+      relLabel =
+        GREETING_CATEGORIES.find((c) => c.id === relationshipId)?.label ||
+        "un momento";
     } else {
       relLabel =
         RELATIONSHIPS.find((r) => r.id === relationshipId)?.label || "alguien";
@@ -220,7 +235,10 @@ const Generator: React.FC<GeneratorProps> = ({
           tone: isPensamiento
             ? (EMOTIONAL_STATES.find((s) => s.id === relationshipId)
                 ?.label as any) || tone
-            : tone,
+            : isGreeting
+              ? (GREETING_TONES.find((t) => (t.id as any) === tone)
+                  ?.label as any) || tone
+              : tone,
           receivedMessageType: isResponder ? receivedMessageType : undefined,
           receivedText: isResponder ? receivedText : undefined,
           contextWords: contextWords,
@@ -276,7 +294,9 @@ const Generator: React.FC<GeneratorProps> = ({
       timestamp: Date.now(),
       gifts: gifts,
       occasionName: occasion.name,
-      toneLabel: availableTones.find((t) => t.value === tone)?.label || tone,
+      toneLabel: isGreeting
+        ? GREETING_TONES.find((t) => (t.id as any) === tone)?.label
+        : availableTones.find((t) => t.value === tone)?.label || tone,
     };
 
     setMessages((prev) => [newMessage, ...prev]);
@@ -343,7 +363,9 @@ const Generator: React.FC<GeneratorProps> = ({
               <label className="block text-sm font-bold text-slate-700 mb-2">
                 {isPensamiento
                   ? "¿Sobre qué quieres reflexionar?"
-                  : "Destinatario"}
+                  : isGreeting
+                    ? "¿En qué momento estás?"
+                    : "Destinatario"}
               </label>
               <select
                 value={relationshipId}
@@ -356,17 +378,27 @@ const Generator: React.FC<GeneratorProps> = ({
                         {theme.label}
                       </option>
                     ))
-                  : RELATIONSHIPS.map((rel) => (
-                      <option key={rel.id} value={rel.id}>
-                        {rel.label}
-                      </option>
-                    ))}
+                  : isGreeting
+                    ? GREETING_CATEGORIES.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.label}
+                        </option>
+                      ))
+                    : RELATIONSHIPS.map((rel) => (
+                        <option key={rel.id} value={rel.id}>
+                          {rel.label}
+                        </option>
+                      ))}
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">
-                {isPensamiento ? "Estado emocional" : "Tono"}
+                {isPensamiento
+                  ? "Estado emocional"
+                  : isGreeting
+                    ? "Intención"
+                    : "Tono"}
               </label>
               <div className="flex flex-wrap gap-2">
                 {isPensamiento
@@ -383,24 +415,38 @@ const Generator: React.FC<GeneratorProps> = ({
                         {state.label}
                       </button>
                     ))
-                  : availableTones.map((t) => (
-                      <FeatureGuard
-                        key={t.value}
-                        featureKey={t.value}
-                        type="tone"
-                      >
+                  : isGreeting
+                    ? GREETING_TONES.map((t) => (
                         <button
-                          onClick={() => setTone(t.value)}
+                          key={t.id}
+                          onClick={() => setTone(t.id as any)}
                           className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
-                            tone === t.value
+                            tone === (t.id as any)
                               ? "bg-blue-600 text-white border-blue-600 shadow-md"
                               : "bg-white text-slate-600 border-slate-200 hover:border-blue-400"
                           }`}
                         >
                           {t.label}
                         </button>
-                      </FeatureGuard>
-                    ))}
+                      ))
+                    : availableTones.map((t) => (
+                        <FeatureGuard
+                          key={t.value}
+                          featureKey={t.value}
+                          type="tone"
+                        >
+                          <button
+                            onClick={() => setTone(t.value)}
+                            className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
+                              tone === t.value
+                                ? "bg-blue-600 text-white border-blue-600 shadow-md"
+                                : "bg-white text-slate-600 border-slate-200 hover:border-blue-400"
+                            }`}
+                          >
+                            {t.label}
+                          </button>
+                        </FeatureGuard>
+                      ))}
               </div>
             </div>
           </div>
@@ -588,7 +634,9 @@ const Generator: React.FC<GeneratorProps> = ({
               <span>
                 {isPensamiento
                   ? "Mezclando pensamientos..."
-                  : "Generando magia..."}
+                  : isGreeting
+                    ? "Creando saludo..."
+                    : "Generando magia..."}
               </span>
             </div>
           ) : (
