@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 // import { handleUpgrade } from "../services/paymentService"; // Stripe deshabilitado
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { ENABLE_UPGRADES } from "../features";
+import { ENABLE_UPGRADES } from "../config";
 import { useLocalization } from "../context/LocalizationContext";
 import { api } from "../context/api";
 
