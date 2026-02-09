@@ -23,7 +23,8 @@ export interface GenerationResponse {
  */
 export const generateMessage = async (
   config: MessageConfig,
-  userId?: string
+  userId?: string,
+  userLocation?: string
 ): Promise<GenerationResponse> => {
   
   // 1. Generar Llave de Caché para optimización
@@ -50,6 +51,7 @@ export const generateMessage = async (
       receivedText: config.receivedText, // Para respuestas
       contextWords: config.contextWords ? config.contextWords.join(" ") : "",
       formatInstruction: config.formatInstruction,
+      userLocation, // Enviamos la ubicación detectada al backend
     });
 
     // Validamos que el backend responda con el campo esperado

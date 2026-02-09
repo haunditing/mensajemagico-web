@@ -36,6 +36,7 @@ import LoadingSpinner from "./LoadingSpinner";
 import { useFeature } from "@/hooks/useFeature";
 import PlanManager from "@/services/PlanManager";
 import UsageBar from "./UsageBar";
+import { getUserLocation } from "../services/locationService";
 
 interface GeneratorProps {
   occasion: Occasion;
@@ -112,6 +113,16 @@ const Generator: React.FC<GeneratorProps> = ({
   const isContextLocked = contextLimit === 0;
   const MAX_CHARS = 400;
   const MAX_CONTEXT = isContextLocked ? 0 : contextLimit;
+  
+  // Estado para la ubicación del usuario
+  const [userLocation, setUserLocation] = useState<string | undefined>(undefined);
+
+  // Detectar ubicación al montar el componente
+  useEffect(() => {
+    getUserLocation().then((loc) => {
+      if (loc) setUserLocation(loc);
+    });
+  }, []);
 
   // Verificar si la ocasión actual está permitida en el plan
   const allowedOccasions = useFeature("access.occasions");
@@ -245,6 +256,7 @@ const Generator: React.FC<GeneratorProps> = ({
           formatInstruction: formatInstruction,
         },
         user?._id,
+        userLocation, // Pasamos la ubicación detectada
       );
 
       generatedContent = response.content;
