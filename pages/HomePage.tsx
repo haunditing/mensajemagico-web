@@ -8,7 +8,7 @@ import OccasionIcon from "../components/OccasionIcon";
 import FallingParticles from "../components/FallingParticles";
 import ValentineCountdown from "../components/ValentineCountdown";
 import ChristmasCountdown from "../components/ChristmasCountdown";
-import ValentineBanner from '../components/ValentineBanner';
+import ValentineBanner from "../components/ValentineBanner";
 
 const HomePage: React.FC = () => {
   useEffect(() => {
@@ -19,7 +19,9 @@ const HomePage: React.FC = () => {
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
 
-  console.log(`[HomePage] Renderizado. San Valentín: ${isValentine}, Navidad: ${isChristmas}`);
+  console.log(
+    `[HomePage] Renderizado. San Valentín: ${isValentine}, Navidad: ${isChristmas}`,
+  );
 
   return (
     <div className="animate-fade-in-up">
@@ -28,7 +30,11 @@ const HomePage: React.FC = () => {
         {(isValentine || isChristmas) && (
           <FallingParticles
             count={20}
-            emojis={isValentine ? ["❤️", "💖", "💘", "💝", "🌹"] : ["❄️", "❅", "🌨️", "☃️"]}
+            emojis={
+              isValentine
+                ? ["❤️", "💖", "💘", "💝", "🌹"]
+                : ["❄️", "❅", "🌨️", "☃️"]
+            }
           />
         )}
 
@@ -64,23 +70,37 @@ const HomePage: React.FC = () => {
           {isValentine
             ? "Sorprende a tu pareja o crush con mensajes únicos creados por IA. La inspiración perfecta para este 14 de febrero."
             : isChristmas
-            ? "Comparte tus mejores deseos de paz y alegría. Crea felicitaciones navideñas únicas con nuestra IA en segundos."
-            : "Nuestra IA redacta cartas, mensajes y respuestas personalizadas en segundos. La solución perfecta para cuando las palabras no fluyen."}
+              ? "Comparte tus mejores deseos de paz y alegría. Crea felicitaciones navideñas únicas con nuestra IA en segundos."
+              : "Nuestra IA redacta cartas, mensajes y respuestas personalizadas en segundos. La solución perfecta para cuando las palabras no fluyen."}
         </p>
 
         <div className="flex flex-col sm:flex-row justify-center gap-4">
           <Link
             to={
-              isValentine ? "/mensajes/amor" : isChristmas ? "/mensajes/navidad" : "/mensajes/responder-un-mensaje"
+              isValentine
+                ? "/mensajes/amor"
+                : isChristmas
+                  ? "/mensajes/navidad"
+                  : "/mensajes/responder-un-mensaje"
             }
             className={`h-14 px-8 rounded-xl ${isValentine ? "bg-rose-600 shadow-rose-600/20 hover:bg-rose-700" : isChristmas ? "bg-red-600 shadow-red-600/20 hover:bg-red-700" : "bg-blue-600 shadow-blue-600/20 hover:bg-blue-700"} text-white font-bold flex items-center justify-center shadow-lg transition-all active:scale-95 gap-3`}
           >
             <OccasionIcon
-              slug={isValentine ? "amor" : isChristmas ? "navidad" : "responder-un-mensaje"}
+              slug={
+                isValentine
+                  ? "amor"
+                  : isChristmas
+                    ? "navidad"
+                    : "responder-un-mensaje"
+              }
               className="w-6 h-6 text-white"
             />
             <span>
-              {isValentine ? "Crear mensaje de Amor" : isChristmas ? "Crear mensaje de Navidad" : "Qué responder a..."}
+              {isValentine
+                ? "Crear mensaje de Amor"
+                : isChristmas
+                  ? "Crear mensaje de Navidad"
+                  : "Qué responder a..."}
             </span>
           </Link>
           <Link
@@ -96,7 +116,7 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <AdBanner position="top" />
+      {/*<AdBanner position="top" />*/}
 
       {/* Grid de Ocasiones */}
       <section className="mt-16">
@@ -159,12 +179,12 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <div className="my-16">
+      {/*<div className="my-16">
         <AdBanner position="middle" />
-      </div>
+      </div>*/}
 
       {/* Feature Section */}
-      <section className="bg-slate-900 rounded-3xl p-8 md:p-16 text-white text-center relative overflow-hidden">
+      <section className="bg-slate-900 rounded-3xl p-8 md:p-16 text-white text-center relative overflow-hidden mt-16">
         <div className="relative z-10 max-w-xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-bold mb-6">
             ¿Bloqueo al escribir?
@@ -186,9 +206,9 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <div className="mt-16">
+      {/*<div className="mt-16">
         <AdBanner position="bottom" />
-      </div>
+      </div>*/}
     </div>
   );
 };

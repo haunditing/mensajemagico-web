@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Occasion, Relationship, Tone, GeneratedMessage, SharePlatform } from "../types";
+import {
+  Occasion,
+  Relationship,
+  Tone,
+  GeneratedMessage,
+  SharePlatform,
+} from "../types";
 import {
   RELATIONSHIPS,
   TONES,
@@ -53,7 +59,8 @@ const Generator: React.FC<GeneratorProps> = ({
   initialRelationship,
   onRelationshipChange,
 }) => {
-  const { user, remainingCredits, monetization, updateCredits, planLevel } = useAuth();
+  const { user, remainingCredits, monetization, updateCredits, planLevel } =
+    useAuth();
   const { triggerUpsell } = useUpsell();
   const { addFavorite, isFavorite, removeFavorite, favorites } = useFavorites();
   const { country } = useLocalization();
@@ -223,7 +230,7 @@ const Generator: React.FC<GeneratorProps> = ({
       );
 
       generatedContent = response.content;
-      
+
       if (response.remainingCredits !== undefined && updateCredits) {
         updateCredits(response.remainingCredits);
       }
@@ -254,10 +261,12 @@ const Generator: React.FC<GeneratorProps> = ({
     } catch (error) {
       // Fallback: Si el JSON está roto o incompleto, intentamos rescatar el mensaje con Regex
       // Busca el contenido de "message": "..." incluso si no cierra la comilla final
-      const messageMatch = generatedContent.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)/);
+      const messageMatch = generatedContent.match(
+        /"message"\s*:\s*"((?:[^"\\]|\\.)*)/,
+      );
       if (messageMatch && messageMatch[1]) {
         // Limpiamos caracteres de escape básicos
-        content = messageMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n');
+        content = messageMatch[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
       }
     }
 
@@ -598,7 +607,7 @@ const Generator: React.FC<GeneratorProps> = ({
         </button>
       </div>
 
-      <AdBanner position="middle" hasContent={messages.length > 0} />
+      {/*<AdBanner position="middle" hasContent={messages.length > 0} />*/}
 
       {/* Banner de Registro para usuarios no logueados */}
       {!user && messages.length > 0 && (
@@ -709,7 +718,7 @@ const Generator: React.FC<GeneratorProps> = ({
                               🛍️
                             </div>
                             <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md group-hover:bg-[#232F3E] group-hover:text-white transition-colors">
-                                {gift.price_range}
+                              {gift.price_range}
                             </span>
                           </div>
 
@@ -724,7 +733,19 @@ const Generator: React.FC<GeneratorProps> = ({
                           <div className="mt-auto relative z-10">
                             <div className="w-full bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] hover:border-[#F2C200] text-[#0F1111] text-xs font-bold py-2.5 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-colors">
                               Ver en Amazon
-                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                              <svg
+                                className="w-3 h-3"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                                />
+                              </svg>
                             </div>
                           </div>
                         </a>
