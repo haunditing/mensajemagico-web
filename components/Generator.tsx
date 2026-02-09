@@ -251,8 +251,14 @@ const Generator: React.FC<GeneratorProps> = ({
           gifts = parsed.gift_suggestions || [];
         }
       }
-    } catch (e) {
-      // Si falla, asumimos que es texto plano (fallback)
+    } catch (error) {
+      // Fallback: Si el JSON está roto o incompleto, intentamos rescatar el mensaje con Regex
+      // Busca el contenido de "message": "..." incluso si no cierra la comilla final
+      const messageMatch = generatedContent.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)/);
+      if (messageMatch && messageMatch[1]) {
+        // Limpiamos caracteres de escape básicos
+        content = messageMatch[1].replace(/\\"/g, '"').replace(/\\n/g, '\n');
+      }
     }
 
     const newMessage: ExtendedGeneratedMessage = {
