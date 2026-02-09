@@ -41,6 +41,7 @@ interface AuthContextType {
   monetization: MonetizationConfig;
   isLoading: boolean;
   availablePlans: any;
+  updateCredits: (credits: number) => void;
   login: (token: string) => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -71,7 +72,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     
     if (!token) {
       setUser(null);
-      setPlanConfig(null);
+      setPlanConfig(availablePlans?.guest || null);
       setIsLoading(false);
       return;
     }
@@ -79,6 +80,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     try {
       // api.get ya incluye el token de localStorage automáticamente
       const data = await api.get('/api/auth/me');
+      console.log("[Frontend] Plan recibido del backend:", data.plan);
       setUser(data.user);
       setRemainingCredits(data.remainingCredits);
       setPlanConfig(data.plan);
@@ -113,6 +115,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     init();
   }, []);
 
+  // Efecto para cargar el plan de invitado si no hay usuario logueado
+  useEffect(() => {
+    if (!user && availablePlans?.guest) {
+      setPlanConfig(availablePlans.guest);
+    }
+  }, [user, availablePlans]);
+
   const login = (token: string) => {
     localStorage.setItem('token', token);
     setIsLoading(true);
@@ -122,9 +131,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const logout = () => {
     localStorage.removeItem('token');
     setUser(null);
-    setPlanConfig(null);
+    setPlanConfig(availablePlans?.guest || null);
     setRemainingCredits(0);
     resetDailyLimit(); // Volver a límites de invitado
+  };
+
+  const updateCredits = (credits: number) => {
+    setRemainingCredits(credits);
   };
 
   return (
@@ -136,6 +149,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       monetization,
       isLoading,
       availablePlans,
+      updateCredits,
       login,
       logout,
       refreshUser: fetchUser

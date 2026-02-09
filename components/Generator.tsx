@@ -27,6 +27,7 @@ import { useFavorites } from "../context/FavoritesContext";
 import LoadingSpinner from "./LoadingSpinner";
 import { useFeature } from "@/hooks/useFeature";
 import PlanManager from "@/services/PlanManager";
+import UsageBar from "./UsageBar";
 
 interface GeneratorProps {
   occasion: Occasion;
@@ -52,7 +53,7 @@ const Generator: React.FC<GeneratorProps> = ({
   initialRelationship,
   onRelationshipChange,
 }) => {
-  const { user, remainingCredits, monetization } = useAuth();
+  const { user, remainingCredits, monetization, updateCredits } = useAuth();
   const { triggerUpsell } = useUpsell();
   const { addFavorite, isFavorite, removeFavorite, favorites } = useFavorites();
   const { country } = useLocalization();
@@ -203,9 +204,9 @@ const Generator: React.FC<GeneratorProps> = ({
       formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: { "message": "texto del mensaje", "gift_suggestions": [{ "title": "nombre corto", "search_term": "termino busqueda generico", "reason": "breve explicacion", "price_range": "rango precio en ${localCurrency}" }] }. Máximo 3 regalos. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
     }
 
-    let text = "";
+    let generatedContent = "";
     try {
-      text = await generateMessage(
+      const response = await generateMessage(
         {
           occasion: occasion.id,
           relationship: relLabel,
@@ -220,6 +221,12 @@ const Generator: React.FC<GeneratorProps> = ({
         },
         user?._id,
       );
+
+      generatedContent = response.content;
+      
+      if (response.remainingCredits !== undefined && updateCredits) {
+        updateCredits(response.remainingCredits);
+      }
     } catch (error: any) {
       setIsLoading(false);
       if (error.upsell) {
@@ -228,12 +235,12 @@ const Generator: React.FC<GeneratorProps> = ({
       return; // Detener ejecución si hubo error de upsell
     }
 
-    let content = text;
+    let content = generatedContent;
     let gifts: GiftSuggestion[] = [];
 
     try {
       // Intentar limpiar y parsear JSON
-      const cleanText = text
+      const cleanText = generatedContent
         .replace(/```json/g, "")
         .replace(/```/g, "")
         .trim();
@@ -293,6 +300,9 @@ const Generator: React.FC<GeneratorProps> = ({
       <div
         className={`bg-white rounded-2xl md:rounded-[2rem] border border-slate-200 p-6 md:p-10 shadow-sm ${isPensamiento ? "border-blue-100 bg-blue-50/10" : ""}`}
       >
+        {/* Barra de Uso de Créditos */}
+        <UsageBar />
+
         <div className="space-y-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

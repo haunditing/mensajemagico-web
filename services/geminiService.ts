@@ -10,13 +10,21 @@ export const AI_ERROR_FALLBACK =
 const generationCache: Record<string, string[]> = {};
 
 /**
+ * Estructura de respuesta del servicio de generación
+ */
+export interface GenerationResponse {
+  content: string;
+  remainingCredits?: number;
+}
+
+/**
  * Servicio de Generación de Mensajes (Frontend)
  * Este archivo ya NO construye el prompt, solo envía los parámetros al Backend.
  */
 export const generateMessage = async (
   config: MessageConfig,
   userId?: string
-): Promise<string> => {
+): Promise<GenerationResponse> => {
   
   // 1. Generar Llave de Caché para optimización
   const cacheKey = `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}`
@@ -26,7 +34,7 @@ export const generateMessage = async (
   // 2. Recuperación de Caché (Short-circuit)
   if (generationCache[cacheKey] && generationCache[cacheKey].length > 0) {
     const cachedResults = generationCache[cacheKey];
-    return cachedResults[Math.floor(Math.random() * cachedResults.length)];
+    return { content: cachedResults[Math.floor(Math.random() * cachedResults.length)] };
   }
 
   try {
@@ -46,6 +54,7 @@ export const generateMessage = async (
 
     // Validamos que el backend responda con el campo esperado
     const result = response?.text || response?.result;
+    const remainingCredits = response?.remaining_credits;
 
     if (!result) {
       throw new Error("El oráculo no devolvió palabras esta vez.");
@@ -55,7 +64,7 @@ export const generateMessage = async (
     if (!generationCache[cacheKey]) generationCache[cacheKey] = [];
     generationCache[cacheKey].push(result.trim());
 
-    return result.trim();
+    return { content: result.trim(), remainingCredits };
 
   } catch (error: any) {
     /**
@@ -69,6 +78,6 @@ export const generateMessage = async (
     }
 
     console.error("Error en flujo de generación:", error);
-    return AI_ERROR_FALLBACK;
+    return { content: AI_ERROR_FALLBACK };
   }
 };
