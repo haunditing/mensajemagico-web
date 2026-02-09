@@ -24,11 +24,19 @@ const ProfilePage: React.FC = () => {
   const [isEditingLoc, setIsEditingLoc] = useState(false);
   const [locationInput, setLocationInput] = useState("");
   const [isSavingLoc, setIsSavingLoc] = useState(false);
+  const [neutralMode, setNeutralMode] = useState(false);
+  const [isSavingNeutral, setIsSavingNeutral] = useState(false);
 
   useEffect(() => {
     if (user) {
       loadSubscription();
       if ((user as any).location) setLocationInput((user as any).location);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (user && (user as any).preferences?.neutralMode) {
+      setNeutralMode(true);
     }
   }, [user]);
 
@@ -95,6 +103,23 @@ const ProfilePage: React.FC = () => {
       showToast(error.message || "Error al actualizar ubicación", "error");
     } finally {
       setIsSavingLoc(false);
+    }
+  };
+
+  const toggleNeutralMode = async () => {
+    const newValue = !neutralMode;
+    setNeutralMode(newValue);
+    setIsSavingNeutral(true);
+
+    try {
+      await api.put("/api/auth/profile", { neutralMode: newValue });
+      await refreshUser();
+      showToast(newValue ? "Modo Neutro activado" : "Modo Neutro desactivado", "success");
+    } catch (error: any) {
+      setNeutralMode(!newValue); // Revertir en caso de error
+      showToast("Error al actualizar preferencia", "error");
+    } finally {
+      setIsSavingNeutral(false);
     }
   };
 
@@ -193,6 +218,26 @@ const ProfilePage: React.FC = () => {
             </p>
           )}
         </div>
+
+        {/* Sección de Preferencias (Modo Neutro) */}
+        {user.planLevel === 'premium' && (
+          <div className="border-t border-slate-100 py-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Modo Neutro</h3>
+                <p className="text-sm text-slate-500">Evita modismos regionales en los mensajes.</p>
+              </div>
+              <button 
+                onClick={toggleNeutralMode}
+                disabled={isSavingNeutral}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${neutralMode ? 'bg-blue-600' : 'bg-slate-200'}`}
+                title={neutralMode ? "Desactivar Modo Neutro" : "Activar Modo Neutro"}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${neutralMode ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
+          </div>
+        )}
 
         <div className="border-t border-slate-100 pt-6">
           <h3 className="text-lg font-bold text-slate-900 mb-4">

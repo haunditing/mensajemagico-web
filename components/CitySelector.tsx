@@ -65,9 +65,9 @@ const CitySelector: React.FC<CitySelectorProps> = ({
       // Usamos la API de Open-Meteo (Geocoding) que es gratuita y estable
       const response = await fetch(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
-          query
+          query,
         )}&count=10&language=es&format=json`,
-        { signal: controller.signal }
+        { signal: controller.signal },
       );
       if (!response.ok) throw new Error("Error en API");
 
@@ -78,18 +78,25 @@ const CitySelector: React.FC<CitySelectorProps> = ({
         let results = data.results;
 
         // Determinar restricción: prop explícita o automática por contexto
-        const targetCountry = restrictCountry !== undefined ? restrictCountry : COUNTRY_MAP[country];
+        const targetCountry =
+          restrictCountry !== undefined
+            ? restrictCountry
+            : COUNTRY_MAP[country];
 
         if (targetCountry) {
-          results = results.filter((item: any) =>
-            item.country && item.country.toLowerCase().includes(targetCountry.toLowerCase())
+          results = results.filter(
+            (item: any) =>
+              item.country &&
+              item.country.toLowerCase().includes(targetCountry.toLowerCase()),
           );
         }
 
         // Extraemos el nombre completo (Ciudad, Región, País)
         cities = results
           .map((item: any) => {
-            const parts = [item.name, item.admin1, item.country].filter(Boolean);
+            const parts = [item.name, item.admin1, item.country].filter(
+              Boolean,
+            );
             // Usamos Set para evitar duplicados (ej: Mexico, Mexico)
             return [...new Set(parts)].join(", ");
           })
