@@ -572,8 +572,8 @@ const Generator: React.FC<GeneratorProps> = ({
                   : !!user && remainingCredits <= 0
                     ? "Sin créditos hoy"
                     : isPensamiento
-                      ? "Obtener mi pensamiento (1 crédito)"
-                      : "Generar Mensaje Mágico (1 crédito)"}
+                      ? "Obtener mi pensamiento"
+                      : "Generar Mensaje Mágico"}
             </span>
           )}
         </button>
