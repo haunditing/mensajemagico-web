@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { handleUpgrade } from "../services/paymentService";
+// import { handleUpgrade } from "../services/paymentService"; // Stripe deshabilitado
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { ENABLE_UPGRADES } from "../features";
 import { useLocalization } from "../context/LocalizationContext";
-import WompiCheckoutButton from "../components/WompiCheckoutButton";
+import { api } from "../context/api";
 
 const PricingPage: React.FC = () => {
   const { user, planLevel, availablePlans, isLoading: authLoading } = useAuth();
@@ -31,7 +31,17 @@ const PricingPage: React.FC = () => {
 
     setIsPaymentLoading(true);
     try {
-      await handleUpgrade(user._id, billingInterval);
+      // Integración MercadoPago (Reemplaza a Stripe)
+      const planId = billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+      const response = await api.post("/api/mercadopago/create_preference", {
+        userId: user._id,
+        planId
+      });
+
+      if (response.init_point) {
+        window.location.href = response.init_point;
+      }
+      // await handleUpgrade(user._id, billingInterval); // Stripe original
     } catch (error) {
       console.error("Error de pago:", error);
       alert("Hubo un problema al iniciar el pago. Por favor intenta de nuevo.");
@@ -237,6 +247,7 @@ const PricingPage: React.FC = () => {
           </button>
 
           {/* Wompi Integration for Colombia */}
+          {/* Ocultando Wompi temporalmente
           {country === "CO" && planLevel !== "premium" && ENABLE_UPGRADES && (
             <div className="mt-4 relative z-10 w-full">
               <div className="flex items-center gap-3 mb-3">
@@ -265,7 +276,7 @@ const PricingPage: React.FC = () => {
                 />
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Background decoration */}
           <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
@@ -274,7 +285,7 @@ const PricingPage: React.FC = () => {
       </div>
 
       <p className="text-center text-slate-400 text-sm mt-12">
-        Pagos seguros procesados por Stripe{country === "CO" ? " y Wompi" : ""}.
+        Pagos seguros procesados por MercadoPago.
         Puedes cancelar en cualquier momento.
       </p>
     </div>
