@@ -663,40 +663,54 @@ const Generator: React.FC<GeneratorProps> = ({
                 {/* Sección de Regalos */}
                 {msg.gifts && msg.gifts.length > 0 && (
                   <div className="mt-8 pt-8 border-t border-slate-100">
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                      <span>🎁</span> Sugerencias para acompañar
-                    </h4>
-                    <div className="grid gap-3">
+                    <div className="flex items-center justify-between mb-6">
+                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+                        <span>🎁</span> Opciones de Regalo
+                      </h4>
+                      <span className="text-[10px] font-bold text-[#FF9900] bg-[#FF9900]/10 px-3 py-1 rounded-full border border-[#FF9900]/20">
+                        Recomendado
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       {msg.gifts.map((gift, idx) => (
-                        <div
+                        <a
                           key={idx}
-                          className="bg-slate-50 rounded-xl p-4 border border-slate-100 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between hover:border-blue-200 transition-colors"
+                          href={generateAmazonLink(gift.search_term, country)}
+                          target="_blank"
+                          rel="noopener noreferrer sponsored"
+                          className="group relative bg-white rounded-2xl border border-slate-200 p-5 hover:border-[#FF9900] hover:shadow-xl hover:shadow-[#FF9900]/10 transition-all duration-300 flex flex-col h-full overflow-hidden hover:-translate-y-1"
                         >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-bold text-slate-800 text-sm">
-                                {gift.title}
-                              </span>
-                              <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded-full font-medium">
-                                {gift.price_range}
-                              </span>
+                          {/* Amazon-like button effect on hover */}
+                          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+
+                          <div className="flex justify-between items-start mb-3 relative z-10">
+                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-xl group-hover:bg-[#FF9900]/10 group-hover:scale-110 transition-all duration-300">
+                              🛍️
                             </div>
-                            <p className="text-xs text-slate-500 leading-relaxed">
-                              {gift.reason}
-                            </p>
+                            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md group-hover:bg-[#232F3E] group-hover:text-white transition-colors">
+                                {gift.price_range}
+                            </span>
                           </div>
-                          <a
-                            href={generateAmazonLink(gift.search_term, country)}
-                            target="_blank"
-                            rel="noopener noreferrer sponsored"
-                            className="bg-[#FF9900] text-white text-xs font-bold px-4 py-2.5 rounded-lg hover:bg-[#ff8c00] transition-colors shadow-sm whitespace-nowrap flex items-center gap-2 w-full sm:w-auto justify-center"
-                          >
-                            Ver en Amazon <span>↗</span>
-                          </a>
-                        </div>
+
+                          <h5 className="font-bold text-slate-900 text-sm mb-2 leading-snug group-hover:text-[#C77700] transition-colors relative z-10 line-clamp-2">
+                            {gift.title}
+                          </h5>
+
+                          <p className="text-xs text-slate-500 leading-relaxed mb-4 flex-grow relative z-10 line-clamp-3">
+                            {gift.reason}
+                          </p>
+
+                          <div className="mt-auto relative z-10">
+                            <div className="w-full bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] hover:border-[#F2C200] text-[#0F1111] text-xs font-bold py-2.5 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-colors">
+                              Ver en Amazon
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                            </div>
+                          </div>
+                        </a>
                       ))}
                     </div>
-                    <p className="text-[9px] text-slate-400 mt-4 text-center italic">
+                    <p className="text-[10px] text-slate-400 mt-6 text-center italic">
                       {CONFIG.AMAZON.DISCLAIMER}
                     </p>
                   </div>
