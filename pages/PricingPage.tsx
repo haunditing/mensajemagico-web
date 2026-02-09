@@ -3,10 +3,13 @@ import { useAuth } from "../context/AuthContext";
 import { handleUpgrade } from "../services/paymentService";
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { ENABLE_UPGRADES } from "../config";
+import { ENABLE_UPGRADES } from "../features";
+import { useLocalization } from "../context/LocalizationContext";
+import WompiCheckoutButton from "../components/WompiCheckoutButton";
 
 const PricingPage: React.FC = () => {
   const { user, planLevel, availablePlans, isLoading: authLoading } = useAuth();
+  const { country } = useLocalization();
   const navigate = useNavigate();
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(
     "monthly",
@@ -233,6 +236,37 @@ const PricingPage: React.FC = () => {
                   : "Mejorar ahora"}
           </button>
 
+          {/* Wompi Integration for Colombia */}
+          {country === "CO" && planLevel !== "premium" && ENABLE_UPGRADES && (
+            <div className="mt-4 relative z-10 w-full">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="h-px bg-slate-700 flex-1"></div>
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+                  O en pesos
+                </span>
+                <div className="h-px bg-slate-700 flex-1"></div>
+              </div>
+              <div
+                onClickCapture={(e) => {
+                  if (!user) {
+                    e.stopPropagation();
+                    navigate("/login");
+                  }
+                }}
+              >
+                <WompiCheckoutButton
+                  planId={
+                    billingInterval === "monthly"
+                      ? "premium_monthly"
+                      : "premium_yearly"
+                  }
+                  className="w-full"
+                  buttonText="Pagar con Wompi / Nequi"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Background decoration */}
           <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
@@ -240,8 +274,8 @@ const PricingPage: React.FC = () => {
       </div>
 
       <p className="text-center text-slate-400 text-sm mt-12">
-        Pagos seguros procesados por Stripe. Puedes cancelar en cualquier
-        momento.
+        Pagos seguros procesados por Stripe{country === "CO" ? " y Wompi" : ""}.
+        Puedes cancelar en cualquier momento.
       </p>
     </div>
   );

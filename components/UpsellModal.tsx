@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useUpsell } from "../context/UpsellContext";
-import { ENABLE_UPGRADES } from "../config";
+import { ENABLE_UPGRADES } from "../features";
 const UpsellModal: React.FC = () => {
   const { isOpen, message, closeUpsell } = useUpsell();
   const navigate = useNavigate();
