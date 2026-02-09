@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import PlanBadge from "./PlanBadge";
-import { ENABLE_UPGRADES } from "@/config";
+import { ENABLE_UPGRADES } from "../config";
 
 const UserMenu: React.FC = () => {
   const { user, planLevel, logout, isPremium } = useAuth();
