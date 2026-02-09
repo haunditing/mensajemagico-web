@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Occasion, Relationship, Tone, GeneratedMessage } from "../types";
+import { Occasion, Relationship, Tone, GeneratedMessage, SharePlatform } from "../types";
 import {
   RELATIONSHIPS,
   TONES,
@@ -53,7 +53,7 @@ const Generator: React.FC<GeneratorProps> = ({
   initialRelationship,
   onRelationshipChange,
 }) => {
-  const { user, remainingCredits, monetization, updateCredits } = useAuth();
+  const { user, remainingCredits, monetization, updateCredits, planLevel } = useAuth();
   const { triggerUpsell } = useUpsell();
   const { addFavorite, isFavorite, removeFavorite, favorites } = useFavorites();
   const { country } = useLocalization();
@@ -628,7 +628,11 @@ const Generator: React.FC<GeneratorProps> = ({
                 <div className="flex items-center justify-between gap-4">
                   <ShareBar
                     content={msg.content}
-                    platforms={occasion.allowedPlatforms}
+                    platforms={
+                      !user || planLevel === "guest"
+                        ? [SharePlatform.COPY]
+                        : occasion.allowedPlatforms
+                    }
                     disabled={isError || isLoading}
                     className="animate-fade-in-up flex-1"
                   />
