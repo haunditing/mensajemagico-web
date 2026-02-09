@@ -32,10 +32,12 @@ const PricingPage: React.FC = () => {
     setIsPaymentLoading(true);
     try {
       // Integración MercadoPago (Reemplaza a Stripe)
-      const planId = billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+      const planId =
+        billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
       const response = await api.post("/api/mercadopago/create_preference", {
         userId: user._id,
-        planId
+        planId,
+        country,
       });
 
       if (response.init_point) {
@@ -61,14 +63,43 @@ const PricingPage: React.FC = () => {
   const freeConfig = availablePlans.freemium || {};
   const premiumConfig = availablePlans.premium || {};
 
-  // Valores por defecto si no vienen en la config (fallback)
-  const monthlyPrice = premiumConfig.pricing?.monthly ?? 9.99;
-  const yearlyPricePerMonth =
-    premiumConfig.pricing?.yearly_monthly_equivalent ?? 7.99;
-  const yearlyTotal = premiumConfig.pricing?.yearly ?? 95.88;
+  // --- Lógica de Precios Localizados ---
+  const isColombia = country === "CO";
+
+  const priceConfig = {
+    monthly: isColombia
+      ? premiumConfig.pricing_hooks?.mercadopago_price_monthly
+      : premiumConfig.pricing?.monthly,
+    yearly: isColombia
+      ? premiumConfig.pricing_hooks?.mercadopago_price_yearly
+      : premiumConfig.pricing?.yearly,
+    yearly_monthly_equivalent: isColombia
+      ? (premiumConfig.pricing_hooks?.mercadopago_price_yearly ?? 0) / 12
+      : premiumConfig.pricing?.yearly_monthly_equivalent,
+    currency: isColombia ? "COP" : "USD",
+    locale: isColombia ? "es-CO" : "en-US",
+  };
+
+  // Fallbacks por si la config no carga
+  if (!priceConfig.monthly) priceConfig.monthly = isColombia ? 19000 : 4.99;
+  if (!priceConfig.yearly) priceConfig.yearly = isColombia ? 190000 : 47.9;
+  if (!priceConfig.yearly_monthly_equivalent)
+    priceConfig.yearly_monthly_equivalent = isColombia
+      ? priceConfig.yearly / 12
+      : 3.99;
+
+  const formatPrice = (amount: number) => {
+    return new Intl.NumberFormat(priceConfig.locale, {
+      style: "currency",
+      currency: priceConfig.currency,
+      minimumFractionDigits: priceConfig.currency === "COP" ? 0 : 2,
+    }).format(amount);
+  };
 
   const currentDisplayPrice =
-    billingInterval === "monthly" ? monthlyPrice : yearlyPricePerMonth;
+    billingInterval === "monthly"
+      ? priceConfig.monthly
+      : priceConfig.yearly_monthly_equivalent;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in-up">
@@ -177,13 +208,13 @@ const PricingPage: React.FC = () => {
             </p>
             <div className="mt-6 flex items-baseline gap-1">
               <span className="text-4xl font-black text-white">
-                ${currentDisplayPrice}
+                {formatPrice(currentDisplayPrice)}
               </span>
               <span className="text-slate-500 font-medium">/mes</span>
             </div>
             {billingInterval === "yearly" && (
               <p className="text-xs text-blue-400 mt-2 font-bold">
-                Facturado ${yearlyTotal} anualmente
+                Facturado {formatPrice(priceConfig.yearly)} anualmente
               </p>
             )}
           </div>
@@ -285,8 +316,8 @@ const PricingPage: React.FC = () => {
       </div>
 
       <p className="text-center text-slate-400 text-sm mt-12">
-        Pagos seguros procesados por MercadoPago.
-        Puedes cancelar en cualquier momento.
+        Pagos seguros procesados por MercadoPago. Puedes cancelar en cualquier
+        momento.
       </p>
     </div>
   );
