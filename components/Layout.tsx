@@ -87,7 +87,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     <Link
                       key={o.id}
                       to={`/mensajes/${o.slug}`}
-                      className={`px-2 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2
+                      className={`px-2 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 group
                         ${
                           isActive
                             ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
@@ -122,7 +122,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                     key={o.id}
                     to={`/mensajes/${o.slug}`}
                     aria-label={localized.name}
-                    className={`shrink-0 p-3.5 rounded-2xl border transition-all duration-300 snap-center flex items-center justify-center
+                    className={`shrink-0 p-3.5 rounded-2xl border transition-all duration-300 snap-center flex items-center justify-center group
                       ${
                         isActive
                           ? "bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-600/30 scale-105"

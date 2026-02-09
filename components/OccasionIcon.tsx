@@ -197,15 +197,34 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
   };
 
   if (slug && icons[slug]) {
+    const isGreeting = slug === "un-saludo";
+
     return (
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        className={`${sizeClass} ${iconColorClass} ${className}`}
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {icons[slug]}
-      </svg>
+      <>
+        {isGreeting && (
+          <style>
+            {`
+            @keyframes wave {
+              0%, 100% { transform: rotate(0deg); }
+              25% { transform: rotate(-15deg); }
+              75% { transform: rotate(10deg); }
+            }
+            .group:hover .animate-wave-hand {
+              animation: wave 1.2s ease-in-out infinite;
+              transform-origin: 70% 70%;
+            }
+          `}
+          </style>
+        )}
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          className={`${sizeClass} ${iconColorClass} ${className} ${isGreeting ? "animate-wave-hand" : ""}`}
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          {icons[slug]}
+        </svg>
+      </>
     );
   }
 
