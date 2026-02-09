@@ -131,6 +131,7 @@ const HomePage: React.FC = () => {
           {OCCASIONS.map((occasion) => {
             const isVisto = occasion.slug === "no-me-dejes-en-visto";
             const isResponder = occasion.slug === "responder-un-mensaje";
+            const isGreeting = occasion.slug === "un-saludo";
 
             return (
               <Link
@@ -159,6 +160,11 @@ const HomePage: React.FC = () => {
                   {occasion.name}
                   {isResponder && (
                     <span className="ml-2 text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                      Nuevo
+                    </span>
+                  )}
+                  {isGreeting && (
+                    <span className="ml-2 text-[10px] bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full uppercase tracking-tighter">
                       Nuevo
                     </span>
                   )}
