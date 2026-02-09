@@ -4,6 +4,7 @@ import { cancelSubscription, getSubscriptionStatus, reactivateSubscription } fro
 import { useToast } from '../context/ToastContext';
 import LoadingSpinner from '../components/LoadingSpinner';
 import { Link } from 'react-router-dom';
+import { ENABLE_UPGRADES } from '../config';
 
 const ProfilePage: React.FC = () => {
   const { user, logout } = useAuth();
@@ -151,9 +152,11 @@ const ProfilePage: React.FC = () => {
           ) : (
             <div className="text-center py-6">
               <p className="text-slate-500 mb-4">No tienes una suscripción activa.</p>
-              <Link to="/pricing" className="text-blue-600 font-bold hover:underline text-sm">
-                Ver planes disponibles
-              </Link>
+              {ENABLE_UPGRADES && (
+                <Link to="/pricing" className="text-blue-600 font-bold hover:underline text-sm">
+                  Ver planes disponibles
+                </Link>
+              )}
             </div>
           )}
         </div>
