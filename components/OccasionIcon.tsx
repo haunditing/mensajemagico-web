@@ -198,6 +198,9 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
 
   if (slug && icons[slug]) {
     const isGreeting = slug === "un-saludo";
+    const isLove = slug === "amor";
+    const isResponder = slug === "responder-un-mensaje";
+    const isPensamiento = slug === "pensamiento-del-dia";
 
     return (
       <>
@@ -216,10 +219,61 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
           `}
           </style>
         )}
+        {isLove && (
+          <style>
+            {`
+            @keyframes heartbeat {
+              0% { transform: scale(1); }
+              14% { transform: scale(1.15); }
+              28% { transform: scale(1); }
+              42% { transform: scale(1.15); }
+              70% { transform: scale(1); }
+            }
+            .group:hover .animate-heartbeat {
+              animation: heartbeat 1.3s ease-in-out infinite;
+              transform-origin: center;
+            }
+          `}
+          </style>
+        )}
+        {isResponder && (
+          <style>
+            {`
+            @keyframes ring {
+              0% { transform: rotate(0); }
+              10% { transform: rotate(15deg); }
+              20% { transform: rotate(-15deg); }
+              30% { transform: rotate(10deg); }
+              40% { transform: rotate(-10deg); }
+              50% { transform: rotate(5deg); }
+              60% { transform: rotate(-5deg); }
+              70% { transform: rotate(0); }
+              100% { transform: rotate(0); }
+            }
+            .group:hover .animate-ring {
+              animation: ring 1.5s ease-in-out infinite;
+              transform-origin: center;
+            }
+          `}
+          </style>
+        )}
+        {isPensamiento && (
+          <style>
+            {`
+            @keyframes levitate {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-6px); }
+            }
+            .group:hover .animate-levitate {
+              animation: levitate 2s ease-in-out infinite;
+            }
+          `}
+          </style>
+        )}
         <svg
           viewBox="0 0 24 24"
           fill="none"
-          className={`${sizeClass} ${iconColorClass} ${className} ${isGreeting ? "animate-wave-hand" : ""}`}
+          className={`${sizeClass} ${iconColorClass} ${className} ${isGreeting ? "animate-wave-hand" : ""} ${isLove ? "animate-heartbeat" : ""} ${isResponder ? "animate-ring" : ""} ${isPensamiento ? "animate-levitate" : ""}`}
           xmlns="http://www.w3.org/2000/svg"
         >
           {icons[slug]}
