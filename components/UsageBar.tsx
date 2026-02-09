@@ -13,6 +13,9 @@ const UsageBar: React.FC = () => {
     return () => clearTimeout(timer);
   }, [remainingCredits]);
 
+  // Ocultar el componente visualmente, manteniendo la lógica existente
+  return null;
+
   // Solo mostrar para usuarios logueados
   if (!user) return null;
 

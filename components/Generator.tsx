@@ -284,6 +284,25 @@ const Generator: React.FC<GeneratorProps> = ({
     }
   };
 
+  const handleShareAction = (platform: SharePlatform) => {
+    if ((!user || planLevel === "guest") && platform !== SharePlatform.COPY) {
+      const platformNames: Record<string, string> = {
+        [SharePlatform.WHATSAPP]: "WhatsApp",
+        [SharePlatform.TELEGRAM]: "Telegram",
+        [SharePlatform.FACEBOOK]: "Facebook",
+        [SharePlatform.INSTAGRAM]: "Instagram",
+        [SharePlatform.X]: "X",
+        [SharePlatform.EMAIL]: "Email",
+        [SharePlatform.SMS]: "SMS",
+      };
+
+      const name = platformNames[platform] || "redes sociales";
+      triggerUpsell(`Regístrate para enviar directamente por ${name}.`);
+      return false;
+    }
+    return true;
+  };
+
   const handleToggleFavorite = (msg: ExtendedGeneratedMessage) => {
     if (!user) {
       triggerUpsell("Regístrate para guardar tus mensajes favoritos.");
@@ -628,11 +647,8 @@ const Generator: React.FC<GeneratorProps> = ({
                 <div className="flex items-center justify-between gap-4">
                   <ShareBar
                     content={msg.content}
-                    platforms={
-                      !user || planLevel === "guest"
-                        ? [SharePlatform.COPY]
-                        : occasion.allowedPlatforms
-                    }
+                    platforms={occasion.allowedPlatforms}
+                    onAction={handleShareAction}
                     disabled={isError || isLoading}
                     className="animate-fade-in-up flex-1"
                   />

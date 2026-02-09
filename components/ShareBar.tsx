@@ -105,6 +105,7 @@ interface ShareBarProps {
   platforms?: SharePlatform[];
   className?: string;
   disabled?: boolean;
+  onAction?: (platform: SharePlatform) => boolean | Promise<boolean>;
 }
 
 const ShareBar: React.FC<ShareBarProps> = ({
@@ -112,6 +113,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
   platforms,
   className = "",
   disabled = false,
+  onAction,
 }) => {
   const [activeAction, setActiveAction] = useState<SharePlatform | null>(null);
   const { showToast } = useToast();
@@ -191,6 +193,12 @@ const ShareBar: React.FC<ShareBarProps> = ({
 
   const handleAction = async (platform: SharePlatform) => {
     if (disabled) return;
+
+    if (onAction) {
+      const shouldProceed = await onAction(platform);
+      if (!shouldProceed) return;
+    }
+
     setActiveAction(platform);
     await executeShare(platform, content);
 
