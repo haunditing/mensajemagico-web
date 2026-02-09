@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
+import { api } from './api';
 
 export interface FavoriteItem {
   _id: string;
@@ -37,14 +38,8 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children 
   const fetchFavorites = async () => {
     setIsLoading(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/favorites', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setFavorites(data);
-      }
+      const data = await api.get<FavoriteItem[]>('/api/favorites');
+      setFavorites(data);
     } catch (error) {
       console.error("Error fetching favorites", error);
     } finally {
@@ -55,37 +50,22 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children 
   const addFavorite = async (content: string, occasion: string, tone: string) => {
     if (!user) return;
     try {
-      const token = localStorage.getItem('token');
-      const res = await fetch('/api/favorites', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}` 
-        },
-        body: JSON.stringify({ content, occasion, tone })
-      });
-      
-      if (res.ok) {
-        const newFav = await res.json();
-        setFavorites(prev => [newFav, ...prev]);
-        showToast("Guardado en favoritos", "success");
-      } else {
-        const err = await res.json();
-        showToast(err.error || "Error al guardar", "error");
-      }
-    } catch (error) {
-      showToast("Error de conexión", "error");
+      const newFav = await api.post<FavoriteItem>('/api/favorites', { content, occasion, tone });
+      setFavorites(prev => [newFav, ...prev]);
+      showToast("Guardado en favoritos", "success");
+    } catch (error: any) {
+      showToast(error.message || "Error al guardar", "error");
     }
   };
 
   const removeFavorite = async (id: string) => {
-    const token = localStorage.getItem('token');
-    await fetch(`/api/favorites/${id}`, {
-      method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    setFavorites(prev => prev.filter(f => f._id !== id));
-    showToast("Eliminado de favoritos", "info");
+    try {
+      await api.delete(`/api/favorites/${id}`);
+      setFavorites(prev => prev.filter(f => f._id !== id));
+      showToast("Eliminado de favoritos", "info");
+    } catch (error: any) {
+      showToast(error.message || "Error al eliminar", "error");
+    }
   };
 
   const isFavorite = (content: string) => favorites.some(f => f.content === content);
