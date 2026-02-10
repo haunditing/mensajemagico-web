@@ -37,6 +37,7 @@ import { useFeature } from "@/hooks/useFeature";
 import PlanManager from "@/services/PlanManager";
 import UsageBar from "./UsageBar";
 import { getUserLocation } from "../services/locationService";
+import GuardianInsight from "./GuardianInsight";
 
 interface GeneratorProps {
   occasion: Occasion;
@@ -55,6 +56,7 @@ interface ExtendedGeneratedMessage extends GeneratedMessage {
   gifts?: GiftSuggestion[];
   occasionName?: string;
   toneLabel?: string;
+  guardianInsight?: string;
 }
 
 const Generator: React.FC<GeneratorProps> = ({
@@ -95,7 +97,9 @@ const Generator: React.FC<GeneratorProps> = ({
     initialRelationship?.id ||
       (isPensamiento
         ? PENSAMIENTO_THEMES[0].id
-        : isGreeting && suggestedGreeting ? suggestedGreeting : RELATIONSHIPS[0].id),
+        : isGreeting && suggestedGreeting
+          ? suggestedGreeting
+          : RELATIONSHIPS[0].id),
   );
   const [tone, setTone] = useState<Tone>(
     isPensamiento
@@ -123,9 +127,11 @@ const Generator: React.FC<GeneratorProps> = ({
   const isContextLocked = contextLimit === 0;
   const MAX_CHARS = 400;
   const MAX_CONTEXT = isContextLocked ? 0 : contextLimit;
-  
+
   // Estado para la ubicación del usuario
-  const [userLocation, setUserLocation] = useState<string | undefined>(undefined);
+  const [userLocation, setUserLocation] = useState<string | undefined>(
+    undefined,
+  );
 
   // Detectar ubicación al montar el componente
   useEffect(() => {
@@ -208,17 +214,24 @@ const Generator: React.FC<GeneratorProps> = ({
   const handleGenerate = async () => {
     if (safetyError || isLoading || isOccasionLocked) return;
 
-    const check = canGenerate();
-    if (!check.allowed) {
-      setUsageMessage(check.message || null);
-      return;
+    let delay = 0;
+
+    // Solo verificar límite local si no hay usuario (Guest)
+    // Los usuarios registrados (Free/Premium) tienen sus límites en el backend
+    if (!user) {
+      const check = canGenerate();
+      if (!check.allowed) {
+        setUsageMessage(check.message || null);
+        return;
+      }
+      if (check.delay) delay = check.delay;
     }
 
     setIsLoading(true);
     setUsageMessage(null);
 
-    if (check.delay) {
-      await new Promise((resolve) => setTimeout(resolve, check.delay));
+    if (delay) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
 
     let relLabel = "";
@@ -248,7 +261,12 @@ const Generator: React.FC<GeneratorProps> = ({
         VE: "Bolívares",
       };
       const localCurrency = currencyMap[country] || "Dólares";
-      formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: { "message": "texto del mensaje", "gift_suggestions": [{ "title": "nombre corto", "search_term": "termino busqueda generico", "reason": "breve explicacion", "price_range": "rango precio en ${localCurrency}" }] }. Máximo 3 regalos. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
+      formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: { 
+        "selected_strategy": "string",
+        "generated_messages": [{ "tone": "string", "content": "string", "locked": boolean }],
+        "guardian_insight": "string (Consejo del Guardián si es GUEST/FREEMIUM, sino null)",
+        "gift_recommendation": { "item": "string", "reason": "string" }
+      }. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
     }
 
     let generatedContent = "";
@@ -288,6 +306,7 @@ const Generator: React.FC<GeneratorProps> = ({
 
     let content = generatedContent;
     let gifts: GiftSuggestion[] = [];
+    let guardianInsight = "";
 
     try {
       // Intentar limpiar y parsear JSON
@@ -297,9 +316,42 @@ const Generator: React.FC<GeneratorProps> = ({
         .trim();
       if (cleanText.startsWith("{")) {
         const parsed = JSON.parse(cleanText);
-        if (parsed.message) {
-          content = parsed.message;
-          gifts = parsed.gift_suggestions || [];
+
+        // Soporte para el nuevo formato "Guardian of Sentiment"
+        if (
+          parsed.generated_messages &&
+          Array.isArray(parsed.generated_messages)
+        ) {
+          // Preferir el mensaje premium si está disponible y no bloqueado (o si somos premium)
+          const premiumMsg = parsed.generated_messages.find(
+            (m: any) =>
+              m.tone.includes("Premium") || m.tone.includes("Regional"),
+          );
+          const standardMsg =
+            parsed.generated_messages.find((m: any) =>
+              m.tone.includes("Estándar"),
+            ) || parsed.generated_messages[0];
+
+          content =
+            planLevel === "premium" && premiumMsg
+              ? premiumMsg.content
+              : standardMsg.content;
+
+          // Añadir insight si existe (para freemium)
+          if (parsed.guardian_insight && planLevel !== "premium") {
+            guardianInsight = parsed.guardian_insight;
+          }
+
+          if (parsed.gift_recommendation) {
+            gifts = [
+              {
+                title: parsed.gift_recommendation.item,
+                reason: parsed.gift_recommendation.reason,
+                search_term: parsed.gift_recommendation.item,
+                price_range: "Variado",
+              },
+            ];
+          }
         }
       }
     } catch (error) {
@@ -323,6 +375,7 @@ const Generator: React.FC<GeneratorProps> = ({
       toneLabel: isGreeting
         ? GREETING_TONES.find((t) => (t.id as any) === tone)?.label
         : availableTones.find((t) => t.value === tone)?.label || tone,
+      guardianInsight: guardianInsight,
     };
 
     setMessages((prev) => [newMessage, ...prev]);
@@ -442,7 +495,8 @@ const Generator: React.FC<GeneratorProps> = ({
                 </label>
                 {isGreeting && relationshipId === suggestedGreeting && (
                   <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full flex items-center gap-1 animate-fade-in">
-                    <span>{suggestedGreeting === "ocaso" ? "🌙" : "☀️"}</span> Sugerido por la hora
+                    <span>{suggestedGreeting === "ocaso" ? "🌙" : "☀️"}</span>{" "}
+                    Sugerido por la hora
                   </span>
                 )}
               </div>
@@ -815,6 +869,11 @@ const Generator: React.FC<GeneratorProps> = ({
                       de las consecuencias sociales de su envío.
                     </p>
                   </div>
+                )}
+
+                {/* Guardian Insight Component */}
+                {msg.guardianInsight && (
+                  <GuardianInsight insight={msg.guardianInsight} />
                 )}
 
                 {/* Sección de Regalos */}

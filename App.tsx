@@ -78,11 +78,18 @@ const App: React.FC = () => {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/favoritos" element={<FavoritesPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+                <Route
+                  path="/forgot-password"
+                  element={<ForgotPasswordPage />}
+                />
+                <Route
+                  path="/reset-password/:token"
+                  element={<ResetPasswordPage />}
+                />
                 <Route path="/perfil" element={<ProfilePage />} />
                 <Route path="/recordatorios" element={<RemindersPage />} />
                 <Route path="/configuracion" element={<SettingsPage />} />
+                <Route path="/contactos" element={<ContactPage />} />
                 <Route path="*" element={<HomePage />} />
               </Routes>
             </Layout>
