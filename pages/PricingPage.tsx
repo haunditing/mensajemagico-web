@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 // import { handleUpgrade } from "../services/paymentService"; // Stripe deshabilitado
 import { useNavigate } from "react-router-dom";
@@ -15,6 +15,17 @@ const PricingPage: React.FC = () => {
     "monthly",
   );
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+
+  useEffect(() => {
+    // Fix para bfcache: Si el usuario vuelve atrás, aseguramos que el loading esté apagado
+    const handlePageShow = (event: any) => {
+      if (event.persisted) {
+        setIsPaymentLoading(false);
+      }
+    };
+    window.addEventListener("pageshow", handlePageShow);
+    return () => window.removeEventListener("pageshow", handlePageShow);
+  }, []);
 
   const handleSubscribe = async () => {
     if (!ENABLE_UPGRADES) {
@@ -33,25 +44,30 @@ const PricingPage: React.FC = () => {
         billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
 
       // Asumiendo que 'api' es una instancia de Axios
-      const { data } = await api.post("/api/mercadopago/create_preference", {
+      const response = await api.post("/api/mercadopago/create_preference", {
         userId: user._id,
         planId,
-        country: country || "US", // Fallback seguro
+        country: country || "US",
       });
-
-      if (data.init_point) {
-        // Usamos el init_point recibido
-        window.location.href = data.init_point;
+      // Verificamos si la data existe antes de usarla
+      if (response?.data?.init_point) {
+        window.location.href = response.data.init_point;
+      } else if (response?.init_point) {
+        // Por si tu instancia 'api' ya devuelve la data directamente
+        window.location.href = response.init_point;
       } else {
-        throw new Error("No se recibió el punto de inicio de pago");
+        throw new Error(
+          "No se pudo obtener el enlace de pago. Revisa tu conexión.",
+        );
       }
     } catch (error) {
       console.error("Error de pago:", error);
+      // Buscamos el mensaje en el orden: Error del servidor > Error de Axios > Mensaje genérico
       const errorMsg =
-        error.response?.data?.error || "Hubo un problema al iniciar el pago.";
+        error.response?.data?.error ||
+        error.message ||
+        "Hubo un problema al iniciar el pago.";
       alert(errorMsg);
-    } finally {
-      setIsPaymentLoading(false);
     }
   };
 

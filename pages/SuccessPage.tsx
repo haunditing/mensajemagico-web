@@ -7,13 +7,20 @@ const SuccessPage: React.FC = () => {
   const { refreshUser } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  
+  // Stripe
   const sessionId = searchParams.get("session_id");
+  
+  // Mercado Pago
+  const paymentId = searchParams.get("payment_id");
+  const statusMP = searchParams.get("status") || searchParams.get("collection_status");
+
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading",
   );
 
   useEffect(() => {
-    if (!sessionId) {
+    if (!sessionId && !paymentId) {
       navigate("/");
       return;
     }
@@ -21,10 +28,17 @@ const SuccessPage: React.FC = () => {
     const verifyPayment = async () => {
       try {
         // Esperamos un momento breve para dar tiempo al Webhook de Stripe de procesar el evento en el backend
-        await new Promise((resolve) => setTimeout(resolve, 1500));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
 
         // Forzamos la actualización del usuario para obtener el nuevo planLevel (Premium)
         await refreshUser();
+
+        // Validación adicional para Mercado Pago
+        if (paymentId && statusMP && statusMP !== "approved") {
+           console.warn("Pago de MercadoPago no aprobado:", statusMP);
+           setStatus("error");
+           return;
+        }
 
         setStatus("success");
 
@@ -62,7 +76,7 @@ const SuccessPage: React.FC = () => {
     };
 
     verifyPayment();
-  }, [sessionId, refreshUser, navigate]);
+  }, [sessionId, paymentId, statusMP, refreshUser, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4 animate-fade-in-up">
@@ -109,9 +123,9 @@ const SuccessPage: React.FC = () => {
               Casi listo...
             </h2>
             <p className="text-slate-500 mb-8 leading-relaxed">
-              Tu pago se ha procesado, pero el sistema está tardando un poco en
-              actualizar tu cuenta. No te preocupes, recibirás un correo de
-              confirmación.
+              {paymentId && statusMP !== "approved" 
+                ? "El pago está en proceso o fue rechazado. Por favor verifica en unos minutos."
+                : "Tu pago se ha procesado, pero el sistema está tardando un poco en actualizar tu cuenta. No te preocupes, recibirás un correo de confirmación."}
             </p>
             <button
               onClick={() => {
