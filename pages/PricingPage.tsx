@@ -236,9 +236,37 @@ const PricingPage: React.FC = () => {
                 Acceso a{" "}
                 <strong>
                   {premiumConfig.access?.exclusive_tones === "all"
-                    ? "todos los tonos"
-                    : "tonos exclusivos"}
+                    ? "todos las ocasiones y tonos"
+                    : "ocasiones y tonos exclusivos"}
                 </strong>
+              </span>
+            </li>
+            <li className="flex items-center gap-3 text-slate-200">
+              <span className="text-blue-400 text-xl">✓</span>
+              <span>
+                <strong>Recordatorios</strong>
+              </span>
+            </li>
+            <li className="flex items-center gap-3 text-slate-200">
+              <span className="text-blue-400 text-xl">✓</span>
+              <span>
+                <strong className="relative inline-flex items-center gap-2">
+                  Guardián de Sentimientos
+                  <span className="text-lg animate-pulse">🔮</span>
+                </strong>{" "}
+                (Análisis de relaciones)
+              </span>
+            </li>
+            <li className="flex items-center gap-3 text-slate-200">
+              <span className="text-blue-400 text-xl">✓</span>
+              <span>
+                <strong>Editor Mágico</strong> (La IA aprende tu estilo)
+              </span>
+            </li>
+            <li className="flex items-center gap-3 text-slate-200">
+              <span className="text-blue-400 text-xl">✓</span>
+              <span>
+                <strong>Modo Regional</strong> (Contexto local inteligente)
               </span>
             </li>
             <li className="flex items-center gap-3 text-slate-200">
