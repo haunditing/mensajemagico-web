@@ -35,6 +35,7 @@ const HomePage: React.FC = () => {
                 ? ["❤️", "💖", "💘", "💝", "🌹"]
                 : ["❄️", "❅", "🌨️", "☃️"]
             }
+            iterationCount={isValentine ? 2 : "infinite"}
           />
         )}
 

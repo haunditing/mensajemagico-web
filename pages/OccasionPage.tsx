@@ -21,6 +21,7 @@ const OccasionPage: React.FC = () => {
   const [localized, setLocalized] = useState<LocalizedContent | null>(null);
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
+  const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
 
   useEffect(() => {
     if (rawOccasion) {
@@ -79,12 +80,18 @@ const OccasionPage: React.FC = () => {
       </nav>
 
       <header className="mb-12 relative">
-        {isValentine && (
+        {(isValentine || isChristmas) && (
           <FallingParticles
-            count={15}
-            emojis={["❤️", "💖", "💘", "💝", "🌹"]}
+            count={20}
+            emojis={
+              isValentine
+                ? ["❤️", "💖", "💘", "💝", "🌹"]
+                : ["❄️", "❅", "🌨️", "☃️"]
+            }
+            iterationCount={isValentine ? 2 : "infinite"}
           />
         )}
+
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8 mb-8">
           <div className="relative group">
             <div

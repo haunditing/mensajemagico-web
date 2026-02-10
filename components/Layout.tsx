@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import confetti from "canvas-confetti";
 import { OCCASIONS } from "../constants";
 import { getLocalizedOccasion } from "../services/localizationService";
 import { CountryCode } from "../types";
@@ -9,6 +10,7 @@ import MetricsDisplay from "./MetricsDisplay";
 import CookieBanner from "./CookieBanner";
 import OccasionIcon from "./OccasionIcon";
 import UserMenu from "./UserMenu";
+import NotificationManager from "./NotificationManager";
 
 const MagicWandIcon = ({ className }: { className?: string }) => (
   <svg
@@ -19,21 +21,21 @@ const MagicWandIcon = ({ className }: { className?: string }) => (
   >
     <path
       d="M16.5 2L15.5 4.5L13 5.5L15.5 6.5L16.5 9L17.5 6.5L20 5.5L17.5 4.5L16.5 2Z"
-      fill="white"
+      fill="currentColor"
     />
     <path
       d="M6 3L5.25 4.75L3.5 5.5L5.25 6.25L6 8L6.75 6.25L8.5 5.5L6.75 4.75L6 3Z"
-      fill="white"
+      fill="currentColor"
       fillOpacity="0.8"
     />
     <path
       d="M19.5 14L18.75 15.75L17 16.5L18.75 17.25L19.5 19L20.25 17.25L22 16.5L20.25 15.75L19.5 14Z"
-      fill="white"
+      fill="currentColor"
       fillOpacity="0.9"
     />
     <path
       d="M4 21L14.5 10.5M14.5 10.5L16.5 8.5C17.0523 7.94772 17.0523 7.05228 16.5 6.5C15.9477 5.94772 15.0523 5.94772 14.5 6.5L12.5 8.5M14.5 10.5L12.5 8.5"
-      stroke="white"
+      stroke="currentColor"
       strokeWidth="2"
       strokeLinecap="round"
       strokeLinejoin="round"
@@ -138,9 +140,111 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
   const { country: currentCountry } = useLocalization();
   const siteName = CONFIG.SEO.BASE_TITLE;
+  const isValentine = CONFIG.THEME.IS_VALENTINE;
+  const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
+  const originalTitleRef = useRef(document.title);
+
+  // Verificar si es el día exacto de San Valentín (14 de Febrero)
+  const isValentineDay = new Date().getMonth() === 1 && new Date().getDate() === 14;
+  
+  // --- EASTER EGG LOGIC ---
+  const [logoClicks, setLogoClicks] = useState(0);
+  const clickTimeoutRef = useRef<any>(null);
+
+  const handleLogoClick = (e: React.MouseEvent) => {
+    // Si el usuario está haciendo clics rápidos, prevenimos la navegación para que no recargue
+    if (logoClicks > 0) {
+      e.preventDefault();
+    }
+
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+
+    setLogoClicks((prev) => {
+      const newCount = prev + 1;
+      if (newCount === 5) {
+        triggerEasterEgg();
+        return 0;
+      }
+      return newCount;
+    });
+
+    clickTimeoutRef.current = setTimeout(() => {
+      setLogoClicks(0);
+    }, 500);
+  };
+
+  const triggerEasterEgg = () => {
+    const duration = 2 * 1000;
+    const end = Date.now() + duration;
+
+    (function frame() {
+      confetti({
+        particleCount: 5,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: ['#2563eb', '#9333ea']
+      });
+      confetti({
+        particleCount: 5,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: ['#db2777', '#e11d48']
+      });
+
+      if (Date.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    }());
+  };
+  // ------------------------
+
+  // Cambiar favicon dinámicamente según la festividad
+  useEffect(() => {
+    const updateFavicon = () => {
+      const color = isValentine
+        ? "#e11d48" // rose-600
+        : isChristmas
+          ? "#16a34a" // green-600
+          : "#2563eb"; // blue-600
+
+      const svg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 2L15.5 4.5L13 5.5L15.5 6.5L16.5 9L17.5 6.5L20 5.5L17.5 4.5L16.5 2Z" fill="${color}"/><path d="M6 3L5.25 4.75L3.5 5.5L5.25 6.25L6 8L6.75 6.25L8.5 5.5L6.75 4.75L6 3Z" fill="${color}" fill-opacity="0.8"/><path d="M19.5 14L18.75 15.75L17 16.5L18.75 17.25L19.5 19L20.25 17.25L22 16.5L20.25 15.75L19.5 14Z" fill="${color}" fill-opacity="0.9"/><path d="M4 21L14.5 10.5M14.5 10.5L16.5 8.5C17.0523 7.94772 17.0523 7.05228 16.5 6.5C15.9477 5.94772 15.0523 5.94772 14.5 6.5L12.5 8.5M14.5 10.5L12.5 8.5" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+      const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (link) {
+        link.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+      } else {
+        const newLink = document.createElement("link");
+        newLink.rel = "icon";
+        newLink.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
+        document.head.appendChild(newLink);
+      }
+    };
+
+    updateFavicon();
+  }, [isValentine, isChristmas]);
+
+  // Cambiar título de la pestaña cuando el usuario se va
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        originalTitleRef.current = document.title;
+        document.title = "¡Te extrañamos! 🥺";
+      } else {
+        document.title = originalTitleRef.current;
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, []);
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-blue-100 selection:text-blue-900">
+      <NotificationManager />
       {/* Header Principal */}
       <header className="bg-white/90 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-50 shadow-sm transition-all duration-300">
         <div className="max-w-screen-2xl mx-auto">
@@ -148,15 +252,30 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           <div className="px-4 sm:px-6 lg:px-8 flex h-16 md:h-20 items-center justify-between">
             <Link
               to="/"
+              onClick={handleLogoClick}
               className="flex items-center gap-2.5 shrink-0 focus-visible:outline-none group"
               aria-label={`Ir al inicio de ${siteName}`}
             >
-              <div className="w-10 h-10 md:w-11 md:h-11 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-md shadow-blue-500/20 group-hover:scale-105 transition-all duration-300">
-                <MagicWandIcon className="w-6 h-6 md:w-7 md:h-7" />
+              <div className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105 text-white
+                ${isValentine 
+                  ? "bg-gradient-to-tr from-rose-500 to-pink-600 shadow-rose-500/20" 
+                  : isChristmas 
+                    ? "bg-gradient-to-tr from-emerald-500 to-green-600 shadow-green-500/20" 
+                    : "bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-blue-500/20"
+                }
+              `}>
+                <MagicWandIcon className="w-6 h-6 md:w-7 md:h-7 transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
               </div>
-              <span className="font-extrabold text-lg md:text-xl tracking-tight text-slate-900">
-                {siteName}
-              </span>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-lg md:text-xl tracking-tight text-slate-900 leading-none">
+                  {siteName}
+                </span>
+                {isValentine && isValentineDay && (
+                  <span className="text-[10px] font-bold text-rose-500 uppercase tracking-widest animate-pulse">
+                    ¡Feliz San Valentín!
+                  </span>
+                )}
+              </div>
             </Link>
 
             <div className="flex items-center gap-4">
@@ -241,8 +360,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 to="/"
                 className="inline-flex items-center gap-2.5 mb-6 group"
               >
-                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-blue-600 transition-colors">
-                  <MagicWandIcon className="w-5 h-5" />
+                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-blue-600 transition-colors text-white">
+                  <MagicWandIcon className="w-5 h-5 transition-all duration-300 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
                 </div>
                 <span className="font-bold text-xl tracking-tight">
                   {siteName}

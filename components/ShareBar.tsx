@@ -106,6 +106,7 @@ interface ShareBarProps {
   className?: string;
   disabled?: boolean;
   onAction?: (platform: SharePlatform) => boolean | Promise<boolean>;
+  highlightedPlatform?: string | null;
 }
 
 const ShareBar: React.FC<ShareBarProps> = ({
@@ -114,6 +115,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
   className = "",
   disabled = false,
   onAction,
+  highlightedPlatform,
 }) => {
   const [activeAction, setActiveAction] = useState<SharePlatform | null>(null);
   const { showToast } = useToast();
@@ -222,6 +224,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
           if (!config) return null;
 
           const isProcessing = activeAction === platform;
+          const isHighlighted = highlightedPlatform && config.label.toLowerCase().includes(highlightedPlatform.toLowerCase());
 
           return (
             <button
@@ -231,6 +234,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
               className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all active:scale-90 border border-transparent shrink-0
                 ${config.bg} ${config.color} 
                 ${isProcessing ? "ring-2 ring-offset-1 ring-current scale-105" : ""}
+                ${isHighlighted ? "ring-2 ring-offset-2 ring-blue-500 shadow-lg scale-110 z-10" : ""}
                 ${disabled ? "cursor-not-allowed" : ""}
               `}
               title={config.label}

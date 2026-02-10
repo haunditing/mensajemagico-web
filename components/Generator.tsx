@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   Occasion,
   Relationship,
@@ -71,6 +71,9 @@ const Generator: React.FC<GeneratorProps> = ({
   const isResponder = occasion.id === "responder";
   const isGreeting = occasion.id === "saludo";
 
+  const [searchParams] = useSearchParams();
+  const shareParam = searchParams.get("share");
+
   // Filtrar tonos: 'Atrasado' solo para Cumpleaños y Aniversarios
   const availableTones = TONES.filter((t) => {
     if (t.value === Tone.BELATED) {
@@ -79,13 +82,20 @@ const Generator: React.FC<GeneratorProps> = ({
     return true;
   });
 
+  // Determinar sugerencia basada en la hora (solo para Saludo)
+  const suggestedGreeting = isGreeting
+    ? (() => {
+        const h = new Date().getHours();
+        // Sugerir "Ocaso" entre 6 PM y 5 AM, de lo contrario "Amanecer"
+        return h >= 18 || h < 5 ? "ocaso" : "amanecer";
+      })()
+    : null;
+
   const [relationshipId, setRelationshipId] = useState<string>(
     initialRelationship?.id ||
       (isPensamiento
         ? PENSAMIENTO_THEMES[0].id
-        : isGreeting
-          ? GREETING_CATEGORIES[0].id
-          : RELATIONSHIPS[0].id),
+        : isGreeting && suggestedGreeting ? suggestedGreeting : RELATIONSHIPS[0].id),
   );
   const [tone, setTone] = useState<Tone>(
     isPensamiento
@@ -422,13 +432,20 @@ const Generator: React.FC<GeneratorProps> = ({
         <div className="space-y-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm font-bold text-slate-700 mb-2">
-                {isPensamiento
-                  ? "¿Sobre qué quieres reflexionar?"
-                  : isGreeting
-                    ? "¿En qué momento estás?"
-                    : "Destinatario"}
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-bold text-slate-700">
+                  {isPensamiento
+                    ? "¿Sobre qué quieres reflexionar?"
+                    : isGreeting
+                      ? "¿En qué momento estás?"
+                      : "Destinatario"}
+                </label>
+                {isGreeting && relationshipId === suggestedGreeting && (
+                  <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full flex items-center gap-1 animate-fade-in">
+                    <span>{suggestedGreeting === "ocaso" ? "🌙" : "☀️"}</span> Sugerido por la hora
+                  </span>
+                )}
+              </div>
               <select
                 value={relationshipId}
                 onChange={handleRelChange}
@@ -770,6 +787,7 @@ const Generator: React.FC<GeneratorProps> = ({
                     onAction={handleShareAction}
                     disabled={isError || isLoading}
                     className="animate-fade-in-up flex-1"
+                    highlightedPlatform={shareParam}
                   />
 
                   {!isError && (
