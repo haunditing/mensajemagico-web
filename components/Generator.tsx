@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Occasion,
@@ -42,6 +42,7 @@ import GiftRecommendations, { GiftSuggestion } from "./GiftRecommendations";
 import CreateContactModal from "./CreateContactModal";
 import { api } from "../context/api";
 import RelationalHealthIndicator from "./RelationalHealthIndicator";
+import GuardianEditorModal from "./GuardianEditorModal";
 import { useToast } from "@/context/ToastContext";
 
 interface GeneratorProps {
@@ -127,6 +128,9 @@ const Generator: React.FC<GeneratorProps> = ({
   const [selectedContactId, setSelectedContactId] = useState<
     string | undefined
   >(undefined);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
   const selectedContact = contacts.find((c) => c._id === selectedContactId);
 
@@ -468,6 +472,16 @@ const Generator: React.FC<GeneratorProps> = ({
     showToast(`Ahora escribiéndole a ${newContact.name}`, "success");
   };
 
+  const handleMessageUpdate = (id: string, newContent: string) => {
+      setMessages((prevMessages) =>
+        prevMessages.map((msg) =>
+          msg.id === id
+            ? { ...msg, content: newContent }
+            : msg
+        )
+      );
+  };
+
   return (
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>
       <div
@@ -524,21 +538,27 @@ const Generator: React.FC<GeneratorProps> = ({
 
         <div className="space-y-6 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-bold text-slate-700">
-                  {isPensamiento
-                    ? "¿Sobre qué quieres reflexionar?"
-                    : "Destinatario"}
-                </label>
-                {selectedContact && (
-                  <div className="scale-75 origin-right -my-3 animate-fade-in">
+            <div className="relative">
+              <label className="block text-sm font-bold text-slate-700 mb-2">
+                {isPensamiento
+                  ? "¿Sobre qué quieres reflexionar?"
+                  : "Destinatario"}
+              </label>
+              {selectedContact && (
+                <div className="absolute top-0 right-0 z-10 -mt-1 animate-fade-in">
+                  <div className="relative">
                     <RelationalHealthIndicator
                       score={selectedContact.relationalHealth}
+                      minimal={true}
                     />
+                    {selectedContact.guardianMetadata?.trained && (
+                      <span className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm animate-pulse whitespace-nowrap">
+                        IA ENTRENADA
+                      </span>
+                    )}
                   </div>
-                )}
-              </div>
+                </div>
+              )}
               <select
                 value={relationshipId}
                 onChange={handleRelChange}
@@ -911,11 +931,23 @@ const Generator: React.FC<GeneratorProps> = ({
               key={msg.id}
               className={`bg-white border border-slate-200 rounded-2xl p-6 md:p-8 animate-fade-in-up shadow-sm relative overflow-hidden ${isPensamiento ? "text-center border-blue-200" : ""}`}
             >
-              <p
-                className={`text-slate-800 leading-relaxed font-medium mb-8 relative z-10 ${isPensamiento ? "text-xl md:text-2xl italic" : "text-base md:text-lg"} ${isError ? "text-red-500 italic text-sm" : ""}`}
-              >
-                {msg.content}
-              </p>
+              <div className="mb-8 relative z-10 group">
+                <p className={`text-slate-800 leading-relaxed font-medium whitespace-pre-wrap ${isPensamiento ? "text-xl md:text-2xl italic text-center" : "text-base md:text-lg"}`}>
+                  {msg.content}
+                </p>
+                
+                {!isError && (
+                  <button 
+                    onClick={() => setEditingMessageId(msg.id)}
+                    className="absolute top-0 right-0 p-2 bg-white/80 backdrop-blur-sm rounded-lg text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all shadow-sm border border-slate-100"
+                    title="Editar mensaje"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                )}
+              </div>
 
               <div className="pt-6 border-t border-slate-100 relative z-10 flex flex-col gap-4">
                 <div className="flex items-center justify-between gap-4">
@@ -969,6 +1001,22 @@ const Generator: React.FC<GeneratorProps> = ({
           );
         })}
       </div>
+
+      {editingMessageId && (
+        <GuardianEditorModal
+          isOpen={!!editingMessageId}
+          onClose={() => setEditingMessageId(null)}
+          initialText={messages.find(m => m.id === editingMessageId)?.content || ""}
+          contactId={selectedContactId}
+          isPremium={planLevel === 'premium'}
+          relationalHealth={selectedContact?.relationalHealth}
+          onSave={(newText) => {
+            handleMessageUpdate(editingMessageId, newText);
+            setEditingMessageId(null);
+          }}
+        />
+      )}
+
       <CreateContactModal
         isOpen={isContactModalOpen}
         onClose={() => setIsContactModalOpen(false)}

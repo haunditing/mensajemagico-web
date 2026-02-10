@@ -40,7 +40,7 @@ const TermsPage: React.FC = () => {
               {item.icon}
             </div>
             <div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2">{item.title}</h3>
+              <h2 className="text-xl font-bold text-slate-900 mb-2">{item.title}</h2>
               <p className="text-slate-600 leading-relaxed m-0">{item.text}</p>
             </div>
           </div>

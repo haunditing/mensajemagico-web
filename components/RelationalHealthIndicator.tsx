@@ -3,11 +3,13 @@ import React from "react";
 interface RelationalHealthIndicatorProps {
   score: number; // 1-10
   className?: string;
+  minimal?: boolean;
 }
 
 const RelationalHealthIndicator: React.FC<RelationalHealthIndicatorProps> = ({
   score,
   className = "",
+  minimal = false,
 }) => {
   // Asegurar rango 0-10
   const clampedScore = Math.max(0, Math.min(10, score));
@@ -59,14 +61,16 @@ const RelationalHealthIndicator: React.FC<RelationalHealthIndicatorProps> = ({
         )}
       </div>
 
-      <div className="flex flex-col items-center mt-1">
-        <span className="text-xs font-black text-slate-700">
-          {clampedScore.toFixed(1)}
-        </span>
-        <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
-          {label}
-        </span>
-      </div>
+      {!minimal && (
+        <div className="flex flex-col items-center mt-1">
+          <span className="text-xs font-black text-slate-700">
+            {clampedScore.toFixed(1)}
+          </span>
+          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+            {label}
+          </span>
+        </div>
+      )}
     </div>
   );
 };

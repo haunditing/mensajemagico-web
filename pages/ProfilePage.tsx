@@ -26,6 +26,7 @@ const ProfilePage: React.FC = () => {
   const [isSavingLoc, setIsSavingLoc] = useState(false);
   const [neutralMode, setNeutralMode] = useState(false);
   const [isSavingNeutral, setIsSavingNeutral] = useState(false);
+  const [grammaticalGender, setGrammaticalGender] = useState("neutral");
 
   useEffect(() => {
     if (user) {
@@ -37,6 +38,9 @@ const ProfilePage: React.FC = () => {
   useEffect(() => {
     if (user && (user as any).preferences?.neutralMode) {
       setNeutralMode(true);
+    }
+    if (user && (user as any).preferences?.grammaticalGender) {
+      setGrammaticalGender((user as any).preferences.grammaticalGender);
     }
   }, [user]);
 
@@ -120,6 +124,18 @@ const ProfilePage: React.FC = () => {
       showToast("Error al actualizar preferencia", "error");
     } finally {
       setIsSavingNeutral(false);
+    }
+  };
+
+  const handleGenderChange = async (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const newGender = e.target.value;
+    setGrammaticalGender(newGender);
+    try {
+      await api.put("/api/auth/profile", { grammaticalGender: newGender });
+      await refreshUser();
+      showToast("Preferencia de género actualizada", "success");
+    } catch (error: any) {
+      showToast(error.message || "Error al actualizar", "error");
     }
   };
 
@@ -238,6 +254,29 @@ const ProfilePage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Sección de Género Gramatical */}
+        <div className="border-t border-slate-100 py-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Género Gramatical</h3>
+              <p className="text-sm text-slate-500">¿Cómo quieres que la IA se dirija a ti?</p>
+            </div>
+            <select
+              value={grammaticalGender}
+              onChange={handleGenderChange}
+              className="bg-white border border-slate-200 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-blue-500 outline-none"
+            >
+              <option value="male">Masculino (cansado)</option>
+              <option value="female">Femenino (cansada)</option>
+              <option value="neutral">Prefiero no decirlo</option>
+            </select>
+          </div>
+          <p className="text-xs text-slate-400 mt-3 italic">
+            Esto solo afecta la concordancia en los mensajes generados para ti (ej. "estoy listo" vs "estoy lista").
+            No influye en la personalidad de la IA.
+          </p>
+        </div>
 
         <div className="border-t border-slate-100 pt-6">
           <h3 className="text-lg font-bold text-slate-900 mb-4">

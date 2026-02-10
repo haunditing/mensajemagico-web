@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { OCCASIONS } from "../constants";
 import { CONFIG } from "../config";
-import { updateSeoTags } from "../services/seoService";
+import { updateSeoTags } from "../services/seoService.ts";
 import AdBanner from "../components/AdBanner";
 import OccasionIcon from "../components/OccasionIcon";
 import FallingParticles from "../components/FallingParticles";
@@ -64,7 +64,7 @@ const HomePage: React.FC = () => {
             </>
           ) : (
             <>
-              Escribe lo que sientes, <br className="hidden md:block" />
+              Tu Asistente de Mensajes con IA, <br className="hidden md:block" />
               <span className="text-gradient">sin complicaciones.</span>
             </>
           )}

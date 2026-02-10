@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { OCCASIONS, RELATIONSHIPS } from "../constants";
 import { CONFIG } from "../config";
-import { updateSeoTags } from "../services/seoService";
+import { updateSeoTags } from "../services/seoService.ts";
 import { getLocalizedOccasion } from "../services/localizationService";
 import Generator from "../components/Generator";
 import AdBanner from "../components/AdBanner";

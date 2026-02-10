@@ -1,4 +1,3 @@
-
 import { Occasion, Relationship } from '../types';
 import { CONFIG } from '../config';
 
@@ -25,11 +24,4 @@ export const updateSeoTags = (occasion?: Occasion, relationship?: Relationship) 
   if (metaDesc) {
     metaDesc.setAttribute('content', description.substring(0, 160));
   }
-
-  // Open Graph dinámico para compartir en redes
-  const ogTitle = document.querySelector('meta[property="og:title"]');
-  if (ogTitle) ogTitle.setAttribute('content', title);
-  
-  const ogDesc = document.querySelector('meta[property="og:description"]');
-  if (ogDesc) ogDesc.setAttribute('content', description);
 };

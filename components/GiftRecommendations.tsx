@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { generateAmazonLink } from '../services/amazonService';
 import { CONFIG } from '../config';
 
@@ -50,12 +50,6 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
 };
 
 const GiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ gift, country }) => {
-  const [imgError, setImgError] = useState(false);
-  
-  // Generamos una imagen basada en el término de búsqueda para simular la foto del producto
-  // Usamos pollinations.ai que permite generar imágenes por URL sin API Key
-  const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(gift.search_term + " product photography photorealistic white background")}`;
-
   return (
     <a
       href={generateAmazonLink(gift.search_term, country)}
@@ -64,18 +58,8 @@ const GiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ gift, c
       className="group relative bg-white rounded-2xl border border-slate-200 overflow-hidden hover:border-[#FF9900]/50 hover:shadow-xl hover:shadow-[#FF9900]/10 transition-all duration-300 flex flex-col h-full hover:-translate-y-1"
     >
       {/* Contenedor de Imagen */}
-      <div className="relative h-48 w-full overflow-hidden bg-slate-50 flex items-center justify-center">
-        {!imgError ? (
-          <img 
-            src={imageUrl} 
-            alt={gift.title}
-            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-            loading="lazy"
-            onError={() => setImgError(true)}
-          />
-        ) : (
-          <div className="text-4xl opacity-20">🛍️</div>
-        )}
+      <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center group-hover:from-[#FF9900]/5 group-hover:to-[#FF9900]/10 transition-colors duration-300">
+        <div className="text-5xl transform group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">🎁</div>
         
         {/* Etiqueta de Precio */}
         <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-800 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm border border-slate-100">
