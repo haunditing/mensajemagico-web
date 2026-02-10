@@ -255,12 +255,12 @@ const Generator: React.FC<GeneratorProps> = ({
         VE: "Bolívares",
       };
       const localCurrency = currencyMap[country] || "Dólares";
-      formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: { 
+      formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: {
         "selected_strategy": "string",
         "generated_messages": [{ "tone": "string", "content": "string", "locked": boolean }],
         "guardian_insight": "string (Consejo del Guardián si es GUEST/FREEMIUM, sino null)",
-        "gift_recommendation": { "item": "string", "reason": "string" }
-      }. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
+        "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}" }]
+      }. Máximo 3 regalos. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
     }
 
     let generatedContent = "";
@@ -336,15 +336,8 @@ const Generator: React.FC<GeneratorProps> = ({
             guardianInsight = parsed.guardian_insight;
           }
 
-          if (parsed.gift_recommendation) {
-            gifts = [
-              {
-                title: parsed.gift_recommendation.item,
-                reason: parsed.gift_recommendation.reason,
-                search_term: parsed.gift_recommendation.item,
-                price_range: "Variado",
-              },
-            ];
+          if (parsed.gift_recommendations && Array.isArray(parsed.gift_recommendations)) {
+            gifts = parsed.gift_recommendations;
           }
         }
       }
