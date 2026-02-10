@@ -27,6 +27,16 @@ interface Holiday {
   country: string;
 }
 
+const COUNTRY_NAMES: Record<string, string> = {
+  CO: "Colombia",
+  MX: "México",
+  AR: "Argentina",
+  CL: "Chile",
+  PE: "Perú",
+  VE: "Venezuela",
+  GENERIC: "LATAM",
+};
+
 const RemindersPage: React.FC = () => {
   const { user, planLevel } = useAuth();
   const { country } = useLocalization();
@@ -211,6 +221,16 @@ const RemindersPage: React.FC = () => {
     }
   };
 
+  const handleComplete = async (id: string) => {
+    try {
+      await api.post(`/api/reminders/${id}/complete`, {});
+      showToast("Recordatorio completado ✅", "success");
+      fetchReminders();
+    } catch (error: any) {
+      showToast(error.message || "Error al completar", "error");
+    }
+  };
+
   const resetForm = () => {
     setTitle("");
     setDate("");
@@ -272,6 +292,155 @@ const RemindersPage: React.FC = () => {
     
     const diff = target.getTime() - now.getTime();
     return Math.ceil(diff / (1000 * 3600 * 24));
+  };
+
+  // Lógica de Segregación (Vencidos vs Próximos)
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const isOverdue = (reminder: Reminder) => {
+    const dateStr = reminder.nextOccurrence || reminder.date;
+    // Crear fecha local desde el string para comparar días correctamente
+    const [y, m, d] = dateStr.toString().split('T')[0].split('-').map(Number);
+    const reminderDate = new Date(y, m - 1, d);
+    
+    return reminderDate < now;
+  };
+
+  const overdueReminders = reminders.filter(isOverdue);
+  const upcomingReminders = reminders.filter(r => !isOverdue(r));
+
+  const renderReminderCard = (reminder: Reminder, isOverdueItem: boolean = false) => {
+    const isHoliday = reminder.isAutomatic || reminder.type === "holiday";
+    const displayDate = reminder.nextOccurrence || reminder.date;
+
+    return (
+      <div
+        key={reminder._id}
+        className={`p-5 rounded-2xl border transition-all hover:shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4
+          ${isOverdueItem 
+            ? "bg-red-50/50 border-red-200" 
+            : isHoliday 
+              ? "bg-blue-50/50 border-blue-100" 
+              : "bg-white border-slate-200"
+          }
+        `}
+      >
+        <div className="flex items-start gap-4">
+          <div
+            className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0
+            ${isOverdueItem ? "bg-red-100 text-red-600" : isHoliday ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-600"}
+          `}
+          >
+            {getIcon(reminder.type)}
+          </div>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className={`font-bold text-lg ${isOverdueItem ? "text-red-700" : "text-slate-900"}`}>
+                {reminder.title}
+              </h3>
+              {isOverdueItem && (
+                <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                  Vencido
+                </span>
+              )}
+              {isHoliday && !isOverdueItem && (
+                <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                  Festivo
+                </span>
+              )}
+              {reminder.isRecurring && !isHoliday && (
+                <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">
+                  Anual
+                </span>
+              )}
+            </div>
+            <p className={`${isOverdueItem ? "text-red-500" : "text-slate-500"} font-medium text-sm flex items-center gap-2`}>
+              <span>🗓️ {formatDate(displayDate)}</span>
+              {reminder.notificationTime && (
+                <span className={`text-xs px-2 py-0.5 rounded ${isOverdueItem ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-600"}`}>
+                  ⏰ {reminder.notificationTime}
+                </span>
+              )}
+            </p>
+            {reminder.notes && (
+              <p className="text-slate-400 text-xs mt-2 italic">
+                "{reminder.notes}"
+              </p>
+            )}
+            {reminder.socialPlatform && (
+              <p className="text-indigo-500 text-xs mt-1 font-bold flex items-center gap-1">
+                <span>📱</span> Publicar en {reminder.socialPlatform}
+              </p>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 sm:self-center self-end">
+          {isOverdueItem && (
+            <button
+              onClick={() => handleComplete(reminder._id)}
+              className="w-9 h-9 flex items-center justify-center text-green-600 hover:bg-green-100 hover:text-green-700 rounded-lg transition-all border border-green-200 bg-white"
+              title="Marcar como completado"
+            >
+              ✅
+            </button>
+          )}
+
+          {isHoliday ? (
+            <div className="flex gap-2">
+              <Link
+                to="/mensajes/un-saludo"
+                className="px-3 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-colors whitespace-nowrap flex items-center gap-1"
+              >
+                <span>👋</span> Saludar
+              </Link>
+              <Link
+                to="/mensajes/pensamiento-del-dia"
+                className="px-3 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap flex items-center gap-1"
+              >
+                <span>🧘</span> Pensamiento
+              </Link>
+            </div>
+          ) : (
+            <Link
+              to={`/mensajes/${getOccasionSlug(reminder.type)}${reminder.socialPlatform ? `?share=${reminder.socialPlatform}` : ""}`}
+              className={`px-4 py-2 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap ${isOverdueItem ? "bg-red-600 hover:bg-red-700" : "bg-slate-900 hover:bg-slate-800"}`}
+            >
+              Escribir Mensaje
+            </Link>
+          )}
+          
+          {/* Botón de Posponer (Snooze) */}
+          {!isHoliday && (
+            <button
+              onClick={() => { setSnoozeTarget(reminder); setCustomSnoozeDate(""); }}
+              className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isOverdueItem ? "text-red-500 hover:bg-red-100" : "text-slate-400 hover:text-indigo-500 hover:bg-indigo-50"}`}
+              title="Posponer"
+            >
+              ⏰
+            </button>
+          )}
+
+          {!isHoliday && (
+            <button
+              onClick={() => handleEdit(reminder)}
+              className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
+              title="Editar"
+            >
+              ✏️
+            </button>
+          )}
+          <button
+            onClick={() => handleDelete(reminder._id)}
+            className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+            title="Eliminar"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+    );
   };
 
   if (!user) {
@@ -512,120 +681,23 @@ const RemindersPage: React.FC = () => {
           </p>
         </div>
       ) : (
-        <div className="grid gap-4">
-          {Array.isArray(reminders) && reminders.map((reminder) => {
-            const isHoliday =
-              reminder.isAutomatic || reminder.type === "holiday";
-            const displayDate = reminder.nextOccurrence || reminder.date;
-
-            return (
-              <div
-                key={reminder._id}
-                className={`p-5 rounded-2xl border transition-all hover:shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4
-                  ${isHoliday ? "bg-blue-50/50 border-blue-100" : "bg-white border-slate-200"}
-                `}
-              >
-                <div className="flex items-start gap-4">
-                  <div
-                    className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0
-                    ${isHoliday ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-600"}
-                  `}
-                  >
-                    {getIcon(reminder.type)}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-bold text-slate-900 text-lg">
-                        {reminder.title}
-                      </h3>
-                      {isHoliday && (
-                        <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
-                          Festivo
-                        </span>
-                      )}
-                      {reminder.isRecurring && !isHoliday && (
-                        <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">
-                          Anual
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-slate-500 font-medium text-sm flex items-center gap-2">
-                      <span>🗓️ {formatDate(displayDate)}</span>
-                      {reminder.notificationTime && (
-                        <span className="text-xs bg-slate-100 px-2 py-0.5 rounded text-slate-600">
-                          ⏰ {reminder.notificationTime}
-                        </span>
-                      )}
-                    </p>
-                    {reminder.notes && (
-                      <p className="text-slate-400 text-xs mt-2 italic">
-                        "{reminder.notes}"
-                      </p>
-                    )}
-                    {reminder.socialPlatform && (
-                      <p className="text-indigo-500 text-xs mt-1 font-bold flex items-center gap-1">
-                        <span>📱</span> Publicar en {reminder.socialPlatform}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2 sm:self-center self-end">
-                  {isHoliday ? (
-                    <div className="flex gap-2">
-                      <Link
-                        to="/mensajes/un-saludo"
-                        className="px-3 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-colors whitespace-nowrap flex items-center gap-1"
-                      >
-                        <span>👋</span> Saludar
-                      </Link>
-                      <Link
-                        to="/mensajes/pensamiento-del-dia"
-                        className="px-3 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap flex items-center gap-1"
-                      >
-                        <span>🧘</span> Pensamiento
-                      </Link>
-                    </div>
-                  ) : (
-                    <Link
-                      to={`/mensajes/${getOccasionSlug(reminder.type)}${reminder.socialPlatform ? `?share=${reminder.socialPlatform}` : ""}`}
-                      className="px-4 py-2 bg-slate-900 text-white text-sm font-bold rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap"
-                    >
-                      Escribir Mensaje
-                    </Link>
-                  )}
-                  
-                  {/* Botón de Posponer (Snooze) */}
-                  {!isHoliday && (
-                    <button
-                      onClick={() => { setSnoozeTarget(reminder); setCustomSnoozeDate(""); }}
-                      className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 rounded-lg transition-all"
-                      title="Posponer"
-                    >
-                      ⏰
-                    </button>
-                  )}
-
-                  {!isHoliday && (
-                    <button
-                      onClick={() => handleEdit(reminder)}
-                      className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
-                      title="Editar"
-                    >
-                      ✏️
-                    </button>
-                  )}
-                  <button
-                    onClick={() => handleDelete(reminder._id)}
-                    className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                    title="Eliminar"
-                  >
-                    🗑️
-                  </button>
-                </div>
+        <div className="space-y-8">
+          {/* Sección de Vencidos */}
+          {overdueReminders.length > 0 && (
+            <div className="animate-fade-in">
+              <h3 className="text-red-600 font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
+                <span>⚠️</span> Requieren Atención ({overdueReminders.length})
+              </h3>
+              <div className="grid gap-4">
+                {overdueReminders.map(r => renderReminderCard(r, true))}
               </div>
-            );
-          })}
+            </div>
+          )}
+
+          {/* Sección de Próximos */}
+          <div className="grid gap-4">
+            {upcomingReminders.map(r => renderReminderCard(r, false))}
+          </div>
         </div>
       )}
 
@@ -680,7 +752,7 @@ const RemindersPage: React.FC = () => {
       {!loading && holidays.length > 0 && (
         <div className="mt-12 border-t border-slate-100 pt-8">
           <h2 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
-            <span>🎉</span> Festivos Sugeridos en {country}
+            <span>🎉</span> Festivos Sugeridos en {COUNTRY_NAMES[country] || country}
           </h2>
           {!isPremium && (
             <p className="text-sm text-slate-500 mb-6">

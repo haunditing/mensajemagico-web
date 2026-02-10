@@ -20,13 +20,20 @@ const GuardianInsight: React.FC<GuardianInsightProps> = ({ insight }) => {
         }
       `}</style>
       <div className="absolute top-0 right-0 -mt-4 -mr-4 w-20 h-20 bg-indigo-100 rounded-full blur-xl opacity-50"></div>
-      
+
       <div className="flex items-start gap-4 relative z-10">
         <div className="text-2xl bg-white p-2 rounded-lg shadow-sm">🔮</div>
         <div>
-          <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wider mb-1">Guardian Insight</h4>
-          <p className="text-indigo-800 text-sm leading-relaxed mb-3">{insight}</p>
-          <Link to="/pricing" className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1">
+          <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wider mb-1">
+            Guardian Insight
+          </h4>
+          <p className="text-indigo-800 text-sm leading-relaxed mb-3">
+            {insight}
+          </p>
+          <Link
+            to="/pricing"
+            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1"
+          >
             Desbloquear Estrategia Premium <span>→</span>
           </Link>
         </div>
