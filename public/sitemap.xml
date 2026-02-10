@@ -1,32 +1,90 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Páginas Base -->
+  <!-- Páginas Estáticas -->
   <url>
-    <loc>https://mensajemagico.com/</loc>
-    <lastmod>2025-02-14</lastmod>
+    <loc>https://www.mensajemagico.com/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://mensajemagico.com/privacidad</loc>
+    <loc>https://www.mensajemagico.com/pricing</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/faq</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/login</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/signup</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/contacto</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/privacidad</loc>
+    <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://mensajemagico.com/contacto</loc>
+    <loc>https://www.mensajemagico.com/terminos</loc>
+    <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
 
-  <!-- Categorías Principales -->
-  <url><loc>https://mensajemagico.com/mensajes/amor</loc><priority>0.9</priority></url>
-  <url><loc>https://mensajemagico.com/mensajes/responder-un-mensaje</loc><priority>0.9</priority></url>
-  <url><loc>https://mensajemagico.com/mensajes/no-me-dejes-en-visto</loc><priority>0.9</priority></url>
-  <url><loc>https://mensajemagico.com/mensajes/cumpleanos</loc><priority>0.8</priority></url>
-  <url><loc>https://mensajemagico.com/mensajes/perdoname</loc><priority>0.8</priority></url>
-  <url><loc>https://mensajemagico.com/mensajes/pensamiento-del-dia</loc><priority>0.8</priority></url>
+  <!-- Ocasiones Principales -->
+  <url><loc>https://www.mensajemagico.com/mensajes/pensamiento-del-dia</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/un-saludo</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/responder-un-mensaje</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/no-me-dejes-en-visto</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/perdoname</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/amor</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/cumpleanos</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/anniversary</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/dia-de-la-madre</loc><changefreq>yearly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/dia-del-padre</loc><changefreq>yearly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/navidad</loc><changefreq>yearly</changefreq><priority>0.8</priority></url>
 
-  <!-- Combinaciones Long-Tail -->
-  <url><loc>https://mensajemagico.com/mensajes/amor/pareja</loc><priority>0.7</priority></url>
-  <url><loc>https://mensajemagico.com/mensajes/amor/ligue</loc><priority>0.7</priority></url>
-  <url><loc>https://mensajemagico.com/mensajes/cumpleanos/amigo</loc><priority>0.7</priority></url>
-  <url><loc>https://mensajemagico.com/mensajes/perdoname/pareja</loc><priority>0.7</priority></url>
+  <!-- Relaciones (Long-tail SEO) - Ejemplos clave -->
+  <url><loc>https://www.mensajemagico.com/mensajes/amor/pareja</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/amor/ligue</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/amor/amor-secreto</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  
+  <url><loc>https://www.mensajemagico.com/mensajes/cumpleanos/amigo</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/cumpleanos/madre</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/cumpleanos/padre</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/cumpleanos/jefe</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
+  <url><loc>https://www.mensajemagico.com/mensajes/perdoname/pareja</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/perdoname/amigo</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
+  <url><loc>https://www.mensajemagico.com/mensajes/no-me-dejes-en-visto/ligue</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/no-me-dejes-en-visto/pareja</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
+  <url><loc>https://www.mensajemagico.com/mensajes/responder-un-mensaje/ligue</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/responder-un-mensaje/ex</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+
+  <url><loc>https://www.mensajemagico.com/mensajes/anniversary/pareja</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  
+  <url><loc>https://www.mensajemagico.com/mensajes/dia-de-la-madre/madre</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/dia-del-padre/padre</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  
+  <url><loc>https://www.mensajemagico.com/mensajes/navidad/familia</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/navidad/amigo</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/navidad/pareja</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/navidad/jefe</loc><changefreq>yearly</changefreq><priority>0.7</priority></url>
+
+  <url><loc>https://www.mensajemagico.com/mensajes/un-saludo/pareja</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/un-saludo/amigo</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
+  <url><loc>https://www.mensajemagico.com/mensajes/un-saludo/madre</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
 </urlset>

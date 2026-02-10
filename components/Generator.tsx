@@ -56,6 +56,7 @@ interface ExtendedGeneratedMessage extends GeneratedMessage {
   occasionName?: string;
   toneLabel?: string;
   guardianInsight?: string;
+  usedLexicalDNA?: boolean;
 }
 
 const Generator: React.FC<GeneratorProps> = ({
@@ -413,6 +414,7 @@ const Generator: React.FC<GeneratorProps> = ({
         ? GREETING_TONES.find((t) => (t.id as any) === tone)?.label
         : availableTones.find((t) => t.value === tone)?.label || tone,
       guardianInsight: guardianInsight,
+      usedLexicalDNA: selectedContact?.guardianMetadata?.preferredLexicon?.length > 0,
     };
 
     setMessages((prev) => [newMessage, ...prev]);
@@ -936,6 +938,13 @@ const Generator: React.FC<GeneratorProps> = ({
                   {msg.content}
                 </p>
                 
+                {msg.usedLexicalDNA && (
+                  <div className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100 animate-fade-in select-none">
+                    <span className="text-xs">✨</span>
+                    <span>Este mensaje incluye tu toque personal</span>
+                  </div>
+                )}
+
                 {!isError && (
                   <button 
                     onClick={() => setEditingMessageId(msg.id)}
