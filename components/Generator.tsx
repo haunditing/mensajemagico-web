@@ -38,18 +38,12 @@ import PlanManager from "@/services/PlanManager";
 import UsageBar from "./UsageBar";
 import { getUserLocation } from "../services/locationService";
 import GuardianInsight from "./GuardianInsight";
+import GiftRecommendations, { GiftSuggestion } from "./GiftRecommendations";
 
 interface GeneratorProps {
   occasion: Occasion;
   initialRelationship?: Relationship;
   onRelationshipChange?: (relId: string) => void;
-}
-
-interface GiftSuggestion {
-  title: string;
-  search_term: string;
-  reason: string;
-  price_range: string;
 }
 
 interface ExtendedGeneratedMessage extends GeneratedMessage {
@@ -877,72 +871,7 @@ const Generator: React.FC<GeneratorProps> = ({
                 )}
 
                 {/* Sección de Regalos */}
-                {msg.gifts && msg.gifts.length > 0 && (
-                  <div className="mt-8 pt-8 border-t border-slate-100">
-                    <div className="flex items-center justify-between mb-6">
-                      <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                        <span>🎁</span> Opciones de Regalo
-                      </h4>
-                      <span className="text-[10px] font-bold text-[#FF9900] bg-[#FF9900]/10 px-3 py-1 rounded-full border border-[#FF9900]/20">
-                        Recomendado
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                      {msg.gifts.map((gift, idx) => (
-                        <a
-                          key={idx}
-                          href={generateAmazonLink(gift.search_term, country)}
-                          target="_blank"
-                          rel="noopener noreferrer sponsored"
-                          className="group relative bg-white rounded-2xl border border-slate-200 p-5 hover:border-[#FF9900] hover:shadow-xl hover:shadow-[#FF9900]/10 transition-all duration-300 flex flex-col h-full overflow-hidden hover:-translate-y-1"
-                        >
-                          {/* Amazon-like button effect on hover */}
-                          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-slate-50/50 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-
-                          <div className="flex justify-between items-start mb-3 relative z-10">
-                            <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-xl group-hover:bg-[#FF9900]/10 group-hover:scale-110 transition-all duration-300">
-                              🛍️
-                            </div>
-                            <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded-md group-hover:bg-[#232F3E] group-hover:text-white transition-colors">
-                              {gift.price_range}
-                            </span>
-                          </div>
-
-                          <h5 className="font-bold text-slate-900 text-sm mb-2 leading-snug group-hover:text-[#C77700] transition-colors relative z-10 line-clamp-2">
-                            {gift.title}
-                          </h5>
-
-                          <p className="text-xs text-slate-500 leading-relaxed mb-4 flex-grow relative z-10 line-clamp-3">
-                            {gift.reason}
-                          </p>
-
-                          <div className="mt-auto relative z-10">
-                            <div className="w-full bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] hover:border-[#F2C200] text-[#0F1111] text-xs font-bold py-2.5 rounded-lg shadow-sm flex items-center justify-center gap-2 transition-colors">
-                              Ver en Amazon
-                              <svg
-                                className="w-3 h-3"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                                />
-                              </svg>
-                            </div>
-                          </div>
-                        </a>
-                      ))}
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-6 text-center italic">
-                      {CONFIG.AMAZON.DISCLAIMER}
-                    </p>
-                  </div>
-                )}
+                {msg.gifts && msg.gifts.length > 0 && <GiftRecommendations gifts={msg.gifts} country={country} />}
               </div>
             </div>
           );
