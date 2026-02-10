@@ -18,35 +18,38 @@ const PricingPage: React.FC = () => {
 
   const handleSubscribe = async () => {
     if (!ENABLE_UPGRADES) {
-      alert(
-        "Las nuevas suscripciones están temporalmente deshabilitadas por mantenimiento.",
-      );
+      alert("Las nuevas suscripciones están temporalmente deshabilitadas.");
       return;
     }
 
     if (!user) {
-      navigate("/login");
+      navigate("/login", { state: { from: location.pathname } }); // Para volver después del login
       return;
     }
 
     setIsPaymentLoading(true);
     try {
-      // Integración MercadoPago (Reemplaza a Stripe)
       const planId =
         billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
-      const response = await api.post("/api/mercadopago/create_preference", {
+
+      // Asumiendo que 'api' es una instancia de Axios
+      const { data } = await api.post("/api/mercadopago/create_preference", {
         userId: user._id,
         planId,
-        country,
+        country: country || "US", // Fallback seguro
       });
 
-      if (response.init_point) {
-        window.location.href = response.init_point;
+      if (data.init_point) {
+        // Usamos el init_point recibido
+        window.location.href = data.init_point;
+      } else {
+        throw new Error("No se recibió el punto de inicio de pago");
       }
-      // await handleUpgrade(user._id, billingInterval); // Stripe original
     } catch (error) {
       console.error("Error de pago:", error);
-      alert("Hubo un problema al iniciar el pago. Por favor intenta de nuevo.");
+      const errorMsg =
+        error.response?.data?.error || "Hubo un problema al iniciar el pago.";
+      alert(errorMsg);
     } finally {
       setIsPaymentLoading(false);
     }
