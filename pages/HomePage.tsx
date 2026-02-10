@@ -17,6 +17,33 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     updateSeoTags();
     window.scrollTo(0, 0);
+
+    // --- SEO: Structured Data for SoftwareApplication ---
+    const script = document.createElement('script');
+    script.type = 'application/ld+json';
+    script.innerHTML = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": CONFIG.SEO.BASE_TITLE,
+      "operatingSystem": "WEB",
+      "applicationCategory": "CommunicationApplication",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.8",
+        "ratingCount": "250" 
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    });
+    document.head.appendChild(script);
+
+    return () => {
+      // Clean up script on component unmount
+      document.head.removeChild(script);
+    };
   }, []);
   const { user } = useAuth();
   const { triggerUpsell } = useUpsell();

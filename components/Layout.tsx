@@ -145,8 +145,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const originalTitleRef = useRef(document.title);
 
   // Verificar si es el día exacto de San Valentín (14 de Febrero)
-  const isValentineDay = new Date().getMonth() === 1 && new Date().getDate() === 14;
-  
+  const isValentineDay =
+    new Date().getMonth() === 1 && new Date().getDate() === 14;
+
   // --- EASTER EGG LOGIC ---
   const [logoClicks, setLogoClicks] = useState(0);
   const clickTimeoutRef = useRef<any>(null);
@@ -185,20 +186,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         angle: 60,
         spread: 55,
         origin: { x: 0 },
-        colors: ['#2563eb', '#9333ea']
+        colors: ["#2563eb", "#9333ea"],
       });
       confetti({
         particleCount: 5,
         angle: 120,
         spread: 55,
         origin: { x: 1 },
-        colors: ['#db2777', '#e11d48']
+        colors: ["#db2777", "#e11d48"],
       });
 
       if (Date.now() < end) {
         requestAnimationFrame(frame);
       }
-    }());
+    })();
   };
   // ------------------------
 
@@ -213,7 +214,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
       const svg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 2L15.5 4.5L13 5.5L15.5 6.5L16.5 9L17.5 6.5L20 5.5L17.5 4.5L16.5 2Z" fill="${color}"/><path d="M6 3L5.25 4.75L3.5 5.5L5.25 6.25L6 8L6.75 6.25L8.5 5.5L6.75 4.75L6 3Z" fill="${color}" fill-opacity="0.8"/><path d="M19.5 14L18.75 15.75L17 16.5L18.75 17.25L19.5 19L20.25 17.25L22 16.5L20.25 15.75L19.5 14Z" fill="${color}" fill-opacity="0.9"/><path d="M4 21L14.5 10.5M14.5 10.5L16.5 8.5C17.0523 7.94772 17.0523 7.05228 16.5 6.5C15.9477 5.94772 15.0523 5.94772 14.5 6.5L12.5 8.5M14.5 10.5L12.5 8.5" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
-      const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      const link = document.querySelector(
+        "link[rel~='icon']",
+      ) as HTMLLinkElement;
       if (link) {
         link.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
       } else {
@@ -239,7 +242,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
 
   return (
@@ -256,14 +260,17 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               className="flex items-center gap-2.5 shrink-0 focus-visible:outline-none group"
               aria-label={`Ir al inicio de ${siteName}`}
             >
-              <div className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105 text-white
-                ${isValentine 
-                  ? "bg-gradient-to-tr from-rose-500 to-pink-600 shadow-rose-500/20" 
-                  : isChristmas 
-                    ? "bg-gradient-to-tr from-emerald-500 to-green-600 shadow-green-500/20" 
-                    : "bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-blue-500/20"
+              <div
+                className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105 text-white
+                ${
+                  isValentine
+                    ? "bg-gradient-to-tr from-rose-500 to-pink-600 shadow-rose-500/20"
+                    : isChristmas
+                      ? "bg-gradient-to-tr from-emerald-500 to-green-600 shadow-green-500/20"
+                      : "bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-blue-500/20"
                 }
-              `}>
+              `}
+              >
                 <MagicWandIcon className="w-6 h-6 md:w-7 md:h-7 transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
               </div>
               <div className="flex flex-col">
@@ -429,6 +436,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       className="text-slate-600 hover:text-blue-600 transition-colors"
                     >
                       Centro de Contacto
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/faq"
+                      className="text-slate-600 hover:text-blue-600 transition-colors"
+                    >
+                      Preguntas Frecuentes
                     </Link>
                   </li>
                 </ul>

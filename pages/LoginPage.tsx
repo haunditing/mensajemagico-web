@@ -6,6 +6,7 @@ import { api } from "../context/api";
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -13,6 +14,12 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!acceptedTerms) {
+      setError("Debes aceptar los nuevos Términos para continuar");
+      return;
+    }
+
     setError("");
     setIsLoading(true);
 
@@ -76,6 +83,19 @@ const LoginPage: React.FC = () => {
             <Link to="/forgot-password" className="text-xs font-bold text-blue-600 hover:underline">
               ¿Olvidaste tu contraseña?
             </Link>
+          </div>
+
+          <div className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              id="terms-login"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            />
+            <label htmlFor="terms-login" className="text-sm text-slate-600 cursor-pointer">
+              He leído y acepto los nuevos <Link to="/terminos" className="text-blue-600 hover:underline font-bold">Términos</Link> y <Link to="/privacidad" className="text-blue-600 hover:underline font-bold">Política de Privacidad</Link>.
+            </label>
           </div>
 
           <button

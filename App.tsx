@@ -52,7 +52,7 @@ import ProfilePage from "./pages/ProfilePage";
 import RemindersPage from "./pages/RemindersPage";
 import SettingsPage from "./pages/SettingsPage";
 import ContactsPage from "./pages/ContactsPage";
-
+import FaqPage from "./pages/FaqPage";
 
 const { BrowserRouter: Router, Routes, Route } = ReactRouterDOM;
 
@@ -92,6 +92,7 @@ const App: React.FC = () => {
                 <Route path="/recordatorios" element={<RemindersPage />} />
                 <Route path="/configuracion" element={<SettingsPage />} />
                 <Route path="/contactos" element={<ContactsPage />} />
+                <Route path="/faq" element={<FaqPage />} />
                 <Route path="*" element={<HomePage />} />
               </Routes>
             </Layout>

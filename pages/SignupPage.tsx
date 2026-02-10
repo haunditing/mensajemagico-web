@@ -7,6 +7,7 @@ const SignupPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -15,6 +16,11 @@ const SignupPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!acceptedTerms) {
+      setError("Debes aceptar los Términos y Condiciones para continuar");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
@@ -100,6 +106,19 @@ const SignupPage: React.FC = () => {
               className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-800"
               placeholder="Repite tu contraseña"
             />
+          </div>
+
+          <div className="flex items-start gap-2">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+            />
+            <label htmlFor="terms" className="text-sm text-slate-600 cursor-pointer">
+              Acepto los <Link to="/terminos" className="text-blue-600 hover:underline font-bold">Términos y Condiciones</Link> y la <Link to="/privacidad" className="text-blue-600 hover:underline font-bold">Política de Privacidad</Link>.
+            </label>
           </div>
 
           <button

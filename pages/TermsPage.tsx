@@ -1,38 +1,50 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { CONFIG } from '../config';
 
 const TermsPage: React.FC = () => {
+  const siteName = CONFIG.SEO.BASE_TITLE;
+
   return (
     <div className="max-w-4xl mx-auto py-12 px-4 animate-fade-in-up">
       <div className="text-center mb-16">
         <h1 className="text-4xl md:text-6xl font-black text-slate-900 mb-4 tracking-tight">
-          Reglas del <span className="text-gradient">Juego</span>
+          Términos y <span className="text-gradient">Condiciones</span>
         </h1>
-        <p className="text-slate-500 font-medium italic">Cómo usar MensajeMágico de forma responsable.</p>
+        <p className="text-slate-500 font-medium italic">Última actualización: 10 de febrero de 2026</p>
       </div>
 
       <div className="grid gap-6">
         {[
           {
-            title: "Uso del Contenido",
+            title: "1. Naturaleza del Servicio",
             icon: "✍️",
-            text: "Los mensajes generados por nuestra IA son meras sugerencias. Siéntete libre de editarlos. El usuario es el único responsable de decidir qué mensajes enviar y a quién."
+            text: `${siteName} es una herramienta de asistencia creativa impulsada por Inteligencia Artificial (incluyendo modelos como Gemma y Gemini). Su propósito es sugerir textos para la comunicación personal. No garantizamos resultados específicos en tus relaciones interpersonales.`
           },
           {
-            title: "Propiedad Intelectual",
+            title: "2. Propiedad Intelectual de los Mensajes",
             icon: "⚖️",
-            text: "El diseño, marca y tecnología de MensajeMágico son propiedad nuestra. Una vez generado un texto, el derecho de uso personal es tuyo."
+            text: "Aunque la tecnología subyacente es propiedad nuestra, tú (el usuario) eres el propietario exclusivo de los mensajes finales generados y editados. Eres libre de usarlos, modificarlos y compartirlos como desees."
           },
           {
-            title: "Exención de Responsabilidad",
+            title: "3. Limitación de Responsabilidad Relacional",
             icon: "🛡️",
-            text: "La IA genera textos basados en patrones probabilísticos. MensajeMágico no garantiza que el resultado sea exacto o apropiado para tu situación específica. No nos hacemos responsables de rupturas, malentendidos o cualquier impacto personal, social o legal derivado del uso de los mensajes."
+            text: "El 'Guardián Relacional' ofrece análisis basados en patrones de datos, no en psicología clínica. No nos hacemos responsables de rupturas, malentendidos, o cualquier consecuencia emocional o legal derivada del envío de los mensajes generados. Tú eres el único responsable de tus comunicaciones."
           },
           {
-            title: "Publicidad de Terceros",
-            icon: "📢",
-            text: "Este sitio se financia mediante publicidad de Google AdSense. No controlamos los anuncios mostrados y no somos responsables de los servicios externos ofrecidos en dicha publicidad."
+            title: "4. Uso Justo y Cuotas (Fair Use)",
+            icon: "⚖️",
+            text: "Los planes Premium con 'mensajes ilimitados' están sujetos a una política de uso justo para evitar abusos automatizados (bots). Nos reservamos el derecho de suspender cuentas que excedan patrones de uso humano razonable."
+          },
+          {
+            title: "5. Entrenamiento de IA y Privacidad",
+            icon: "🧠",
+            text: "Al usar el 'Editor Mágico', aceptas que tus ediciones sean procesadas para entrenar tu modelo personal de estilo (Lexicón Preferido). Estos datos son privados y no se comparten con terceros para fines comerciales."
+          },
+          {
+            title: "6. Jurisdicción",
+            icon: "🇨🇴",
+            text: "Estos términos se rigen e interpretan de acuerdo con las leyes de la República de Colombia. Cualquier disputa se resolverá en los tribunales de Cartagena de Indias."
           }
         ].map((item, i) => (
           <div key={i} className="group bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all flex flex-col md:flex-row gap-6 items-start">
@@ -48,7 +60,7 @@ const TermsPage: React.FC = () => {
       </div>
 
       <div className="mt-16 text-center">
-        <p className="text-slate-400 text-sm mb-8">Al usar este sitio, aceptas que eres el único autor y responsable de tus comunicaciones.</p>
+        <p className="text-slate-400 text-sm mb-8">Al usar este sitio, aceptas estos términos y nuestra Política de Privacidad.</p>
         <Link to="/contacto" className="inline-flex items-center gap-2 bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-600 transition-all shadow-lg">
           Hablar con el Equipo ✉️
         </Link>
