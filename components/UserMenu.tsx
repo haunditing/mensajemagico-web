@@ -118,6 +118,13 @@ const UserMenu: React.FC = () => {
               <span>❤️</span> Mis Favoritos
             </Link>
             <Link
+              to="/contactos"
+              onClick={() => setIsOpen(false)}
+              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-600 transition-colors"
+            >
+              <span>📒</span> Mis Contactos
+            </Link>
+            <Link
               to="/recordatorios"
               onClick={() => setIsOpen(false)}
               className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-600 transition-colors"

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { OCCASIONS } from "../constants";
 import { CONFIG } from "../config";
@@ -9,12 +9,18 @@ import FallingParticles from "../components/FallingParticles";
 import ValentineCountdown from "../components/ValentineCountdown";
 import ChristmasCountdown from "../components/ChristmasCountdown";
 import ValentineBanner from "../components/ValentineBanner";
+import CreateContactModal from "../components/CreateContactModal";
+import { useAuth } from "../context/AuthContext";
+import { useUpsell } from "../context/UpsellContext";
 
 const HomePage: React.FC = () => {
   useEffect(() => {
     updateSeoTags();
     window.scrollTo(0, 0);
   }, []);
+  const { user } = useAuth();
+  const { triggerUpsell } = useUpsell();
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
@@ -115,6 +121,18 @@ const HomePage: React.FC = () => {
             <span>Me dejaron en visto</span>
           </Link>
         </div>
+
+        {/* Botón Proactivo del Guardián */}
+        <div className="mt-6">
+          <button
+            onClick={() => user ? setIsContactModalOpen(true) : triggerUpsell("Regístrate para que el Guardián pueda recordar a tus contactos.")}
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors group"
+          >
+            <span className="bg-indigo-50 text-indigo-600 w-6 h-6 rounded-full flex items-center justify-center text-xs group-hover:scale-110 transition-transform">+</span>
+            ✨ Agregar a alguien especial para seguimiento del Guardián
+          </button>
+        </div>
+        <CreateContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} />
       </section>
 
       {/*<AdBanner position="top" />*/}

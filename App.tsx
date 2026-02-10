@@ -51,6 +51,8 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 import ProfilePage from "./pages/ProfilePage";
 import RemindersPage from "./pages/RemindersPage";
 import SettingsPage from "./pages/SettingsPage";
+import ContactsPage from "./pages/ContactsPage";
+
 
 const { BrowserRouter: Router, Routes, Route } = ReactRouterDOM;
 
@@ -89,7 +91,7 @@ const App: React.FC = () => {
                 <Route path="/perfil" element={<ProfilePage />} />
                 <Route path="/recordatorios" element={<RemindersPage />} />
                 <Route path="/configuracion" element={<SettingsPage />} />
-                <Route path="/contactos" element={<ContactPage />} />
+                <Route path="/contactos" element={<ContactsPage />} />
                 <Route path="*" element={<HomePage />} />
               </Routes>
             </Layout>

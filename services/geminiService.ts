@@ -24,23 +24,26 @@ export interface GenerationResponse {
 export const generateMessage = async (
   config: MessageConfig,
   userId?: string,
-  userLocation?: string
+  userLocation?: string,
+  contactId?: string,
 ): Promise<GenerationResponse> => {
-  
   // 1. Generar Llave de Caché para optimización
-  const cacheKey = `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}`
-    .toLowerCase()
-    .replace(/\s+/g, "-");
+  const cacheKey =
+    `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}`
+      .toLowerCase()
+      .replace(/\s+/g, "-");
 
   // 2. Recuperación de Caché (Short-circuit)
   if (generationCache[cacheKey] && generationCache[cacheKey].length > 0) {
     const cachedResults = generationCache[cacheKey];
-    return { content: cachedResults[Math.floor(Math.random() * cachedResults.length)] };
+    return {
+      content: cachedResults[Math.floor(Math.random() * cachedResults.length)],
+    };
   }
 
   try {
     /**
-     * IMPORTANTE: Enviamos solo los datos crudos. 
+     * IMPORTANTE: Enviamos solo los datos crudos.
      * El Backend usará su `PlanService` para decidir el modelo y las instrucciones.
      */
     const response = await api.post("/api/magic/generate", {
@@ -52,6 +55,7 @@ export const generateMessage = async (
       contextWords: config.contextWords ? config.contextWords.join(" ") : "",
       formatInstruction: config.formatInstruction,
       userLocation, // Enviamos la ubicación detectada al backend
+      contactId, // Enviamos el ID del contacto para el Guardián
     });
 
     // Validamos que el backend responda con el campo esperado
@@ -67,7 +71,6 @@ export const generateMessage = async (
     generationCache[cacheKey].push(result.trim());
 
     return { content: result.trim(), remainingCredits };
-
   } catch (error: any) {
     /**
      * Lógica de Patrón de Upgrade:
@@ -75,8 +78,8 @@ export const generateMessage = async (
      * el error contendrá el mensaje de 'upsell' definido en plans.js.
      */
     if (error.status === 403 || error.message?.includes("límite")) {
-       // Re-lanzamos para que el componente Generator.tsx muestre el Modal de Compra
-       throw error; 
+      // Re-lanzamos para que el componente Generator.tsx muestre el Modal de Compra
+      throw error;
     }
 
     console.error("Error en flujo de generación:", error);

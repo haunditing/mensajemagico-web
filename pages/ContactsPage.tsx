@@ -53,6 +53,56 @@ const ContactsPage: React.FC = () => {
     }
   };
 
+  const getCleanContent = (content: any) => {
+    if (!content) return "";
+    
+    // Asegurar que trabajamos con string
+    let textToParse = typeof content === 'string' ? content : JSON.stringify(content);
+
+    try {
+      // Limpiar markdown que la IA suele añadir
+      const cleanText = textToParse
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+
+      if (cleanText.startsWith("{")) {
+        const parsed = JSON.parse(cleanText);
+        if (parsed.generated_messages && Array.isArray(parsed.generated_messages)) {
+          const msg = parsed.generated_messages.find((m: any) => m.tone?.includes("Premium")) || parsed.generated_messages[0];
+          return msg ? msg.content : "Mensaje generado";
+        }
+        if (parsed.message) return parsed.message;
+      }
+      return cleanText;
+    } catch (e) {
+      return textToParse;
+    }
+  };
+
+  const timeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) return `Hace ${interval} año${interval === 1 ? "" : "s"}`;
+
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) return `Hace ${interval} mes${interval === 1 ? "" : "es"}`;
+
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) return `Hace ${interval} día${interval === 1 ? "" : "s"}`;
+
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return `Hace ${interval} hora${interval === 1 ? "" : "s"}`;
+
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return `Hace ${interval} minuto${interval === 1 ? "" : "s"}`;
+
+    return "Hace un momento";
+  };
+
   if (!user)
     return (
       <div className="p-10 text-center">
@@ -176,9 +226,8 @@ const ContactsPage: React.FC = () => {
                   Historial de Mensajes
                 </h3>
                 <div className="space-y-4">
-                  {selectedContact.history
-                    .slice()
-                    .reverse()
+                  {selectedContact.history.slice()
+                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                     .map((item: any, i) => (
                       <div
                         key={i}
@@ -188,12 +237,12 @@ const ContactsPage: React.FC = () => {
                           <span className="font-bold uppercase">
                             {item.occasion}
                           </span>
-                          <span>
-                            {new Date(item.date).toLocaleDateString()}
+                          <span title={new Date(item.date).toLocaleString()}>
+                            {timeAgo(item.date)}
                           </span>
                         </div>
                         <p className="text-slate-700 text-sm italic">
-                          "{item.content.substring(0, 100)}..."
+                          "{getCleanContent(item.content).substring(0, 100)}..."
                         </p>
                       </div>
                     ))}
@@ -216,3 +265,5 @@ const ContactsPage: React.FC = () => {
     </div>
   );
 };
+
+export default ContactsPage;

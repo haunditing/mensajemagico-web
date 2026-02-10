@@ -39,6 +39,10 @@ import UsageBar from "./UsageBar";
 import { getUserLocation } from "../services/locationService";
 import GuardianInsight from "./GuardianInsight";
 import GiftRecommendations, { GiftSuggestion } from "./GiftRecommendations";
+import CreateContactModal from "./CreateContactModal";
+import { api } from "../context/api";
+import RelationalHealthIndicator from "./RelationalHealthIndicator";
+import { useToast } from "@/context/ToastContext";
 
 interface GeneratorProps {
   occasion: Occasion;
@@ -66,6 +70,7 @@ const Generator: React.FC<GeneratorProps> = ({
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
   const isGreeting = occasion.id === "saludo";
+  const { showToast } = useToast();
 
   const [searchParams] = useSearchParams();
   const shareParam = searchParams.get("share");
@@ -89,11 +94,7 @@ const Generator: React.FC<GeneratorProps> = ({
 
   const [relationshipId, setRelationshipId] = useState<string>(
     initialRelationship?.id ||
-      (isPensamiento
-        ? PENSAMIENTO_THEMES[0].id
-        : isGreeting && suggestedGreeting
-          ? suggestedGreeting
-          : RELATIONSHIPS[0].id),
+      (isPensamiento ? PENSAMIENTO_THEMES[0].id : RELATIONSHIPS[0].id),
   );
   const [tone, setTone] = useState<Tone>(
     isPensamiento
@@ -101,6 +102,9 @@ const Generator: React.FC<GeneratorProps> = ({
       : isGreeting
         ? ("dulce" as any)
         : Tone.ROMANTIC,
+  );
+  const [greetingMoment, setGreetingMoment] = useState<string>(
+    (isGreeting && suggestedGreeting) ? suggestedGreeting : GREETING_CATEGORIES[0].id
   );
   const [receivedMessageType, setReceivedMessageType] = useState<string>(
     RECEIVED_MESSAGE_TYPES[0].label,
@@ -116,6 +120,15 @@ const Generator: React.FC<GeneratorProps> = ({
   const [safetyError, setSafetyError] = useState<string | null>(null);
   const [usageMessage, setUsageMessage] = useState<string | null>(null);
   const [showGifts, setShowGifts] = useState(true);
+
+  // Estado para contactos
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState<
+    string | undefined
+  >(undefined);
+
+  const selectedContact = contacts.find((c) => c._id === selectedContactId);
 
   const contextLimit = useFeature("access.context_words_limit", 0);
   const isContextLocked = contextLimit === 0;
@@ -135,6 +148,18 @@ const Generator: React.FC<GeneratorProps> = ({
       getUserLocation().then((loc) => {
         if (loc) setUserLocation(loc);
       });
+    }
+  }, [user]);
+
+  // Cargar contactos si el usuario está logueado
+  useEffect(() => {
+    if (user) {
+      api
+        .get("/api/contacts")
+        .then((data) => {
+          setContacts(data);
+        })
+        .catch((err) => console.error("Error cargando contactos", err));
     }
   }, [user]);
 
@@ -172,7 +197,23 @@ const Generator: React.FC<GeneratorProps> = ({
 
   const handleRelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newId = e.target.value;
-    setRelationshipId(newId);
+
+    if (newId === "new_contact") {
+      setIsContactModalOpen(true);
+      return; // No cambiamos el select todavía
+    }
+
+    // Verificar si es un contacto real (buscando en la lista de contactos)
+    const contact = contacts.find((c) => c._id === newId);
+    if (contact) {
+      setRelationshipId(newId);
+      setSelectedContactId(newId);
+      // Opcional: Podríamos pre-llenar el tono basado en la salud relacional aquí
+    } else {
+      setRelationshipId(newId);
+      setSelectedContactId(undefined); // Es una relación genérica
+    }
+
     if (onRelationshipChange) onRelationshipChange(newId);
   };
 
@@ -235,8 +276,9 @@ const Generator: React.FC<GeneratorProps> = ({
         "la vida";
     } else if (isGreeting) {
       relLabel =
-        GREETING_CATEGORIES.find((c) => c.id === relationshipId)?.label ||
-        "un momento";
+        RELATIONSHIPS.find((r) => r.id === relationshipId)?.label || "alguien";
+      const momentLabel = GREETING_CATEGORIES.find((c) => c.id === greetingMoment)?.label;
+      if (momentLabel) relLabel += ` (Momento: ${momentLabel})`;
     } else {
       relLabel =
         RELATIONSHIPS.find((r) => r.id === relationshipId)?.label || "alguien";
@@ -283,6 +325,7 @@ const Generator: React.FC<GeneratorProps> = ({
         },
         user?._id,
         userLocation, // Pasamos la ubicación detectada
+        selectedContactId, // Pasamos el ID del contacto seleccionado
       );
 
       generatedContent = response.content;
@@ -336,7 +379,10 @@ const Generator: React.FC<GeneratorProps> = ({
             guardianInsight = parsed.guardian_insight;
           }
 
-          if (parsed.gift_recommendations && Array.isArray(parsed.gift_recommendations)) {
+          if (
+            parsed.gift_recommendations &&
+            Array.isArray(parsed.gift_recommendations)
+          ) {
             gifts = parsed.gift_recommendations;
           }
         }
@@ -415,6 +461,13 @@ const Generator: React.FC<GeneratorProps> = ({
     }
   };
 
+  const handleContactCreated = (newContact: any) => {
+    setContacts((prev) => [newContact, ...prev]);
+    setRelationshipId(newContact._id);
+    setSelectedContactId(newContact._id);
+    showToast(`Ahora escribiéndole a ${newContact.name}`, "success");
+  };
+
   return (
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>
       <div
@@ -476,15 +529,14 @@ const Generator: React.FC<GeneratorProps> = ({
                 <label className="block text-sm font-bold text-slate-700">
                   {isPensamiento
                     ? "¿Sobre qué quieres reflexionar?"
-                    : isGreeting
-                      ? "¿En qué momento estás?"
-                      : "Destinatario"}
+                    : "Destinatario"}
                 </label>
-                {isGreeting && relationshipId === suggestedGreeting && (
-                  <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full flex items-center gap-1 animate-fade-in">
-                    <span>{suggestedGreeting === "ocaso" ? "🌙" : "☀️"}</span>{" "}
-                    Sugerido por la hora
-                  </span>
+                {selectedContact && (
+                  <div className="scale-75 origin-right -my-3 animate-fade-in">
+                    <RelationalHealthIndicator
+                      score={selectedContact.relationalHealth}
+                    />
+                  </div>
                 )}
               </div>
               <select
@@ -492,25 +544,70 @@ const Generator: React.FC<GeneratorProps> = ({
                 onChange={handleRelChange}
                 className="w-full h-12 md:h-14 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
               >
-                {isPensamiento
-                  ? PENSAMIENTO_THEMES.map((theme) => (
-                      <option key={theme.id} value={theme.id}>
-                        {theme.label}
-                      </option>
-                    ))
-                  : isGreeting
-                    ? GREETING_CATEGORIES.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.label}
-                        </option>
-                      ))
-                    : RELATIONSHIPS.map((rel) => (
+                {/* Opción Mágica: Nuevo Contacto (Solo si no es pensamiento/saludo) */}
+                {!isPensamiento && (
+                  <>
+                    <option
+                      value="new_contact"
+                      className="font-bold text-blue-600"
+                    >
+                      + Nuevo Contacto
+                    </option>
+                    {contacts.length > 0 && (
+                      <optgroup label="Mis Contactos">
+                        {contacts.map((c) => (
+                          <option key={c._id} value={c._id}>
+                            {c.name} ({c.relationship}){" "}
+                            {c.relationalHealth >= 8 ? "❤️" : ""}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    <optgroup label="Relaciones Generales">
+                      {RELATIONSHIPS.map((rel) => (
                         <option key={rel.id} value={rel.id}>
                           {rel.label}
                         </option>
                       ))}
+                    </optgroup>
+                  </>
+                )}
+
+                {
+                  isPensamiento
+                    ? PENSAMIENTO_THEMES.map((theme) => (
+                        <option key={theme.id} value={theme.id}>
+                          {theme.label}
+                        </option>
+                      ))
+                      : null /* Ya manejado arriba */
+                }
               </select>
             </div>
+
+            {isGreeting && (
+              <div className="animate-fade-in">
+                <div className="flex justify-between items-center mb-2">
+                  <label className="block text-sm font-bold text-slate-700">
+                    ¿En qué momento estás?
+                  </label>
+                  {greetingMoment === suggestedGreeting && (
+                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full flex items-center gap-1 animate-fade-in">
+                      <span>{suggestedGreeting === "ocaso" ? "🌙" : "☀️"}</span> Sugerido por la hora
+                    </span>
+                  )}
+                </div>
+                <select
+                  value={greetingMoment}
+                  onChange={(e) => setGreetingMoment(e.target.value)}
+                  className="w-full h-12 md:h-14 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                >
+                  {GREETING_CATEGORIES.map((cat) => (
+                    <option key={cat.id} value={cat.id}>{cat.label}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-bold text-slate-700 mb-2">
@@ -864,12 +961,19 @@ const Generator: React.FC<GeneratorProps> = ({
                 )}
 
                 {/* Sección de Regalos */}
-                {msg.gifts && msg.gifts.length > 0 && <GiftRecommendations gifts={msg.gifts} country={country} />}
+                {msg.gifts && msg.gifts.length > 0 && (
+                  <GiftRecommendations gifts={msg.gifts} country={country} />
+                )}
               </div>
             </div>
           );
         })}
       </div>
+      <CreateContactModal
+        isOpen={isContactModalOpen}
+        onClose={() => setIsContactModalOpen(false)}
+        onSuccess={handleContactCreated}
+      />
     </div>
   );
 };
