@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npx tsx scripts/generate-sitemap.ts && vite build",
+    "build": "npx tsx public/generate-sitemap.ts && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
