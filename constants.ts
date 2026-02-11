@@ -11,6 +11,8 @@ export const RELATIONSHIPS: Relationship[] = [
   { id: "father", label: "Padre", slug: "padre" },
   { id: "boss", label: "Jefe/a", slug: "jefe" },
   { id: "secret_love", label: "Amor Secreto", slug: "amor-secreto" },
+  { id: "family", label: "Familia", slug: "familia" },
+  { id: "other", label: "Otro", slug: "otro" },
 ];
 
 export const PENSAMIENTO_THEMES = [
@@ -21,6 +23,7 @@ export const PENSAMIENTO_THEMES = [
   { id: "crecimiento", label: "Crecimiento Personal" },
   { id: "soledad", label: "Soledad y Paz" },
   { id: "futuro", label: "El Futuro" },
+  { id: "nostalgia", label: "Nostalgia" },
 ];
 
 export const EMOTIONAL_STATES = [
@@ -29,6 +32,8 @@ export const EMOTIONAL_STATES = [
   { id: "triste", label: "Melancólico/a" },
   { id: "motivado", label: "Motivado/a" },
   { id: "neutro", label: "Neutro/Ecléctico" },
+  { id: "feliz", label: "Feliz/a" },
+  { id: "sorprendido", label: "Sorprendido/a" },
 ];
 
 export const RECEIVED_MESSAGE_TYPES = [
@@ -39,6 +44,7 @@ export const RECEIVED_MESSAGE_TYPES = [
   { id: "cold", label: "Mensaje frío o desinteresado" },
   { id: "angry", label: "Mensaje molesto" },
   { id: "question", label: "Una pregunta directa" },
+  { id: "other", label: "Otro" },
 ];
 
 // --- NUEVAS CONSTANTES PARA "UN SALUDO" ---
@@ -48,6 +54,9 @@ export const GREETING_CATEGORIES = [
   { id: "trayecto", label: "Trayecto (En viaje)" },
   { id: "arribo", label: "Arribo (Ya llegué)" },
   { id: "estado", label: "Estado (¿Cómo estás?)" },
+  { id: "despedida", label: "Despedida (Adiós)" },
+  { id: "agradecimiento", label: "Agradecimiento (Gracias)" },
+  { id: "invitacion", label: "Invitación (Vamos)" },
 ];
 
 export const GREETING_TONES = [
@@ -56,6 +65,7 @@ export const GREETING_TONES = [
   { id: "fuerte", label: "Fuerte" },
   { id: "fresco", label: "Fresco" },
   { id: "sobrio", label: "Sobrio" },
+  { id: "alegre", label: "Alegre" },
 ];
 // ------------------------------------------
 

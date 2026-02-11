@@ -62,11 +62,11 @@ const ContactPage: React.FC = () => {
               ¿Dónde estamos?
             </h3>
             <p className="text-slate-400 mb-6 relative z-10 font-bold uppercase tracking-widest text-[10px]">
-              Mensajes Magicos
+              Mensaje Mágico
             </p>
             <div className="flex items-center gap-4 text-xl relative z-10">
               <span className="text-3xl">📍</span>
-              <span className="font-bold">Latinoamerica</span>
+              <span className="font-bold">El mundo es nuestro hogar</span>
             </div>
             <div className="absolute right-0 bottom-0 text-[15rem] opacity-5 pointer-events-none transform translate-x-1/4 translate-y-1/4">
               🌎
