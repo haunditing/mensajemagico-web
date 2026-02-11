@@ -832,7 +832,7 @@ const Generator: React.FC<GeneratorProps> = ({
         </div>
 
         {safetyError && (
-          <div className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg animate-fade-in-up">
+          <div role="alert" aria-live="assertive" className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg animate-fade-in-up">
             <p className="text-xs font-bold text-red-600 flex items-start gap-2">
               <span className="text-sm">🚫</span>
               <span>{safetyError}</span>
@@ -841,7 +841,7 @@ const Generator: React.FC<GeneratorProps> = ({
         )}
 
         {usageMessage && (
-          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in-up">
+          <div role="alert" aria-live="assertive" className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in-up">
             <p className="text-sm font-bold text-amber-700 flex items-start gap-3">
               <span className="text-xl">⏳</span>
               <span>{usageMessage}</span>
