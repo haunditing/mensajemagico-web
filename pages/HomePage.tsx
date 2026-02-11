@@ -12,6 +12,7 @@ import ValentineBanner from "../components/ValentineBanner";
 import CreateContactModal from "../components/CreateContactModal";
 import { useAuth } from "../context/AuthContext";
 import { useUpsell } from "../context/UpsellContext";
+import FaqSection, { faqData } from "../components/FaqSection";
 
 const HomePage: React.FC = () => {
   useEffect(() => {
@@ -40,9 +41,27 @@ const HomePage: React.FC = () => {
     });
     document.head.appendChild(script);
 
+    // --- SEO: Structured Data for FAQPage ---
+    const faqScript = document.createElement('script');
+    faqScript.type = 'application/ld+json';
+    faqScript.innerHTML = JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": faqData.map(item => ({
+        "@type": "Question",
+        "name": item.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": typeof item.answer === 'string' ? item.answer : 'Visita nuestra página de precios para más detalles.'
+        }
+      }))
+    });
+    document.head.appendChild(faqScript);
+
     return () => {
       // Clean up script on component unmount
       document.head.removeChild(script);
+      document.head.removeChild(faqScript);
     };
   }, []);
   const { user } = useAuth();
@@ -57,7 +76,7 @@ const HomePage: React.FC = () => {
   );
 
   return (
-    <div className="animate-fade-in-up">
+    <main className="animate-fade-in-up">
       {/* Hero Section */}
       <section className="text-center mb-16 md:mb-24 relative">
         {(isValentine || isChristmas) && (
@@ -258,10 +277,12 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
+      <FaqSection />
+
       {/*<div className="mt-16">
         <AdBanner position="bottom" />
       </div>*/}
-    </div>
+    </main>
   );
 };
 

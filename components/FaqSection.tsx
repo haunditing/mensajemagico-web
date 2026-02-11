@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useId } from "react";
 import { Link } from "react-router-dom";
 
 // 1. Definición de Interfaces
@@ -55,18 +55,24 @@ export const faqData: FaqItemData[] = [
 // 2. Componente FaqItem corregido con React.FC para evitar error de 'key'
 const FaqItem: React.FC<{ item: FaqItemData }> = ({ item }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const id = useId();
+  const contentId = `faq-content-${id}`;
+  const headerId = `faq-header-${id}`;
 
   return (
     <div className="border-b border-slate-200 py-6">
+      <h3>
       <button
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen} // Mejora de accesibilidad
+        aria-controls={contentId}
+        id={headerId}
         className="w-full flex justify-between items-center text-left focus:outline-none group"
       >
         <div className="flex items-center gap-3">
-          <h4 className="text-lg font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+          <span className="text-lg font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
             {item.question}
-          </h4>
+          </span>
           {item.badge && (
             <span className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm animate-pulse">
               {item.badge}
@@ -93,10 +99,11 @@ const FaqItem: React.FC<{ item: FaqItemData }> = ({ item }) => {
           </svg>
         </span>
       </button>
+      </h3>
 
       {/* Contenedor de respuesta corregido de <p> a <div> para evitar errores de nesting */}
       {isOpen && (
-        <div className="mt-4 animate-fade-in-up">
+        <div id={contentId} role="region" aria-labelledby={headerId} className="mt-4 animate-fade-in-up">
           <div className="text-slate-600 leading-relaxed">{item.answer}</div>
         </div>
       )}
