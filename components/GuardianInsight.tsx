@@ -10,8 +10,16 @@ const GuardianInsight: React.FC<GuardianInsightProps> = ({ insight }) => {
   const { planLevel } = useAuth();
   if (!insight) return null;
 
+  const isPremium = planLevel === "premium";
+
   return (
-    <div className="mt-6 bg-indigo-50 border border-indigo-100 rounded-xl p-5 relative overflow-hidden animate-slide-in">
+    <div
+      className={`mt-6 border rounded-xl p-5 relative overflow-hidden animate-slide-in ${
+        isPremium
+          ? "bg-gradient-to-br from-amber-50 to-orange-50 border-amber-200 shadow-sm"
+          : "bg-indigo-50 border-indigo-100"
+      }`}
+    >
       <style>{`
         @keyframes slide-in-soft {
           0% { opacity: 0; transform: translateY(10px); }
@@ -21,18 +29,39 @@ const GuardianInsight: React.FC<GuardianInsightProps> = ({ insight }) => {
           animation: slide-in-soft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
       `}</style>
-      <div className="absolute top-0 right-0 -mt-4 -mr-4 w-20 h-20 bg-indigo-100 rounded-full blur-xl opacity-50"></div>
+      <div
+        className={`absolute top-0 right-0 -mt-4 -mr-4 w-20 h-20 rounded-full blur-xl opacity-50 ${
+          isPremium ? "bg-amber-200" : "bg-indigo-100"
+        }`}
+      ></div>
 
       <div className="flex items-start gap-4 relative z-10">
-        <div className="text-2xl bg-white p-2 rounded-lg shadow-sm">🔮</div>
+        <div className="text-2xl bg-white p-2 rounded-lg shadow-sm">
+          {isPremium ? "🦁" : "🔮"}
+        </div>
         <div>
-          <h4 className="text-sm font-bold text-indigo-900 uppercase tracking-wider mb-1">
-            Guardian Insight
-          </h4>
-          <p className="text-indigo-800 text-sm leading-relaxed mb-3">
+          <div className="flex items-center gap-2 mb-1">
+            <h4
+              className={`text-sm font-bold uppercase tracking-wider ${
+                isPremium ? "text-amber-900" : "text-indigo-900"
+              }`}
+            >
+              Guardian Insight
+            </h4>
+            {isPremium && (
+              <span className="text-[10px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full font-black border border-amber-200">
+                PRO
+              </span>
+            )}
+          </div>
+          <p
+            className={`text-sm leading-relaxed mb-3 ${
+              isPremium ? "text-amber-900/80" : "text-indigo-800"
+            }`}
+          >
             {insight}
           </p>
-          {planLevel !== "premium" && (
+          {!isPremium && (
             <Link
               to="/pricing"
               className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1"

@@ -52,7 +52,7 @@ export const generateMessage = async (
       relationship: config.relationship,
       tone: config.tone,
       receivedText: config.receivedText, // Para respuestas
-      contextWords: config.contextWords ? config.contextWords.join(" ") : "",
+      contextWords: config.contextWords || [],
       formatInstruction: config.formatInstruction,
       userLocation, // Enviamos la ubicación detectada al backend
       contactId, // Enviamos el ID del contacto para el Guardián
