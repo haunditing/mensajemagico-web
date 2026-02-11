@@ -78,6 +78,9 @@ export interface MessageConfig {
   receivedText?: string;
   contextWords?: string[];
   formatInstruction?: string;
+  intention?: string;
+  relationalHealth?: number;
+  grammaticalGender?: string;
 }
 
 export interface GeneratedMessage {

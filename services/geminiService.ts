@@ -56,6 +56,9 @@ export const generateMessage = async (
       formatInstruction: config.formatInstruction,
       userLocation, // Enviamos la ubicación detectada al backend
       contactId, // Enviamos el ID del contacto para el Guardián
+      intention: config.intention, // Enviamos la intención calculada
+      relationalHealth: config.relationalHealth,
+      grammaticalGender: config.grammaticalGender,
     });
 
     // Validamos que el backend responda con el campo esperado

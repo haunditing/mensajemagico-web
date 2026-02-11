@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Acceso Admin | Mensaje Mágico</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --border: #30363d;
+        --text: #c9d1d9;
+        --btn: #238636;
+        --btn-hover: #2ea043;
+        --err: #f85149;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+
+      .login-box {
+        background: var(--card);
+        padding: 40px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        width: 100%;
+        max-width: 320px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+      }
+
+      h2 {
+        text-align: center;
+        margin-bottom: 25px;
+        font-weight: 400;
+      }
+
+      .form-group {
+        margin-bottom: 15px;
+      }
+
+      label {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 14px;
+        color: #8b949e;
+      }
+
+      input {
+        width: 100%;
+        padding: 10px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: white;
+        box-sizing: border-box;
+      }
+
+      input:focus {
+        outline: none;
+        border-color: #58a6ff;
+      }
+
+      button {
+        width: 100%;
+        padding: 12px;
+        background: var(--btn);
+        border: none;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 6px;
+        margin-top: 10px;
+      }
+
+      button:disabled {
+        background: #1a4d2e;
+        cursor: not-allowed;
+      }
+
+      .error {
+        background: rgba(248, 81, 73, 0.1);
+        border: 1px solid var(--err);
+        color: var(--err);
+        padding: 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        margin-top: 15px;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-box">
+      <h2>🔒 Admin Access</h2>
+
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="email" placeholder="admin@ejemplo.com" />
+      </div>
+
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="password" placeholder="••••••••" />
+      </div>
+
+      <button id="loginBtn" onclick="handleLogin()">Entrar al Sistema</button>
+
+      <div id="error-msg" class="error"></div>
+    </div>
+
+    <script>
+      // Permitir Enter para loguear
+      document.addEventListener("keypress", (e) => {
+        if (e.key === "Enter") handleLogin();
+      });
+
+      async function handleLogin() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+        const errorMsg = document.getElementById("error-msg");
+        const btn = document.getElementById("loginBtn");
+
+        // Limpiar errores y bloquear botón
+        errorMsg.style.display = "none";
+        btn.innerText = "Verificando...";
+        btn.disabled = true;
+
+        try {
+          console.log("Iniciando petición de login...");
+
+          const res = await fetch("/api/admin/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, password }),
+          });
+
+          // Si la respuesta no es 200-299
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            throw new Error(
+              errorData.message || `Error del servidor (${res.status})`,
+            );
+          }
+
+          const data = await res.json();
+          console.log("Respuesta recibida:", data);
+
+          // EXTRAER TOKEN: Compatible con data.token O data.response.token
+          const token = data.token || (data.response && data.response.token);
+
+          if (token) {
+            localStorage.setItem("admin_token", token);
+            console.log("Token guardado. Redirigiendo...");
+            // Redirección simple a la misma carpeta
+            window.location.href = "logs.html";
+          } else {
+            console.error("Estructura de respuesta inesperada:", data);
+            throw new Error(
+              "No se encontró el token en la respuesta del servidor.",
+            );
+          }
+        } catch (err) {
+          console.error("Error en handleLogin:", err);
+          errorMsg.innerText = "❌ " + err.message;
+          errorMsg.style.display = "block";
+
+          // Restaurar botón para reintentar
+          btn.innerText = "Entrar al Sistema";
+          btn.disabled = false;
+        }
+      }
+    </script>
+  </body>
+</html>

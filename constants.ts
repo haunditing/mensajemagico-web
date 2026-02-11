@@ -50,6 +50,7 @@ export const RECEIVED_MESSAGE_TYPES = [
 // --- NUEVAS CONSTANTES PARA "UN SALUDO" ---
 export const GREETING_CATEGORIES = [
   { id: "amanecer", label: "Amanecer (Buenos días)" },
+  { id: "tarde", label: "Tarde (Buenas tardes)" },
   { id: "ocaso", label: "Ocaso (Buenas noches)" },
   { id: "trayecto", label: "Trayecto (En viaje)" },
   { id: "arribo", label: "Arribo (Ya llegué)" },
@@ -284,3 +285,30 @@ export const TONES = [
   { value: Tone.LIGHT_DESPERATION, label: "Desesperado (Light)" },
   { value: Tone.BELATED, label: "Atrasado" },
 ];
+
+export const GUARDIAN_INTENTIONS = [
+  { id: "low_effort", label: "✨ Solo Cariño", description: "Para mantener el afecto sin pedir nada a cambio.", warmth: 5, pressure: 1 },
+  { id: "inquiry", label: "❓ Conectar", description: "Para saber cómo está y generar conversación.", warmth: 4, pressure: 2 },
+  { id: "resolutive", label: "✅ Resolver", description: "Para cerrar un plan o tomar una decisión.", warmth: 2, pressure: 4 },
+  { id: "action", label: "📢 Impulsar", description: "Para pedir una tarea o dar una instrucción.", warmth: 1, pressure: 5 },
+];
+
+export const PSYCHOLOGICAL_MATRIX: Record<string, string> = {
+  [Tone.ROMANTIC]: "low_effort",
+  [Tone.FUNNY]: "inquiry",
+  [Tone.FLIRTY]: "inquiry",
+  [Tone.DIRECT]: "action",
+  [Tone.SUBTLE]: "low_effort",
+  [Tone.SARCASTIC]: "inquiry",
+  [Tone.SHORT]: "resolutive",
+  [Tone.PROFOUND]: "low_effort",
+  [Tone.FORMAL]: "resolutive",
+  [Tone.LIGHT_DESPERATION]: "inquiry",
+  [Tone.BELATED]: "low_effort",
+  "dulce": "low_effort",
+  "atento": "inquiry",
+  "fuerte": "action",
+  "fresco": "inquiry",
+  "sobrio": "resolutive",
+  "alegre": "low_effort",
+};

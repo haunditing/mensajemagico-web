@@ -15,6 +15,8 @@ import {
   EMOTIONAL_STATES,
   GREETING_CATEGORIES,
   GREETING_TONES,
+  GUARDIAN_INTENTIONS,
+  PSYCHOLOGICAL_MATRIX,
 } from "../constants";
 import { generateMessage, AI_ERROR_FALLBACK } from "../services/geminiService";
 import {
@@ -106,7 +108,9 @@ const Generator: React.FC<GeneratorProps> = ({
         : Tone.ROMANTIC,
   );
   const [greetingMoment, setGreetingMoment] = useState<string>(
-    (isGreeting && suggestedGreeting) ? suggestedGreeting : GREETING_CATEGORIES[0].id
+    isGreeting && suggestedGreeting
+      ? suggestedGreeting
+      : GREETING_CATEGORIES[0].id,
   );
   const [receivedMessageType, setReceivedMessageType] = useState<string>(
     RECEIVED_MESSAGE_TYPES[0].label,
@@ -116,6 +120,9 @@ const Generator: React.FC<GeneratorProps> = ({
   // Estado para palabras de contexto
   const [contextWords, setContextWords] = useState<string[]>([]);
   const [currentWord, setCurrentWord] = useState("");
+  const [intention, setIntention] = useState<string>("low_effort");
+  const [manualIntentionOverride, setManualIntentionOverride] =
+    useState<boolean>(false);
 
   const [messages, setMessages] = useState<ExtendedGeneratedMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -251,6 +258,75 @@ const Generator: React.FC<GeneratorProps> = ({
     }
   };
 
+  // --- LÓGICA DEL GUARDIÁN: CÁLCULO DE INTENCIÓN ---
+  const calculateIntention = (
+    currentTone: string,
+    details: string[],
+    contact: any,
+  ) => {
+    if (manualIntentionOverride) return intention;
+
+    // 1. Base desde el tono (Matriz Psicológica)
+    let baseIntention = PSYCHOLOGICAL_MATRIX[currentTone] || "low_effort";
+
+    // 2. Análisis de Palabras Clave (Trigger de Indagación/Acción)
+    const detailsString = details.join(" ").toLowerCase();
+    if (
+      detailsString.includes("?") ||
+      detailsString.includes("cuándo") ||
+      detailsString.includes("dónde") ||
+      detailsString.includes("cuando") ||
+      detailsString.includes("donde")
+    ) {
+      baseIntention = "inquiry";
+    }
+
+    const actionVerbs = [
+      "comprar",
+      "traer",
+      "hacer",
+      "ir",
+      "venir",
+      "llamar",
+      "recoger",
+      "pagar",
+      "necesito",
+    ];
+    if (actionVerbs.some((v) => detailsString.includes(v))) {
+      baseIntention = "action";
+    }
+
+    // 3. Ajuste por ADN del Contacto (Preferencia histórica)
+    // Si el contacto prefiere mensajes resolutivos y estamos en modo "cariño", sugerimos subir el nivel.
+    if (
+      contact?.guardianMetadata?.preference === "Resolutivo" &&
+      baseIntention === "low_effort"
+    ) {
+      baseIntention = "resolutive";
+    }
+
+    // 4. Hora Crítica (Bloqueo de Acción tarde en la noche)
+    const hour = new Date().getHours();
+    if (hour >= 22 || hour < 5) {
+      if (baseIntention === "action") {
+        baseIntention = "low_effort"; // Forzamos a bajar la intensidad
+      }
+    }
+
+    return baseIntention;
+  };
+
+  useEffect(() => {
+    const newIntention = calculateIntention(
+      tone as string,
+      contextWords,
+      selectedContact,
+    );
+    if (newIntention !== intention) {
+      setIntention(newIntention);
+    }
+  }, [tone, contextWords, selectedContact, manualIntentionOverride]);
+
   const handleGenerate = async () => {
     if (safetyError || isLoading || isOccasionLocked) return;
 
@@ -282,7 +358,9 @@ const Generator: React.FC<GeneratorProps> = ({
     } else if (isGreeting) {
       relLabel =
         RELATIONSHIPS.find((r) => r.id === relationshipId)?.label || "alguien";
-      const momentLabel = GREETING_CATEGORIES.find((c) => c.id === greetingMoment)?.label;
+      const momentLabel = GREETING_CATEGORIES.find(
+        (c) => c.id === greetingMoment,
+      )?.label;
       if (momentLabel) relLabel += ` (Momento: ${momentLabel})`;
     } else {
       relLabel =
@@ -303,8 +381,12 @@ const Generator: React.FC<GeneratorProps> = ({
     const formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: {
       "selected_strategy": "string",
       "generated_messages": [{ "tone": "string", "content": "string", "locked": boolean }],
-      "guardian_insight": "string (Consejo del Guardián)"${showGifts ? `,
-      "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}" }]` : ""}
+      "guardian_insight": "string (Consejo del Guardián)"${
+        showGifts
+          ? `,
+      "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}" }]`
+          : ""
+      }
     }. ${showGifts ? "Máximo 3 regalos." : "NO incluyas regalos."} Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
 
     let generatedContent = "";
@@ -324,6 +406,9 @@ const Generator: React.FC<GeneratorProps> = ({
           receivedText: isResponder ? receivedText : undefined,
           contextWords: contextWords,
           formatInstruction: formatInstruction,
+          intention: intention, // Enviamos la intención calculada al backend
+          relationalHealth: selectedContact?.relationalHealth, // Salud relacional real
+          grammaticalGender: (user as any)?.preferences?.grammaticalGender, // Género del usuario
         },
         user?._id,
         userLocation, // Pasamos la ubicación detectada
@@ -411,7 +496,8 @@ const Generator: React.FC<GeneratorProps> = ({
         ? GREETING_TONES.find((t) => (t.id as any) === tone)?.label
         : availableTones.find((t) => t.value === tone)?.label || tone,
       guardianInsight: guardianInsight,
-      usedLexicalDNA: selectedContact?.guardianMetadata?.preferredLexicon?.length > 0,
+      usedLexicalDNA:
+        selectedContact?.guardianMetadata?.preferredLexicon?.length > 0,
     };
 
     setMessages((prev) => [newMessage, ...prev]);
@@ -472,13 +558,11 @@ const Generator: React.FC<GeneratorProps> = ({
   };
 
   const handleMessageUpdate = (id: string, newContent: string) => {
-      setMessages((prevMessages) =>
-        prevMessages.map((msg) =>
-          msg.id === id
-            ? { ...msg, content: newContent }
-            : msg
-        )
-      );
+    setMessages((prevMessages) =>
+      prevMessages.map((msg) =>
+        msg.id === id ? { ...msg, content: newContent } : msg,
+      ),
+    );
   };
 
   return (
@@ -599,7 +683,7 @@ const Generator: React.FC<GeneratorProps> = ({
                           {theme.label}
                         </option>
                       ))
-                      : null /* Ya manejado arriba */
+                    : null /* Ya manejado arriba */
                 }
               </select>
             </div>
@@ -612,7 +696,8 @@ const Generator: React.FC<GeneratorProps> = ({
                   </label>
                   {greetingMoment === suggestedGreeting && (
                     <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full flex items-center gap-1 animate-fade-in">
-                      <span>{suggestedGreeting === "ocaso" ? "🌙" : "☀️"}</span> Sugerido por la hora
+                      <span>{suggestedGreeting === "ocaso" ? "🌙" : "☀️"}</span>{" "}
+                      Sugerido por la hora
                     </span>
                   )}
                 </div>
@@ -622,7 +707,9 @@ const Generator: React.FC<GeneratorProps> = ({
                   className="w-full h-12 md:h-14 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
                 >
                   {GREETING_CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>{cat.label}</option>
+                    <option key={cat.id} value={cat.id}>
+                      {cat.label}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -685,6 +772,41 @@ const Generator: React.FC<GeneratorProps> = ({
                       ))}
               </div>
             </div>
+          </div>
+
+          {/* --- UI: OBJETIVO DEL GUARDIÁN --- */}
+          <div className="animate-fade-in-up">
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-bold text-slate-700">
+                Objetivo del Guardián
+              </label>
+              {planLevel === "premium" && !manualIntentionOverride && (
+                <span className="text-[10px] text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full font-bold flex items-center gap-1 animate-pulse">
+                  ✨ IA Ajustando
+                </span>
+              )}
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-2">
+              {GUARDIAN_INTENTIONS.map((int) => (
+                <button
+                  key={int.id}
+                  onClick={() => {
+                    setIntention(int.id);
+                    setManualIntentionOverride(true);
+                  }}
+                  className={`px-2 py-2 rounded-lg text-xs font-bold transition-all border flex flex-col items-center gap-1 ${
+                    intention === int.id
+                      ? "bg-indigo-600 text-white border-indigo-600 shadow-md scale-105 ring-2 ring-indigo-100"
+                      : "bg-white text-slate-600 border-slate-200 hover:border-indigo-300 hover:bg-slate-50"
+                  }`}
+                >
+                  <span>{int.label}</span>
+                </button>
+              ))}
+            </div>
+            <p className="text-[10px] text-slate-500 italic min-h-[1.5em] transition-all text-center sm:text-left">
+              {GUARDIAN_INTENTIONS.find((i) => i.id === intention)?.description}
+            </p>
           </div>
 
           {/* Sección de Palabras de Contexto */}
@@ -829,7 +951,11 @@ const Generator: React.FC<GeneratorProps> = ({
         </div>
 
         {safetyError && (
-          <div role="alert" aria-live="assertive" className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg animate-fade-in-up">
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="mb-6 p-3 bg-red-50 border border-red-100 rounded-lg animate-fade-in-up"
+          >
             <p className="text-xs font-bold text-red-600 flex items-start gap-2">
               <span className="text-sm">🚫</span>
               <span>{safetyError}</span>
@@ -838,7 +964,11 @@ const Generator: React.FC<GeneratorProps> = ({
         )}
 
         {usageMessage && (
-          <div role="alert" aria-live="assertive" className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in-up">
+          <div
+            role="alert"
+            aria-live="assertive"
+            className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl animate-fade-in-up"
+          >
             <p className="text-sm font-bold text-amber-700 flex items-start gap-3">
               <span className="text-xl">⏳</span>
               <span>{usageMessage}</span>
@@ -935,10 +1065,12 @@ const Generator: React.FC<GeneratorProps> = ({
               className={`bg-white border border-slate-200 rounded-2xl p-6 md:p-8 animate-fade-in-up shadow-sm relative overflow-hidden ${isPensamiento ? "text-center border-blue-200" : ""}`}
             >
               <div className="mb-8 relative z-10 group">
-                <p className={`text-slate-800 leading-relaxed font-medium whitespace-pre-wrap ${isPensamiento ? "text-xl md:text-2xl italic text-center" : "text-base md:text-lg"}`}>
+                <p
+                  className={`text-slate-800 leading-relaxed font-medium whitespace-pre-wrap ${isPensamiento ? "text-xl md:text-2xl italic text-center" : "text-base md:text-lg"}`}
+                >
                   {msg.content}
                 </p>
-                
+
                 {msg.usedLexicalDNA && (
                   <div className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100 animate-fade-in select-none">
                     <span className="text-xs">✨</span>
@@ -947,13 +1079,23 @@ const Generator: React.FC<GeneratorProps> = ({
                 )}
 
                 {!isError && (
-                  <button 
+                  <button
                     onClick={() => setEditingMessageId(msg.id)}
                     className="absolute top-0 right-0 p-2 bg-white/80 backdrop-blur-sm rounded-lg text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all shadow-sm border border-slate-100"
                     title="Editar mensaje"
                   >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
                     </svg>
                   </button>
                 )}
@@ -1016,9 +1158,11 @@ const Generator: React.FC<GeneratorProps> = ({
         <GuardianEditorModal
           isOpen={!!editingMessageId}
           onClose={() => setEditingMessageId(null)}
-          initialText={messages.find(m => m.id === editingMessageId)?.content || ""}
+          initialText={
+            messages.find((m) => m.id === editingMessageId)?.content || ""
+          }
           contactId={selectedContactId}
-          isPremium={planLevel === 'premium'}
+          isPremium={planLevel === "premium"}
           relationalHealth={selectedContact?.relationalHealth}
           onSave={(newText) => {
             handleMessageUpdate(editingMessageId, newText);

@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel de Logs | Mensaje Mágico</title>
+    <style>
+      :root {
+        --bg: #0d1117;
+        --card: #161b22;
+        --border: #30363d;
+        --text: #c9d1d9;
+        --accent: #58a6ff;
+        --err: #f85149;
+        --success: #3fb950;
+        --warning: #d29922;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        margin: 0;
+        padding: 20px;
+      }
+
+      .log-container {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+      }
+
+      .controls {
+        display: flex;
+        gap: 10px;
+      }
+
+      .btn {
+        background: var(--card);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .btn:hover:not(:disabled) {
+        border-color: var(--accent);
+        background: #1f242c;
+      }
+      .btn-refresh {
+        background: var(--accent);
+        color: white;
+        border: none;
+      }
+      .btn-refresh:disabled {
+        opacity: 0.6;
+        cursor: wait;
+      }
+      .btn-logout {
+        color: var(--err);
+        border-color: var(--err);
+      }
+
+      .log-item {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        margin-bottom: 8px;
+        padding: 10px 15px;
+        transition: 0.2s;
+      }
+
+      .log-row {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .level-badge {
+        font-size: 10px;
+        font-weight: 800;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 12px;
+        min-width: 55px;
+        text-align: center;
+      }
+
+      .level-info {
+        background: rgba(63, 185, 80, 0.1);
+        color: var(--success);
+      }
+      .level-error {
+        background: rgba(248, 81, 73, 0.1);
+        color: var(--err);
+      }
+
+      .time {
+        color: #8b949e;
+        font-family: monospace;
+        font-size: 13px;
+        min-width: 70px;
+      }
+      .msg-text {
+        flex-grow: 1;
+        font-weight: 500;
+        font-size: 14px;
+        color: #f0f6fc;
+      }
+
+      details {
+        margin-top: 8px;
+        border-top: 1px solid #21262d;
+        padding-top: 8px;
+      }
+
+      summary {
+        font-size: 12px;
+        color: var(--accent);
+        cursor: pointer;
+        list-style: none;
+      }
+
+      pre {
+        background: #010409;
+        color: #7ee787;
+        padding: 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        overflow-x: auto;
+        margin-top: 10px;
+        border: 1px solid #30363d;
+        line-height: 1.4;
+      }
+
+      .status-msg {
+        text-align: center;
+        padding: 60px;
+        color: #8b949e;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="log-container">
+      <header>
+        <div>
+          <h1 style="margin: 0; font-size: 1.4em">🛰️ Registro de Actividad</h1>
+          <p style="margin: 4px 0 0; color: #8b949e; font-size: 0.9em">
+            Panel de control del sistema
+          </p>
+        </div>
+        <div class="controls">
+          <button id="refreshBtn" class="btn btn-refresh" onclick="fetchLogs()">
+            <span>🔄</span> Actualizar
+          </button>
+          <button class="btn btn-logout" onclick="logout()">Sair</button>
+        </div>
+      </header>
+
+      <div id="logs-display">
+        <div class="status-msg">Cargando registros...</div>
+      </div>
+    </div>
+
+    <script>
+      const BASE_URL = "http://localhost:3000";
+
+      async function fetchLogs() {
+        const display = document.getElementById("logs-display");
+        const btn = document.getElementById("refreshBtn");
+        const token = localStorage.getItem("admin_token");
+
+        if (!token) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = "<span>⏳</span> Cargando...";
+
+        try {
+          const res = await fetch(`${BASE_URL}/api/admin/logs`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          if (res.status === 401 || res.status === 403) {
+            logout();
+            return;
+          }
+
+          const logs = await res.json();
+
+          if (!logs || logs.length === 0) {
+            display.innerHTML =
+              '<div class="status-msg">📭 No hay logs registrados para hoy.</div>';
+            return;
+          }
+
+          display.innerHTML = logs
+            .map((log) => {
+              // Extraer datos con seguridad
+              const { timestamp, level = "info", message, ...extra } = log;
+
+              // Si no hay 'message' pero hay 'peticion', es nuestra transacción IA
+              const displayMsg =
+                message ||
+                (extra.peticion
+                  ? "🚀 Transacción IA: Generación"
+                  : "Evento del sistema");
+
+              // Formatear hora: "2026-02-11 15:56:35" -> "15:56:35"
+              const timeOnly =
+                timestamp && timestamp.includes(" ")
+                  ? timestamp.split(" ")[1]
+                  : "--:--";
+              const levelClass =
+                level === "error" ? "level-error" : "level-info";
+
+              return `
+                <div class="log-item">
+                  <div class="log-row">
+                    <span class="time">${timeOnly}</span>
+                    <span class="level-badge ${levelClass}">${level}</span>
+                    <span class="msg-text">${displayMsg}</span>
+                  </div>
+                  ${
+                    Object.keys(extra).length > 0
+                      ? `
+                    <details>
+                      <summary>▸ Ver detalles técnicos</summary>
+                      <pre>${JSON.stringify(extra, null, 2)}</pre>
+                    </details>
+                  `
+                      : ""
+                  }
+                </div>
+              `;
+            })
+            .join("");
+        } catch (err) {
+          display.innerHTML = `<div class="status-msg" style="color:var(--err)">❌ Error: ${err.message}</div>`;
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = "<span>🔄</span> Actualizar";
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem("admin_token");
+        window.location.href = "login.html";
+      }
+
+      document.addEventListener("DOMContentLoaded", fetchLogs);
+    </script>
+  </body>
+</html>
