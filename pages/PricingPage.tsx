@@ -27,6 +27,18 @@ const PricingPage: React.FC = () => {
     return () => window.removeEventListener("pageshow", handlePageShow);
   }, []);
 
+  // Cargar script de seguridad de Mercado Pago para Device ID
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://www.mercadopago.com/v2/security.js";
+    script.setAttribute("view", "checkout");
+    document.body.appendChild(script);
+
+    return () => {
+      if (document.body.contains(script)) document.body.removeChild(script);
+    };
+  }, []);
+
   const handleSubscribe = async () => {
     if (!ENABLE_UPGRADES) {
       alert("Las nuevas suscripciones están temporalmente deshabilitadas.");
@@ -43,18 +55,38 @@ const PricingPage: React.FC = () => {
       const planId =
         billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
 
+      // Obtener Device ID generado por el script de MP
+      const deviceId = (window as any).MP_DEVICE_SESSION_ID;
+
       // Asumiendo que 'api' es una instancia de Axios
       const response = await api.post("/api/mercadopago/create_preference", {
         userId: user._id,
         planId,
         country: country || "US",
+        deviceId, // Enviamos la huella digital al backend
       });
+
+      // Normalizar respuesta (Axios vs fetch wrapper)
+      const data = response?.data || response;
+
       // Verificamos si la data existe antes de usarla
-      if (response?.data?.init_point) {
-        window.location.href = response.data.init_point;
-      } else if (response?.init_point) {
-        // Por si tu instancia 'api' ya devuelve la data directamente
-        window.location.href = response.init_point;
+      if (data?.init_point) {
+        // Lógica inteligente: Si estamos en localhost, preferimos el link de Sandbox
+        const isDev =
+          window.location.hostname === "localhost" ||
+          window.location.hostname === "127.0.0.1" ||
+          window.location.port !== ""; // Útil si usas puertos custom
+
+        const redirectUrl =
+          isDev && data.sandbox_init_point
+            ? data.sandbox_init_point
+            : data.init_point;
+
+        console.log(
+          `💳 Modo ${isDev ? "SANDBOX" : "PRODUCCIÓN"}:`,
+          redirectUrl,
+        );
+        window.location.href = redirectUrl;
       } else {
         throw new Error(
           "No se pudo obtener el enlace de pago. Revisa tu conexión.",
