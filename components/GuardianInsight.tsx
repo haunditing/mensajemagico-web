@@ -1,11 +1,13 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 interface GuardianInsightProps {
   insight: string;
 }
 
 const GuardianInsight: React.FC<GuardianInsightProps> = ({ insight }) => {
+  const { planLevel } = useAuth();
   if (!insight) return null;
 
   return (
@@ -30,12 +32,14 @@ const GuardianInsight: React.FC<GuardianInsightProps> = ({ insight }) => {
           <p className="text-indigo-800 text-sm leading-relaxed mb-3">
             {insight}
           </p>
-          <Link
-            to="/pricing"
-            className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1"
-          >
-            Desbloquear Estrategia Premium <span>→</span>
-          </Link>
+          {planLevel !== "premium" && (
+            <Link
+              to="/pricing"
+              className="text-xs font-bold text-indigo-600 hover:text-indigo-800 hover:underline flex items-center gap-1"
+            >
+              Desbloquear Estrategia Premium <span>→</span>
+            </Link>
+          )}
         </div>
       </div>
     </div>

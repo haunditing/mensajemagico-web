@@ -12,10 +12,41 @@ export interface GiftSuggestion {
 interface GiftRecommendationsProps {
   gifts: GiftSuggestion[];
   country: string;
+  isLoading?: boolean;
 }
 
-const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, country }) => {
-  if (!gifts || gifts.length === 0) return null;
+const GiftCardSkeleton: React.FC = () => {
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden animate-pulse flex flex-col h-full">
+      {/* Image Placeholder */}
+      <div className="h-32 w-full bg-slate-200 shrink-0"></div>
+      <div className="p-5 flex flex-col flex-grow">
+        {/* Title Placeholder */}
+        <div className="h-4 bg-slate-200 rounded w-3/4 mb-3"></div>
+        <div className="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
+        
+        {/* Reason Placeholder */}
+        <div className="space-y-2 mb-4 flex-grow">
+          <div className="h-3 bg-slate-200 rounded"></div>
+          <div className="h-3 bg-slate-200 rounded"></div>
+          <div className="h-3 bg-slate-200 rounded w-5/6"></div>
+        </div>
+        
+        {/* Button Placeholder */}
+        <div className="h-10 bg-slate-300 rounded-xl mt-auto"></div>
+      </div>
+    </div>
+  );
+};
+
+const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, country, isLoading = false }) => {
+  // Filtrar regalos inválidos (sin título o término de búsqueda) para evitar errores de renderizado
+  const validGifts = gifts?.filter(g => g && g.title && g.search_term);
+
+  // Si no estamos cargando y no hay regalos válidos, no renderizamos nada.
+  if (!isLoading && (!validGifts || validGifts.length === 0)) {
+    return null;
+  }
 
   return (
     <div className="mt-10 pt-8 border-t border-slate-100 animate-fade-in">
@@ -36,11 +67,15 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-        {gifts.map((gift, idx) => (
-          <GiftCard key={idx} gift={gift} country={country} />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {[...Array(3)].map((_, i) => <GiftCardSkeleton key={i} />)}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {validGifts.map((gift, idx) => <GiftCard key={idx} gift={gift} country={country} />)}
+        </div>
+      )}
       
       <p className="text-[10px] text-slate-400 mt-8 text-center italic opacity-70">
         {CONFIG.AMAZON.DISCLAIMER}

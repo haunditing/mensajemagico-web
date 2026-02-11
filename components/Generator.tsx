@@ -290,25 +290,22 @@ const Generator: React.FC<GeneratorProps> = ({
     }
 
     // Inyectamos instrucción para formato JSON y regalos si está activo
-    let formatInstruction = "";
-    if (showGifts) {
-      const currencyMap: Record<string, string> = {
-        CO: "Pesos Colombianos",
-        MX: "Pesos Mexicanos",
-        AR: "Pesos Argentinos",
-        CL: "Pesos Chilenos",
-        PE: "Soles",
-        UY: "Pesos Uruguayos",
-        VE: "Bolívares",
-      };
-      const localCurrency = currencyMap[country] || "Dólares";
-      formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: {
-        "selected_strategy": "string",
-        "generated_messages": [{ "tone": "string", "content": "string", "locked": boolean }],
-        "guardian_insight": "string (Consejo del Guardián si es GUEST/FREEMIUM, sino null)",
-        "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}" }]
-      }. Máximo 3 regalos. Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
-    }
+    const currencyMap: Record<string, string> = {
+      CO: "Pesos Colombianos",
+      MX: "Pesos Mexicanos",
+      AR: "Pesos Argentinos",
+      CL: "Pesos Chilenos",
+      PE: "Soles",
+      UY: "Pesos Uruguayos",
+      VE: "Bolívares",
+    };
+    const localCurrency = currencyMap[country] || "Dólares";
+    const formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: {
+      "selected_strategy": "string",
+      "generated_messages": [{ "tone": "string", "content": "string", "locked": boolean }],
+      "guardian_insight": "string (Consejo del Guardián)"${showGifts ? `,
+      "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}" }]` : ""}
+    }. ${showGifts ? "Máximo 3 regalos." : "NO incluyas regalos."} Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
 
     let generatedContent = "";
     try {
@@ -380,7 +377,7 @@ const Generator: React.FC<GeneratorProps> = ({
               : standardMsg.content;
 
           // Añadir insight si existe (para freemium)
-          if (parsed.guardian_insight && planLevel !== "premium") {
+          if (parsed.guardian_insight) {
             guardianInsight = parsed.guardian_insight;
           }
 
@@ -924,6 +921,10 @@ const Generator: React.FC<GeneratorProps> = ({
       )}
 
       <div id="results-section" className="mt-6 space-y-6">
+        {isLoading && showGifts && (
+          <GiftRecommendations gifts={[]} country={country} isLoading={true} />
+        )}
+
         {messages.map((msg) => {
           const isError = msg.content === AI_ERROR_FALLBACK;
           const isFav = isFavorite(msg.content);
