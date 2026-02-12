@@ -1,15 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-// import { handleUpgrade } from "../services/paymentService"; // Stripe deshabilitado
+import { handleUpgrade } from "../services/paymentService"; // Stripe habilitado
 import { useNavigate } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { ENABLE_UPGRADES } from "../config";
 import { useLocalization } from "../context/LocalizationContext";
 import { api } from "../context/api";
+import PaymentGateways from "../components/PaymentGateways";
+import { useToast } from "../context/ToastContext";
+
+declare global {
+  interface Window {
+    WidgetCheckout: any;
+  }
+}
 
 const PricingPage: React.FC = () => {
   const { user, planLevel, availablePlans, isLoading: authLoading } = useAuth();
   const { country } = useLocalization();
+  const { showToast } = useToast();
   const navigate = useNavigate();
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(
     "monthly",
@@ -39,7 +48,24 @@ const PricingPage: React.FC = () => {
     };
   }, []);
 
-  const handleSubscribe = async () => {
+  // Helper para cargar el script de Wompi dinámicamente
+  const loadWompiScript = () => {
+    return new Promise((resolve, reject) => {
+      if (document.getElementById('wompi-script')) {
+        resolve(true);
+        return;
+      }
+      const script = document.createElement('script');
+      script.id = 'wompi-script';
+      script.src = 'https://checkout.wompi.co/widget.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => reject(new Error('Error cargando Wompi'));
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleSubscribe = async (gateway: string) => {
     if (!ENABLE_UPGRADES) {
       alert("Las nuevas suscripciones están temporalmente deshabilitadas.");
       return;
@@ -52,54 +78,88 @@ const PricingPage: React.FC = () => {
 
     setIsPaymentLoading(true);
     try {
-      const planId =
-        billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+      // --- 1. Mercado Pago ---
+      if (gateway === "mercadopago") {
+        const planId = billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+        
+        // Obtener Device ID generado por el script de MP (si existe)
+        const deviceId = (window as any).MP_DEVICE_SESSION_ID;
 
-      // Obtener Device ID generado por el script de MP
-      const deviceId = (window as any).MP_DEVICE_SESSION_ID;
+        const response = await api.post("/api/mercadopago/create_preference", {
+          userId: user._id,
+          planId,
+          country: country || "US",
+          deviceId,
+        });
 
-      // Asumiendo que 'api' es una instancia de Axios
-      const response = await api.post("/api/mercadopago/create_preference", {
-        userId: user._id,
-        planId,
-        country: country || "US",
-        deviceId, // Enviamos la huella digital al backend
-      });
+        const data = response?.data || response;
 
-      // Normalizar respuesta (Axios vs fetch wrapper)
-      const data = response?.data || response;
-
-      // Verificamos si la data existe antes de usarla
-      if (data?.init_point) {
-        // Lógica inteligente: Si estamos en localhost, preferimos el link de Sandbox
-        const isDev =
-          window.location.hostname === "localhost" ||
-          window.location.hostname === "127.0.0.1" ||
-          window.location.port !== ""; // Útil si usas puertos custom
-
-        const redirectUrl =
-          isDev && data.sandbox_init_point
-            ? data.sandbox_init_point
-            : data.init_point;
-
-        console.log(
-          `💳 Modo ${isDev ? "SANDBOX" : "PRODUCCIÓN"}:`,
-          redirectUrl,
-        );
-        window.location.href = redirectUrl;
-      } else {
-        throw new Error(
-          "No se pudo obtener el enlace de pago. Revisa tu conexión.",
-        );
+        if (data?.init_point) {
+          const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+          const redirectUrl = isDev && data.sandbox_init_point ? data.sandbox_init_point : data.init_point;
+          window.location.href = redirectUrl;
+          return; // Mantenemos loading true mientras redirige
+        } else {
+          throw new Error("No se pudo obtener el enlace de pago de Mercado Pago.");
+        }
       }
-    } catch (error) {
+
+      // --- 2. Stripe ---
+      if (gateway === "stripe") {
+        await handleUpgrade(user._id, billingInterval);
+        return; // handleUpgrade maneja la redirección
+      }
+
+      // --- 3. Wompi ---
+      if (gateway === "wompi") {
+        await loadWompiScript();
+        
+        const planId = billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+        
+        // 1. Obtener datos de firma del backend
+        const response = await api.post('/api/checkout', {
+          userId: user._id,
+          planId
+        });
+        
+        const data = response.data || response;
+
+        // 2. Configurar Widget
+        const checkout = new window.WidgetCheckout({
+          currency: data.currency,
+          amountInCents: data.amountInCents,
+          reference: data.reference,
+          publicKey: data.publicKey,
+          signature: { integrity: data.signature },
+          redirectUrl: data.redirectUrl,
+          customerData: {
+            email: user.email,
+            fullName: user.email.split('@')[0], // Fallback simple
+          }
+        });
+
+        // 3. Abrir Widget
+        checkout.open((result: any) => {
+          const transaction = result.transaction;
+          console.log('Transaction Result:', transaction);
+        });
+        
+        setIsPaymentLoading(false);
+        return;
+      }
+
+      throw new Error("Método de pago no reconocido.");
+
+    } catch (error: any) {
       console.error("Error de pago:", error);
-      // Buscamos el mensaje en el orden: Error del servidor > Error de Axios > Mensaje genérico
-      const errorMsg =
-        error.response?.data?.error ||
-        error.message ||
-        "Hubo un problema al iniciar el pago.";
-      alert(errorMsg);
+      setIsPaymentLoading(false);
+      
+      // Manejo robusto de errores
+      let errorMsg = error.message || "Hubo un problema al iniciar el pago.";
+      if (error.response?.data?.error) errorMsg = error.response.data.error;
+      if (error.response?.data?.details) errorMsg += `: ${error.response.data.details}`;
+      
+      showToast(errorMsg, "payment_error" as any);
     }
   };
 
@@ -197,7 +257,7 @@ const PricingPage: React.FC = () => {
 
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Free Plan */}
-        <div className="bg-white rounded-[2.5rem] p-8 border border-slate-200 shadow-sm flex flex-col">
+        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-200 shadow-sm flex flex-col">
           <div className="mb-8">
             <h3 className="text-2xl font-bold text-slate-900 mb-2">Gratis</h3>
             <p className="text-slate-500">Para uso casual y esporádico.</p>
@@ -207,7 +267,7 @@ const PricingPage: React.FC = () => {
             </div>
           </div>
 
-          <ul className="space-y-4 mb-8 flex-1">
+          <ul className="space-y-4 mb-6 md:mb-8 flex-1">
             <li className="flex items-center gap-3 text-slate-600">
               <span className="text-green-500 text-xl">✓</span>
               <span>
@@ -238,7 +298,7 @@ const PricingPage: React.FC = () => {
 
           <button
             disabled={true}
-            className="w-full py-4 rounded-xl font-bold text-slate-400 bg-slate-100 cursor-default"
+            className="w-full py-4 rounded-2xl font-bold text-slate-400 bg-slate-100 cursor-default"
           >
             {planLevel === "freemium" || planLevel === "guest"
               ? "Tu plan actual"
@@ -247,7 +307,7 @@ const PricingPage: React.FC = () => {
         </div>
 
         {/* Premium Plan */}
-        <div className="bg-slate-900 rounded-[2.5rem] p-8 border border-slate-800 shadow-2xl shadow-blue-900/20 flex flex-col relative overflow-hidden">
+        <div className="bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 shadow-2xl shadow-blue-900/20 flex flex-col relative overflow-hidden">
           <div className="absolute top-0 right-0 bg-gradient-to-bl from-blue-600 to-purple-600 text-white text-xs font-bold px-4 py-2 rounded-bl-2xl">
             RECOMENDADO
           </div>
@@ -270,7 +330,7 @@ const PricingPage: React.FC = () => {
             )}
           </div>
 
-          <ul className="space-y-4 mb-8 flex-1 relative z-10">
+          <ul className="space-y-4 mb-6 md:mb-8 flex-1 relative z-10">
             <li className="flex items-center gap-3 text-slate-200">
               <span className="text-blue-400 text-xl">✓</span>
               <span>
@@ -335,69 +395,17 @@ const PricingPage: React.FC = () => {
             </li>
           </ul>
 
-          <button
-            onClick={handleSubscribe}
-            disabled={
-              isPaymentLoading || planLevel === "premium" || !ENABLE_UPGRADES
-            }
-            className={`w-full py-4 rounded-xl font-bold text-lg transition-all relative z-10
-              ${
-                planLevel === "premium" || !ENABLE_UPGRADES
-                  ? "bg-slate-200 text-slate-400 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98]"
-              }`}
-          >
-            {isPaymentLoading
-              ? "Procesando..."
-              : !ENABLE_UPGRADES
-                ? "No disponible temporalmente"
-                : planLevel === "premium"
-                  ? "Plan Activo"
-                  : "Mejorar ahora"}
-          </button>
-
-          {/* Wompi Integration for Colombia */}
-          {/* Ocultando Wompi temporalmente
-          {country === "CO" && planLevel !== "premium" && ENABLE_UPGRADES && (
-            <div className="mt-4 relative z-10 w-full">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="h-px bg-slate-700 flex-1"></div>
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
-                  O en pesos
-                </span>
-                <div className="h-px bg-slate-700 flex-1"></div>
-              </div>
-              <div
-                onClickCapture={(e) => {
-                  if (!user) {
-                    e.stopPropagation();
-                    navigate("/login");
-                  }
-                }}
-              >
-                <WompiCheckoutButton
-                  planId={
-                    billingInterval === "monthly"
-                      ? "premium_monthly"
-                      : "premium_yearly"
-                  }
-                  className="w-full"
-                  buttonText="Pagar con Wompi / Nequi"
-                />
-              </div>
-            </div>
-          )} */}
+          <PaymentGateways 
+            onSelectGateway={handleSubscribe} 
+            isLoading={isPaymentLoading}
+            planLevel={planLevel}
+          />
 
           {/* Background decoration */}
           <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
           <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
         </div>
       </div>
-
-      <p className="text-center text-slate-400 text-sm mt-12">
-        Pagos seguros procesados por MercadoPago. Puedes cancelar en cualquier
-        momento.
-      </p>
     </div>
   );
 };

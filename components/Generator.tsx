@@ -137,6 +137,7 @@ const Generator: React.FC<GeneratorProps> = ({
     string | undefined
   >(undefined);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [showHandAnimation, setShowHandAnimation] = useState(false);
 
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -206,6 +207,17 @@ const Generator: React.FC<GeneratorProps> = ({
       setSafetyError(null);
     }
   }, [receivedText, isResponder]);
+
+  // Efecto para ocultar la animación de la mano después de 3 segundos
+  useEffect(() => {
+    if (currentWord.trim() && !isContextLocked && contextWords.length < MAX_CONTEXT) {
+      setShowHandAnimation(true);
+      const timer = setTimeout(() => setShowHandAnimation(false), 3000);
+      return () => clearTimeout(timer);
+    } else {
+      setShowHandAnimation(false);
+    }
+  }, [currentWord, isContextLocked, contextWords.length, MAX_CONTEXT]);
 
   const handleRelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newId = e.target.value;
@@ -813,7 +825,7 @@ const Generator: React.FC<GeneratorProps> = ({
 
           {/* Sección de Palabras de Contexto */}
           <div className="animate-fade-in-up">
-            <label className="block text-sm font-bold text-slate-700 mb-2">
+            <label htmlFor="context-word-input" className="block text-sm font-bold text-slate-700 mb-6">
               Añade detalles o palabras clave{" "}
               {isContextLocked ? (
                 <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full ml-2">
@@ -826,6 +838,7 @@ const Generator: React.FC<GeneratorProps> = ({
             <div className="flex gap-2 mb-3">
               <div className="relative flex-grow">
                 <input
+                  id="context-word-input"
                   type="text"
                   value={currentWord}
                   onChange={(e) => setCurrentWord(e.target.value)}
@@ -851,20 +864,28 @@ const Generator: React.FC<GeneratorProps> = ({
                   />
                 )}
               </div>
-              <button
-                onClick={addContextWord}
-                disabled={
-                  !currentWord.trim() ||
-                  contextWords.length >= MAX_CONTEXT ||
-                  isContextLocked
-                }
-                className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-200 transition-colors disabled:opacity-50"
-                title="Añadir palabra"
-              >
-                <span className="text-xl font-bold">
-                  {isContextLocked ? "🔒" : "+"}
-                </span>
-              </button>
+              <div className="relative">
+                {showHandAnimation && (
+                  <div className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2 animate-bounce text-xl md:text-2xl pointer-events-none z-20 filter drop-shadow-sm">
+                    👇
+                  </div>
+                )}
+                <button
+                  onClick={addContextWord}
+                  disabled={
+                    !currentWord.trim() ||
+                    contextWords.length >= MAX_CONTEXT ||
+                    isContextLocked
+                  }
+                  className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-200 transition-colors disabled:opacity-50"
+                  title="Añadir palabra"
+                  aria-label="Añadir palabra al contexto"
+                >
+                  <span className="text-xl font-bold" aria-hidden="true">
+                    {isContextLocked ? "🔒" : "+"}
+                  </span>
+                </button>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-2">
