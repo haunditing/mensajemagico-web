@@ -177,7 +177,10 @@
     </div>
 
     <script>
-      const BASE_URL = "http://localhost:3000";
+      const BASE_URL =
+        window.location.hostname === "localhost"
+          ? ""
+          : "https://web-production-e736.up.railway.app";
 
       async function fetchLogs() {
         const display = document.getElementById("logs-display");

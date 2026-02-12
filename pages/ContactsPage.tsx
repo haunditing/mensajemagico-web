@@ -5,6 +5,8 @@ import LoadingSpinner from "../components/LoadingSpinner";
 import RelationalHealthIndicator from "../components/RelationalHealthIndicator";
 import RelationalHealthChart from "../components/RelationalHealthChart";
 import { Link } from "react-router-dom";
+import CreateContactModal from "../components/CreateContactModal";
+import { useToast } from "../context/ToastContext";
 
 interface Contact {
   _id: string;
@@ -13,16 +15,17 @@ interface Contact {
   relationalHealth: number;
   lastInteraction?: string;
   history: any[];
+  grammaticalGender?: string;
 }
 
 const ContactsPage: React.FC = () => {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showCreate, setShowForm] = useState(false);
-  const [newName, setName] = useState("");
-  const [newRel, setRel] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingContact, setEditingContact] = useState<Contact | null>(null);
 
   useEffect(() => {
     if (user) fetchContacts();
@@ -40,16 +43,29 @@ const ContactsPage: React.FC = () => {
     }
   };
 
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreate = () => {
+    setEditingContact(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (contact: Contact, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditingContact(contact);
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm("¿Estás seguro de eliminar este contacto?")) return;
+
     try {
-      await api.post("/api/contacts", { name: newName, relationship: newRel });
-      setShowForm(false);
-      setName("");
-      setRel("");
+      await api.delete(`/api/contacts/${id}`);
+      showToast("Contacto eliminado", "success");
       fetchContacts();
+      if (selectedContact?._id === id) setSelectedContact(null);
     } catch (error) {
       console.error(error);
+      showToast("Error al eliminar contacto", "error");
     }
   };
 
@@ -115,49 +131,12 @@ const ContactsPage: React.FC = () => {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-black text-slate-900">Mis Contactos</h1>
         <button
-          onClick={() => setShowForm(!showCreate)}
+          onClick={handleCreate}
           className="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-800"
         >
-          {showCreate ? "Cancelar" : "+ Nuevo Contacto"}
+          + Nuevo Contacto
         </button>
       </div>
-
-      {showCreate && (
-        <form
-          onSubmit={handleCreate}
-          className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8 flex gap-4 items-end"
-        >
-          <div className="flex-1">
-            <label className="block text-xs font-bold text-slate-500 mb-1">
-              Nombre
-            </label>
-            <input
-              value={newName}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-slate-200"
-              required
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-xs font-bold text-slate-500 mb-1">
-              Relación
-            </label>
-            <input
-              value={newRel}
-              onChange={(e) => setRel(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-slate-200"
-              placeholder="Ej: Pareja, Jefe"
-              required
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-blue-600 text-white px-6 py-2.5 rounded-xl font-bold"
-          >
-            Guardar
-          </button>
-        </form>
-      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Lista de Contactos */}
@@ -169,7 +148,7 @@ const ContactsPage: React.FC = () => {
               <div
                 key={contact._id}
                 onClick={() => setSelectedContact(contact)}
-                className={`p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-md flex items-center justify-between
+                className={`p-4 rounded-2xl border cursor-pointer transition-all hover:shadow-md flex items-center justify-between group
                 ${selectedContact?._id === contact._id ? "bg-blue-50 border-blue-200 ring-2 ring-blue-100" : "bg-white border-slate-200"}
               `}
               >
@@ -184,10 +163,26 @@ const ContactsPage: React.FC = () => {
                     </p>
                   </div>
                 </div>
-                <RelationalHealthIndicator
-                  score={contact.relationalHealth}
-                  className="scale-75"
-                />
+                <div className="flex items-center gap-2">
+                  <RelationalHealthIndicator
+                    score={contact.relationalHealth}
+                    className="scale-75"
+                  />
+                  <div className="hidden group-hover:flex gap-1">
+                    <button
+                      onClick={(e) => handleEdit(contact, e)}
+                      className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      onClick={(e) => handleDelete(contact._id, e)}
+                      className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      🗑️
+                    </button>
+                  </div>
+                </div>
               </div>
             ))
           )}
@@ -262,6 +257,13 @@ const ContactsPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      <CreateContactModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={fetchContacts}
+        contactToEdit={editingContact}
+      />
     </div>
   );
 };

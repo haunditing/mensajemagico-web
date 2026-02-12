@@ -355,16 +355,18 @@ const Generator: React.FC<GeneratorProps> = ({
       relLabel =
         PENSAMIENTO_THEMES.find((t) => t.id === relationshipId)?.label ||
         "la vida";
-    } else if (isGreeting) {
-      relLabel =
-        RELATIONSHIPS.find((r) => r.id === relationshipId)?.label || "alguien";
-      const momentLabel = GREETING_CATEGORIES.find(
-        (c) => c.id === greetingMoment,
-      )?.label;
-      if (momentLabel) relLabel += ` (Momento: ${momentLabel})`;
     } else {
-      relLabel =
-        RELATIONSHIPS.find((r) => r.id === relationshipId)?.label || "alguien";
+      if (selectedContact) {
+        // Si es un contacto guardado, usamos su relación (ej. "Pareja", "Jefe")
+        relLabel = selectedContact.relationship || "alguien";
+      } else {
+        relLabel = RELATIONSHIPS.find((r) => r.id === relationshipId)?.label || "alguien";
+      }
+
+      if (isGreeting) {
+        const momentLabel = GREETING_CATEGORIES.find((c) => c.id === greetingMoment)?.label;
+        if (momentLabel) relLabel += ` (Momento: ${momentLabel})`;
+      }
     }
 
     // Inyectamos instrucción para formato JSON y regalos si está activo
