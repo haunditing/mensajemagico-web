@@ -321,7 +321,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
           {/* Navegación Móvil Horizontal */}
           <div className="lg:hidden border-t border-slate-50 nav-mask">
-            <nav className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-4 snap-x items-center justify-center">
+            <nav className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-4 snap-x items-center justify-start">
               {OCCASIONS.map((o) => {
                 const localized = getLocalizedOccasion(o, currentCountry);
                 const isActive = location.pathname.startsWith(

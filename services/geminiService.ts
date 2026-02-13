@@ -54,7 +54,8 @@ export const generateMessage = async (
         intention: config.intention,
         styleInstructions, 
         creativityLevel, 
-        avoidTopics 
+        avoidTopics,
+        contextWords: config.contextWords
       });
     }
 

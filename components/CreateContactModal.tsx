@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { api } from "../context/api";
 import { useToast } from "../context/ToastContext";
 import { RELATIONSHIPS } from "../constants";
@@ -21,6 +21,8 @@ const CreateContactModal: React.FC<CreateContactModalProps> = ({
   const [grammaticalGender, setGrammaticalGender] = useState("neutral");
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -38,6 +40,52 @@ const CreateContactModal: React.FC<CreateContactModalProps> = ({
       }
     }
   }, [isOpen, contactToEdit]);
+
+  // Manejo de Foco (Trap Focus) y Tecla Escape
+  useEffect(() => {
+    if (isOpen) {
+      previousFocus.current = document.activeElement as HTMLElement;
+
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === "Escape") {
+          onClose();
+          return;
+        }
+
+        if (e.key === "Tab" && modalRef.current) {
+          const focusableElements = modalRef.current.querySelectorAll(
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+          );
+          
+          if (focusableElements.length === 0) return;
+
+          const firstElement = focusableElements[0] as HTMLElement;
+          const lastElement = focusableElements[focusableElements.length - 1] as HTMLElement;
+
+          if (e.shiftKey) {
+            if (document.activeElement === firstElement) {
+              e.preventDefault();
+              lastElement.focus();
+            }
+          } else {
+            if (document.activeElement === lastElement) {
+              e.preventDefault();
+              firstElement.focus();
+            }
+          }
+        }
+      };
+
+      document.addEventListener("keydown", handleKeyDown);
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+        // Restaurar foco al cerrar
+        if (previousFocus.current) {
+          previousFocus.current.focus();
+        }
+      };
+    }
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -76,7 +124,13 @@ const CreateContactModal: React.FC<CreateContactModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative overflow-hidden" onClick={(e) => e.stopPropagation()}>
+      <div 
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative overflow-hidden" 
+        onClick={(e) => e.stopPropagation()}
+      >
         <h3 className="text-lg font-bold text-slate-900 mb-1">{contactToEdit ? "Editar Contacto" : "Nuevo Contacto"}</h3>
         <p className="text-sm text-slate-500 mb-4">El Guardián aprenderá de tu relación con esta persona.</p>
         

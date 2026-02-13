@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useId } from "react";
 import { SharePlatform } from "../types";
 import { executeShare, isNativeShareSupported } from "../services/shareService";
 import { useToast } from "../context/ToastContext";
@@ -124,6 +124,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
 }) => {
   const [activeAction, setActiveAction] = useState<SharePlatform | null>(null);
   const { showToast } = useToast();
+  const labelId = useId();
 
   // Configuraciones visuales por plataforma
   const platformConfig: Record<
@@ -220,10 +221,14 @@ const ShareBar: React.FC<ShareBarProps> = ({
     <div
       className={`w-full ${className} ${disabled ? "opacity-40 grayscale pointer-events-none" : ""}`}
     >
-      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 text-center sm:text-left">
+      <p id={labelId} className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 text-center sm:text-left">
         {disabled ? "Opciones desactivadas" : "Enviar Mensaje"}
       </p>
-      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+      <div 
+        className="flex flex-wrap items-center justify-center sm:justify-start gap-3"
+        role="group"
+        aria-labelledby={labelId}
+      >
         {activePlatforms.map((platform) => {
           const config = platformConfig[platform];
           if (!config) return null;
@@ -236,7 +241,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
               key={platform}
               disabled={disabled}
               onClick={() => handleAction(platform)}
-              className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all active:scale-90 border border-transparent shrink-0
+              className={`flex items-center justify-center w-12 h-12 rounded-xl transition-all active:scale-90 border border-transparent shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500
                 ${config.bg} ${config.color} 
                 ${isProcessing ? "ring-2 ring-offset-1 ring-current scale-105" : ""}
                 ${isHighlighted ? "ring-2 ring-offset-2 ring-blue-500 shadow-lg scale-110 z-10" : ""}

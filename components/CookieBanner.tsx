@@ -21,10 +21,15 @@ const CookieBanner: React.FC = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:max-w-md z-[100] animate-fade-in-up">
+    <div 
+      role="region" 
+      aria-live="polite" 
+      aria-label="Aviso de uso de cookies"
+      className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:max-w-md z-[100] animate-fade-in-up"
+    >
       <div className="bg-white/90 backdrop-blur-xl border border-slate-200 p-6 rounded-[2rem] shadow-2xl shadow-slate-200/50">
         <div className="flex items-start gap-4">
-          <div className="bg-blue-50 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0">
+          <div className="bg-blue-50 w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shrink-0" aria-hidden="true">
             🍪
           </div>
           <div className="flex-1">

@@ -103,17 +103,28 @@ const PaymentGateways: React.FC<PaymentGatewaysProps> = ({ onSelectGateway, isLo
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent, id: string) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (!isLoading) setSelectedGateway(id);
+    }
+  };
+
   return (
     <div className="w-full relative z-10">
-      <div className="space-y-3 mb-6">
+      <div className="space-y-3 mb-6" role="radiogroup" aria-label="Métodos de pago">
         {activeGateways.map((gateway) => {
           const isSelected = selectedGateway === gateway.id;
           return (
             <div
               key={gateway.id}
+              role="radio"
+              aria-checked={isSelected}
+              tabIndex={0}
               onClick={() => !isLoading && setSelectedGateway(gateway.id)}
+              onKeyDown={(e) => handleKeyDown(e, gateway.id)}
               className={`
-                relative flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 group
+                relative flex items-center gap-3 md:gap-4 p-3 md:p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 group outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2
                 ${isSelected 
                   ? "border-blue-600 bg-blue-50/30 shadow-sm" 
                   : "border-slate-100 hover:border-slate-200 bg-white hover:shadow-sm"
