@@ -6,7 +6,11 @@ const CookieBanner: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem('cookie_consent');
+    let consent = null;
+    try {
+      consent = localStorage.getItem('cookie_consent');
+    } catch {}
+
     if (!consent) {
       const timer = setTimeout(() => setIsVisible(true), 1500);
       return () => clearTimeout(timer);
@@ -14,7 +18,9 @@ const CookieBanner: React.FC = () => {
   }, []);
 
   const acceptCookies = () => {
-    localStorage.setItem('cookie_consent', 'true');
+    try {
+      localStorage.setItem('cookie_consent', 'true');
+    } catch {}
     setIsVisible(false);
   };
 

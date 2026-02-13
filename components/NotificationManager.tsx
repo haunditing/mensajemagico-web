@@ -6,13 +6,19 @@ import { useLocalization } from "../context/LocalizationContext";
 const NotificationManager: React.FC = () => {
   const { user } = useAuth();
   const { country } = useLocalization();
-  const [permission, setPermission] = useState(Notification.permission);
+  const [permission, setPermission] = useState(() => {
+    if (typeof Notification !== "undefined") {
+      return Notification.permission;
+    }
+    return "denied"; // Asumimos denegado si no existe la API para evitar crashes
+  });
   const [isVisible, setIsVisible] = useState(true); // Para cerrar el banner manualmente
   const notificationsEnabled = (user as any)?.preferences?.notificationsEnabled !== false;
   const [nextAlert, setNextAlert] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user || permission !== "granted" || !notificationsEnabled) return;
+    // Verificación de seguridad adicional para 'Notification'
+    if (!user || permission !== "granted" || !notificationsEnabled || typeof Notification === "undefined") return;
 
     const checkReminders = async () => {
       try {
@@ -56,7 +62,12 @@ const NotificationManager: React.FC = () => {
             // FIX: Incluir la hora en la clave para permitir re-notificar si el usuario cambia la hora
             const key = `notified_${reminder._id}_${today.toDateString()}_${reminder.notificationTime || '09:00'}`;
             
-            if (!localStorage.getItem(key)) {
+            let isNotified = false;
+            try {
+              isNotified = !!localStorage.getItem(key);
+            } catch {}
+
+            if (!isNotified) {
               // Disparar notificación nativa
               try {
                 new Notification("✨ Recordatorio Mágico", {
@@ -70,7 +81,9 @@ const NotificationManager: React.FC = () => {
               }
               
               // Marcar como notificado
-              localStorage.setItem(key, "true");
+              try {
+                localStorage.setItem(key, "true");
+              } catch {}
             }
           }
         });
@@ -95,6 +108,7 @@ const NotificationManager: React.FC = () => {
   }, [user, permission, country, notificationsEnabled]);
 
   const requestPermission = async () => {
+    if (typeof Notification === "undefined") return;
     const result = await Notification.requestPermission();
     setPermission(result);
   };

@@ -54,11 +54,14 @@ const CitySelector: React.FC<CitySelectorProps> = ({
     if (!query || query.length < 3) return;
 
     // Cancelar petición anterior si existe para evitar condiciones de carrera
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
+    let controller: AbortController | null = null;
+    if (typeof AbortController !== "undefined") {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      controller = new AbortController();
+      abortControllerRef.current = controller;
     }
-    const controller = new AbortController();
-    abortControllerRef.current = controller;
 
     setIsLoading(true);
     try {
@@ -67,7 +70,7 @@ const CitySelector: React.FC<CitySelectorProps> = ({
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
           query,
         )}&count=10&language=es&format=json`,
-        { signal: controller.signal },
+        controller ? { signal: controller.signal } : undefined,
       );
       if (!response.ok) throw new Error("Error en API");
 
@@ -111,7 +114,7 @@ const CitySelector: React.FC<CitySelectorProps> = ({
         setSuggestions([]);
       }
     } finally {
-      if (abortControllerRef.current === controller) {
+      if (!controller || abortControllerRef.current === controller) {
         setIsLoading(false);
       }
     }

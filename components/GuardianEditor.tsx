@@ -56,8 +56,16 @@ const GuardianEditor: React.FC<GuardianEditorProps> = ({ generatedText, contactI
   const handleFinalize = async () => {
     if (!contactId || !isPremium) {
       // Si no es premium o no hay contacto, solo copiamos o hacemos una acción local
-      navigator.clipboard.writeText(text);
-      showToast("Texto copiado al portapapeles", "success");
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast("Texto copiado al portapapeles", "success");
+        } catch (err) {
+          showToast("No se pudo copiar automáticamente", "error");
+        }
+      } else {
+        showToast("Tu navegador no soporta copiado automático", "info");
+      }
       return;
     }
 
