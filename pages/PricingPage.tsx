@@ -95,7 +95,13 @@ const PricingPage: React.FC = () => {
         const data = response?.data || response;
 
         if (data?.init_point) {
-          const isDev = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+          // Detección robusta de entorno de desarrollo (Localhost, IPs locales, Ngrok)
+          const isDev = 
+            window.location.hostname === "localhost" || 
+            window.location.hostname === "127.0.0.1" ||
+            window.location.hostname.startsWith("192.168.") ||
+            window.location.hostname.includes("ngrok");
+
           const redirectUrl = isDev && data.sandbox_init_point ? data.sandbox_init_point : data.init_point;
           window.location.href = redirectUrl;
           return; // Mantenemos loading true mientras redirige
@@ -123,6 +129,8 @@ const PricingPage: React.FC = () => {
         });
         
         const data = response.data || response;
+        
+        console.log("💰 Wompi Checkout Data:", data); // Verificación de precio
 
         // 2. Configurar Widget
         const checkout = new window.WidgetCheckout({
