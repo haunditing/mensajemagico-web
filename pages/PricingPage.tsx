@@ -333,7 +333,7 @@ const PricingPage: React.FC = () => {
       ? priceConfig.monthlyOriginal
       : priceConfig.yearlyOriginal
         ? priceConfig.yearlyOriginal / 12
-        : undefined;
+        : priceConfig.monthly;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in-up">
@@ -449,7 +449,7 @@ const PricingPage: React.FC = () => {
                     {formatPrice(currentOriginalPrice)}
                   </span>
                   <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
-                    OFERTA
+                    {isOfferActive ? "OFERTA" : "AHORRO"}
                   </span>
                 </div>
                 {priceConfig.offerDuration > 0 && (
