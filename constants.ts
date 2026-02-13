@@ -34,6 +34,7 @@ export const EMOTIONAL_STATES = [
   { id: "neutro", label: "Neutro/Ecléctico" },
   { id: "feliz", label: "Feliz/a" },
   { id: "sorprendido", label: "Sorprendido/a" },
+  { id: "sarcastico", label: "Sarcástico/Agudo" },
 ];
 
 export const RECEIVED_MESSAGE_TYPES = [
@@ -311,4 +312,13 @@ export const PSYCHOLOGICAL_MATRIX: Record<string, string> = {
   "fresco": "inquiry",
   "sobrio": "resolutive",
   "alegre": "low_effort",
+  // Estados Emocionales (Pensamiento)
+  "tranquilo": "low_effort",
+  "reflexivo": "inquiry",
+  "triste": "low_effort",
+  "motivado": "action",
+  "neutro": "resolutive",
+  "feliz": "low_effort",
+  "sorprendido": "inquiry",
+  "sarcastico": "inquiry",
 };

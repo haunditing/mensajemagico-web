@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   Occasion,
@@ -79,13 +79,73 @@ const Generator: React.FC<GeneratorProps> = ({
   const [searchParams] = useSearchParams();
   const shareParam = searchParams.get("share");
 
-  // Filtrar tonos: 'Atrasado' solo para Cumpleaños y Aniversarios
-  const availableTones = TONES.filter((t) => {
-    if (t.value === Tone.BELATED) {
-      return ["birthday", "anniversary"].includes(occasion.id);
+  const [relationshipId, setRelationshipId] = useState<string>(
+    initialRelationship?.id ||
+      (isPensamiento ? PENSAMIENTO_THEMES[0].id : RELATIONSHIPS[0].id),
+  );
+
+  // Estado para contactos
+  const [contacts, setContacts] = useState<any[]>([]);
+  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const [selectedContactId, setSelectedContactId] = useState<
+    string | undefined
+  >(undefined);
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
+  const [showHandAnimation, setShowHandAnimation] = useState(false);
+  const [guardianWarning, setGuardianWarning] = useState<string | null>(null);
+
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Temas tendencia para creadores (Pills)
+  const TRENDING_TOPICS = ["Propósito", "Minimalismo", "Fracaso", "Conexión", "Tiempo", "Silencio"];
+
+  // Agrupación de Estados Emocionales por Energía
+  const EMOTIONAL_GROUPS = {
+    "Energía Baja": ["tranquilo", "reflexivo", "triste", "nostalgia"],
+    "Energía Alta": ["motivado", "feliz", "sorprendido"],
+    "Personalidad": ["neutro", "sarcastico"]
+  };
+
+  const selectedContact = contacts.find((c) => c._id === selectedContactId);
+
+  // --- LÓGICA DEL GUARDIÁN: FILTRO DE TONOS POR RELACIÓN ---
+  // 1. Determinar el tipo de relación actual (normalizado)
+  
+  const currentRelType = useMemo(() => {
+    if (selectedContact) {
+      // Intentamos mapear el label del contacto al ID de la relación estándar
+      const rel = RELATIONSHIPS.find(r => r.label === selectedContact.relationship);
+      return rel ? rel.id : "other";
     }
-    return true;
-  });
+    return relationshipId;
+  }, [selectedContact, relationshipId]);
+
+  // 2. Filtrar tonos disponibles según Ocasión y Relación
+  const availableTones = useMemo(() => {
+    return TONES.filter((t) => {
+      // A. Filtro de Ocasión (Atrasado)
+      if (t.value === Tone.BELATED) {
+        if (!["birthday", "anniversary"].includes(occasion.id)) return false;
+      }
+
+      // B. Filtro de Relación (Guardián de Sentido Común)
+      const romanticTones = [Tone.ROMANTIC, Tone.FLIRTY, Tone.LIGHT_DESPERATION];
+      const professionalForbidden = [...romanticTones, Tone.SARCASTIC];
+      const familyForbidden = [...romanticTones];
+
+      // Regla: Jefes (Profesional) -> Nada romántico ni sarcástico
+      if (currentRelType === "boss") {
+        if (professionalForbidden.includes(t.value)) return false;
+      }
+
+      // Regla: Familia (Padres, Hijos) -> Nada romántico/coqueto
+      if (["father", "mother", "family"].includes(currentRelType)) {
+        if (familyForbidden.includes(t.value)) return false;
+      }
+
+      return true;
+    });
+  }, [occasion.id, currentRelType]);
 
   // Determinar sugerencia basada en la hora (solo para Saludo)
   const suggestedGreeting = isGreeting
@@ -96,10 +156,6 @@ const Generator: React.FC<GeneratorProps> = ({
       })()
     : null;
 
-  const [relationshipId, setRelationshipId] = useState<string>(
-    initialRelationship?.id ||
-      (isPensamiento ? PENSAMIENTO_THEMES[0].id : RELATIONSHIPS[0].id),
-  );
   const [tone, setTone] = useState<Tone>(
     isPensamiento
       ? Tone.PROFOUND
@@ -129,19 +185,7 @@ const Generator: React.FC<GeneratorProps> = ({
   const [safetyError, setSafetyError] = useState<string | null>(null);
   const [usageMessage, setUsageMessage] = useState<string | null>(null);
   const [showGifts, setShowGifts] = useState(true);
-
-  // Estado para contactos
-  const [contacts, setContacts] = useState<any[]>([]);
-  const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const [selectedContactId, setSelectedContactId] = useState<
-    string | undefined
-  >(undefined);
-  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
-  const [showHandAnimation, setShowHandAnimation] = useState(false);
-
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-
-  const selectedContact = contacts.find((c) => c._id === selectedContactId);
+  const [isForPost, setIsForPost] = useState(false);
 
   const contextLimit = useFeature("access.context_words_limit", 0);
   const isContextLocked = contextLimit === 0;
@@ -184,17 +228,47 @@ const Generator: React.FC<GeneratorProps> = ({
       (!allowedOccasions.includes("all") &&
         !allowedOccasions.includes(occasion.id)));
 
-  // Si cambiamos de ocasión y el tono actual ya no está disponible, lo reseteamos
+  // Si cambiamos de ocasión o relación y el tono actual ya no está disponible, lo reseteamos
   useEffect(() => {
     if (!isPensamiento && !isGreeting) {
       const isCurrentToneAvailable = availableTones.some(
         (t) => t.value === tone,
       );
       if (!isCurrentToneAvailable) {
-        setTone(Tone.ROMANTIC);
+        // Estrategia de Fallback del Guardián
+        if (currentRelType === "boss") {
+          // Para jefes, preferimos Formal o Directo
+          const safeTone = availableTones.find(t => t.value === Tone.FORMAL) || availableTones.find(t => t.value === Tone.DIRECT);
+          setTone(safeTone ? safeTone.value : availableTones[0]?.value);
+          showToast("El Guardián ajustó el tono a profesional para tu Jefe.", "info");
+        } else if (["father", "mother", "family"].includes(currentRelType)) {
+          // Para familia, preferimos Sutil (Cariñoso) o Directo
+          const safeTone = availableTones.find(t => t.value === Tone.SUBTLE) || availableTones.find(t => t.value === Tone.DIRECT);
+          setTone(safeTone ? safeTone.value : availableTones[0]?.value);
+          showToast("El Guardián ajustó el tono para ser más familiar.", "info");
+        } else {
+          // Default (Romántico si existe, sino el primero)
+          const defaultTone = availableTones.find(t => t.value === Tone.ROMANTIC);
+          setTone(defaultTone ? defaultTone.value : availableTones[0]?.value);
+        }
       }
     }
-  }, [occasion.id, availableTones, tone, isPensamiento, isGreeting]);
+  }, [occasion.id, availableTones, tone, isPensamiento, isGreeting, currentRelType, showToast]);
+
+  // Efecto para advertencias suaves (Tonos permitidos pero no ideales)
+  useEffect(() => {
+    let warning = null;
+    if (currentRelType === "family" && tone === Tone.SARCASTIC) {
+      warning = "El sarcasmo con la familia puede ser malinterpretado.";
+    } else if (currentRelType === "couple" && tone === Tone.FORMAL) {
+      warning = "¿Todo bien? Un tono formal con tu pareja puede sonar distante.";
+    } else if (currentRelType === "ex" && tone === Tone.ROMANTIC) {
+      warning = "Cuidado. Un tono romántico con tu ex puede enviar señales confusas.";
+    } else if (currentRelType === "boss" && tone === Tone.FUNNY) {
+      warning = "Asegúrate de que tu jefe tenga buen sentido del humor.";
+    }
+    setGuardianWarning(warning);
+  }, [tone, currentRelType]);
 
   useEffect(() => {
     if (isResponder && receivedText.trim() !== "") {
@@ -318,15 +392,42 @@ const Generator: React.FC<GeneratorProps> = ({
     }
 
     // 4. Hora Crítica (Bloqueo de Acción tarde en la noche)
-    const hour = new Date().getHours();
-    if (hour >= 22 || hour < 5) {
-      if (baseIntention === "action") {
-        baseIntention = "low_effort"; // Forzamos a bajar la intensidad
+    // No aplicamos esto si es para un Post (contenido asíncrono)
+    if (!isForPost) {
+      const hour = new Date().getHours();
+      if (hour >= 22 || hour < 5) {
+        if (baseIntention === "action") {
+          baseIntention = "low_effort"; // Forzamos a bajar la intensidad
+        }
       }
     }
 
     return baseIntention;
   };
+
+  // Descripción dinámica del Guardián
+  const guardianDescription = useMemo(() => {
+    if (isPensamiento) {
+      if (isForPost) {
+        switch (intention) {
+          case 'action': return "Para movilizar a tu audiencia hacia una acción específica.";
+          case 'resolutive': return "Para establecer una postura firme o una conclusión clara.";
+          case 'inquiry': return "Para generar debate y comentarios en tu comunidad.";
+          default: return "Para generar conexión y reflexión en tu comunidad.";
+        }
+      } else {
+        // Para Chat (Privado)
+        switch (intention) {
+          case 'action': return "Para contagiar energía y motivar (sin dar órdenes).";
+          case 'resolutive': return "Para compartir una verdad directa o una decisión.";
+          case 'inquiry': return "Para invitar al diálogo profundo y la reflexión.";
+          case 'low_effort': return "Para fortalecer el vínculo personal sin presiones.";
+          default: return "Para compartir algo significativo.";
+        }
+      }
+    }
+    return GUARDIAN_INTENTIONS.find((i) => i.id === intention)?.description;
+  }, [intention, isForPost, isPensamiento]);
 
   useEffect(() => {
     const newIntention = calculateIntention(
@@ -337,7 +438,7 @@ const Generator: React.FC<GeneratorProps> = ({
     if (newIntention !== intention) {
       setIntention(newIntention);
     }
-  }, [tone, contextWords, selectedContact, manualIntentionOverride]);
+  }, [tone, contextWords, selectedContact, manualIntentionOverride, isForPost]);
 
   const handleGenerate = async () => {
     if (safetyError || isLoading || isOccasionLocked) return;
@@ -420,8 +521,46 @@ const Generator: React.FC<GeneratorProps> = ({
       styleInstructions += `[ESTILO: Sé espontáneo. Evita saludos robóticos. ${selectedTrigger}]`;
     }
 
+    // --- NUEVA LÓGICA PARA PENSAMIENTO (DEEP TALK / CONTENT) ---
+    if (isPensamiento) {
+      // 1. Filtro de Profundidad y Stop-List
+      styleInstructions += ` [MODO PENSAMIENTO: DEEP TALK]
+      PROHIBIDO: No uses clichés de clima ("sol radiante", "brisa"), ni invitaciones físicas ("vamos por un helado", "caminemos"), ni gastronomía ("raspao", "café").
+      OBJETIVO: Generar valor, reflexión o conexión profunda. Estilo: "Internal Monologue / Storytelling".`;
+
+      // 2. Estructura Hook -> Story -> Lesson
+      styleInstructions += `
+      ESTRUCTURA OBLIGATORIA:
+      1. Hook (Gancho): Empieza con una verdad incómoda o una observación aguda.
+      2. Story (Relato): Humaniza la idea sin usar clichés geográficos.
+      3. Lesson (Cierre): Termina con una pregunta que invite a pensar o una conclusión potente.`;
+
+      // 3. Niveles de Consciencia (según el tono/estado emocional)
+      if (['triste', 'reflexivo', 'soledad', 'nostalgia'].includes(tone as string)) {
+         styleInstructions += ` ESTILO: "Poético-Existencial". Evita jerga callejera. Sé profundo y vulnerable.`;
+      } else if (['motivado', 'feliz', 'crecimiento'].includes(tone as string)) {
+         styleInstructions += ` ESTILO: "Manifiesto". Frases cortas, contundentes y energéticas (tipo Twitter/X).`;
+      } else if (tone === 'sarcastico') {
+         styleInstructions += ` ESTILO: "Humor Ácido". Usa ironía fina, observaciones agudas y un toque de cinismo elegante.`;
+      }
+
+      // 4. Formato (Chat vs Post)
+      if (isForPost) {
+        styleInstructions += ` FORMATO: "Para Redes Sociales (Post)". NO incluyas saludos personales ni nombres. Escribe para una audiencia general. INCLUYE UN CALL TO ACTION AL FINAL (ej. "¿Te ha pasado?", "¿Qué opinas?").`;
+      } else {
+        styleInstructions += ` FORMATO: "Para Chat Privado". Mantén la intimidad de una conversación uno a uno.`;
+      }
+    }
+
     // DEBUG: Verificar lógica del Guardián en consola
     console.group("🛡️ Guardian Debug");
+    if (isPensamiento) {
+      console.log("🧘 [PENSAMIENTO] Configuración Activa:");
+      console.log("   • Formato:", isForPost ? "📱 Para Post (Público)" : "💬 Para Chat (Privado)");
+      console.log("   • Intención:", intention);
+      console.log("   • Tono:", tone);
+      console.log("   • Contexto:", contextWords.join(", "));
+    }
     console.log("Creativity Level:", creativityLevel);
     console.log("Style Instructions:", styleInstructions);
     console.log("Avoid Topics (Exclusion List):", avoidTopics);
@@ -460,7 +599,7 @@ const Generator: React.FC<GeneratorProps> = ({
     const formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido y MINIFICADO (sin espacios extra) con esta estructura: {
       "selected_strategy": "string",
       "generated_messages": [{ "tone": "string", "content": "string", "locked": boolean }],
-      "guardian_insight": "string (Explica qué elemento nuevo usaste para no sonar repetitivo)"${
+      "guardian_insight": "string (${isPensamiento ? 'Explica por qué esta reflexión es potente para un creador' : 'Explica qué elemento nuevo usaste para no sonar repetitivo'})"${
         showGifts
           ? `,
       "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}" }]`
@@ -475,7 +614,7 @@ const Generator: React.FC<GeneratorProps> = ({
           occasion: occasion.id,
           relationship: relLabel,
           tone: isPensamiento
-            ? (EMOTIONAL_STATES.find((s) => s.id === relationshipId)
+            ? (EMOTIONAL_STATES.find((s) => s.id === tone)
                 ?.label as any) || tone
             : isGreeting
               ? (GREETING_TONES.find((t) => (t.id as any) === tone)
@@ -647,6 +786,115 @@ const Generator: React.FC<GeneratorProps> = ({
     );
   };
 
+  // Helper para renderizar la sección de Input de Contexto (Reflexión/Detalles)
+  const renderContextInputSection = () => (
+    <div className="animate-fade-in-up">
+      <label htmlFor="context-word-input" className="block text-sm font-bold text-slate-700 mb-2">
+        {isPensamiento ? "¿Sobre qué quieres reflexionar?" : "Añade detalles o palabras clave"}{" "}
+        {isContextLocked ? (
+          <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full ml-2">
+            Premium 💎
+          </span>
+        ) : (
+          !isPensamiento && `(Máx ${MAX_CONTEXT})`
+        )}
+      </label>
+      <div className="flex gap-2 mb-3">
+        <div className="relative flex-grow">
+          <input
+            id="context-word-input"
+            type="text"
+            value={currentWord}
+            onChange={(e) => setCurrentWord(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={
+              isContextLocked
+                ? "Desbloquea palabras clave con Premium 🔒"
+                : isPensamiento ? "Ej: La brevedad del tiempo o el valor de los silencios" : "Ej: playa, pizza, 5 años..."
+            }
+            disabled={
+              contextWords.length >= MAX_CONTEXT || isContextLocked
+            }
+            className={`w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isContextLocked ? "bg-slate-100 text-slate-400" : ""}`}
+          />
+          {isContextLocked && (
+            <div
+              className="absolute inset-0 z-10 cursor-pointer"
+              onClick={() =>
+                triggerUpsell(
+                  PlanManager.getUpsellMessage("on_context_limit"),
+                )
+              }
+            />
+          )}
+        </div>
+        <div className="relative">
+          {showHandAnimation && (
+            <div className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2 animate-bounce text-xl md:text-2xl pointer-events-none z-20 filter drop-shadow-sm">
+              👇
+            </div>
+          )}
+          <button
+            onClick={addContextWord}
+            disabled={
+              !currentWord.trim() ||
+              contextWords.length >= MAX_CONTEXT ||
+              isContextLocked
+            }
+            className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-200 transition-colors disabled:opacity-50"
+            title="Añadir palabra"
+            aria-label="Añadir palabra al contexto"
+          >
+            <span className="text-xl font-bold" aria-hidden="true">
+              {isContextLocked ? "🔒" : "+"}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {contextWords.map((word, idx) => (
+          <div
+            key={idx}
+            className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in-up shadow-sm"
+          >
+            <span>{word}</span>
+            <button
+              onClick={() => removeContextWord(word)}
+              className="hover:text-blue-200 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+        {contextWords.length === 0 && (
+          <span className="text-[10px] text-slate-400 font-medium italic">
+            Opcional: añade palabras para personalizar el mensaje.
+          </span>
+        )}
+      </div>
+
+      {/* Pills de Tendencias (Solo Pensamiento) */}
+      {isPensamiento && !isContextLocked && (
+        <div className="mt-3 flex flex-wrap gap-2 animate-fade-in">
+          {TRENDING_TOPICS.map((topic) => (
+            <button
+              key={topic}
+              onClick={() => {
+                if (contextWords.length < MAX_CONTEXT && !contextWords.includes(topic)) {
+                  setContextWords([...contextWords, topic]);
+                }
+              }}
+              className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full hover:bg-slate-200 transition-colors border border-slate-200"
+            >
+              + {topic}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>
       <div
@@ -702,73 +950,86 @@ const Generator: React.FC<GeneratorProps> = ({
         )}
 
         <div className="space-y-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="relative">
-              <label className="block text-sm font-bold text-slate-700 mb-2">
-                {isPensamiento
-                  ? "¿Sobre qué quieres reflexionar?"
-                  : "Destinatario"}
-              </label>
-              {selectedContact && (
-                <div className="absolute top-0 right-0 z-10 -mt-1 animate-fade-in">
-                  <div className="relative">
-                    <RelationalHealthIndicator
-                      score={selectedContact.relationalHealth}
-                      minimal={true}
-                    />
-                    {selectedContact.guardianMetadata?.trained && (
-                      <span className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm animate-pulse whitespace-nowrap">
-                        IA ENTRENADA
-                      </span>
-                    )}
-                  </div>
+          {/* --- SECCIÓN SUPERIOR PARA PENSAMIENTOS (Jerarquía Visual) --- */}
+          {isPensamiento && (
+            <div className="space-y-6">
+              {/* Selector de Formato */}
+              <div className="animate-fade-in">
+                <label className="block text-sm font-bold text-slate-700 mb-2">Formato</label>
+                <div className="flex bg-slate-100 p-1 rounded-xl w-full md:w-fit">
+                  <button
+                    onClick={() => setIsForPost(false)}
+                    className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${!isForPost ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-indigo-100' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    💬 Para Chat
+                  </button>
+                  <button
+                    onClick={() => setIsForPost(true)}
+                    className={`flex-1 md:flex-none px-4 py-2 rounded-lg text-xs font-bold transition-all ${isForPost ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md' : 'text-slate-500 hover:text-slate-700'}`}
+                  >
+                    📱 Para Post
+                  </button>
                 </div>
-              )}
-              <select
-                value={relationshipId}
-                onChange={handleRelChange}
-                className="w-full h-12 md:h-14 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
-              >
-                {/* Opción Mágica: Nuevo Contacto (Solo si no es pensamiento/saludo) */}
-                {!isPensamiento && (
-                  <>
-                    <option
-                      value="new_contact"
-                      className="font-bold text-blue-600"
-                    >
-                      + Nuevo Contacto
-                    </option>
-                    {contacts.length > 0 && (
-                      <optgroup label="Mis Contactos">
-                        {contacts.map((c) => (
-                          <option key={c._id} value={c._id}>
-                            {c.name} ({c.relationship}){" "}
-                            {c.relationalHealth >= 8 ? "❤️" : ""}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-                    <optgroup label="Relaciones Generales">
-                      {RELATIONSHIPS.map((rel) => (
-                        <option key={rel.id} value={rel.id}>
-                          {rel.label}
+              </div>
+              
+              {/* Input de Reflexión (Movido arriba) */}
+              {renderContextInputSection()}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Destinatario Select (Oculto para Pensamiento) */}
+            {!isPensamiento && (
+              <div className="relative">
+                <label className="block text-sm font-bold text-slate-700 mb-2">
+                  Destinatario
+                </label>
+                {selectedContact && (
+                  <div className="absolute top-0 right-0 z-10 -mt-1 animate-fade-in">
+                    <div className="relative">
+                      <RelationalHealthIndicator
+                        score={selectedContact.relationalHealth}
+                        minimal={true}
+                      />
+                      {selectedContact.guardianMetadata?.trained && (
+                        <span className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded-full shadow-sm animate-pulse whitespace-nowrap">
+                          IA ENTRENADA
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <select
+                  value={relationshipId}
+                  onChange={handleRelChange}
+                  className="w-full h-12 md:h-14 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                >
+                  <option
+                    value="new_contact"
+                    className="font-bold text-blue-600"
+                  >
+                    + Nuevo Contacto
+                  </option>
+                  {contacts.length > 0 && (
+                    <optgroup label="Mis Contactos">
+                      {contacts.map((c) => (
+                        <option key={c._id} value={c._id}>
+                          {c.name} ({c.relationship}){" "}
+                          {c.relationalHealth >= 8 ? "❤️" : ""}
                         </option>
                       ))}
                     </optgroup>
-                  </>
-                )}
-
-                {
-                  isPensamiento
-                    ? PENSAMIENTO_THEMES.map((theme) => (
-                        <option key={theme.id} value={theme.id}>
-                          {theme.label}
-                        </option>
-                      ))
-                    : null /* Ya manejado arriba */
-                }
-              </select>
-            </div>
+                  )}
+                  <optgroup label="Relaciones Generales">
+                    {RELATIONSHIPS.map((rel) => (
+                      <option key={rel.id} value={rel.id}>
+                        {rel.label}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
+            )}
 
             {isGreeting && (
               <div className="animate-fade-in">
@@ -806,7 +1067,37 @@ const Generator: React.FC<GeneratorProps> = ({
                     : "Tono"}
               </label>
               <div className="flex flex-wrap gap-2">
-                {isPensamiento
+                {isPensamiento ? (
+                  // Renderizado agrupado para Pensamientos
+                  <div className="space-y-3 w-full">
+                    {Object.entries(EMOTIONAL_GROUPS).map(([groupName, stateIds]) => (
+                      <div key={groupName} className="flex flex-col gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{groupName}</span>
+                        <div className="flex flex-wrap gap-2">
+                          {stateIds.map(id => {
+                            const state = EMOTIONAL_STATES.find(s => s.id === id);
+                            if (!state) return null;
+                            return (
+                              <button
+                                key={state.id}
+                                onClick={() => setTone(state.id as any)}
+                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                                  tone === state.id
+                                    ? "bg-slate-800 text-white border-slate-800 shadow-md"
+                                    : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
+                                }`}
+                              >
+                                {state.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  // Renderizado normal para otras ocasiones
+                   isGreeting
                   ? EMOTIONAL_STATES.map((state) => (
                       <button
                         key={state.id}
@@ -851,8 +1142,15 @@ const Generator: React.FC<GeneratorProps> = ({
                             {t.label}
                           </button>
                         </FeatureGuard>
-                      ))}
+                      ))
+                )}
               </div>
+              {guardianWarning && (
+                <div className="mt-3 p-2 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-700 font-medium flex items-start gap-2 animate-fade-in">
+                  <span>🛡️</span>
+                  <span>{guardianWarning}</span>
+                </div>
+              )}
             </div>
           </div>
 
@@ -887,97 +1185,13 @@ const Generator: React.FC<GeneratorProps> = ({
               ))}
             </div>
             <p className="text-[10px] text-slate-500 italic min-h-[1.5em] transition-all text-center sm:text-left">
-              {GUARDIAN_INTENTIONS.find((i) => i.id === intention)?.description}
+              {guardianDescription}
             </p>
           </div>
 
-          {/* Sección de Palabras de Contexto */}
-          <div className="animate-fade-in-up">
-            <label htmlFor="context-word-input" className="block text-sm font-bold text-slate-700 mb-6">
-              Añade detalles o palabras clave{" "}
-              {isContextLocked ? (
-                <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full ml-2">
-                  Premium 💎
-                </span>
-              ) : (
-                `(Máx ${MAX_CONTEXT})`
-              )}
-            </label>
-            <div className="flex gap-2 mb-3">
-              <div className="relative flex-grow">
-                <input
-                  id="context-word-input"
-                  type="text"
-                  value={currentWord}
-                  onChange={(e) => setCurrentWord(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={
-                    isContextLocked
-                      ? "Desbloquea palabras clave con Premium 🔒"
-                      : "Ej: playa, pizza, 5 años..."
-                  }
-                  disabled={
-                    contextWords.length >= MAX_CONTEXT || isContextLocked
-                  }
-                  className={`w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isContextLocked ? "bg-slate-100 text-slate-400" : ""}`}
-                />
-                {isContextLocked && (
-                  <div
-                    className="absolute inset-0 z-10 cursor-pointer"
-                    onClick={() =>
-                      triggerUpsell(
-                        PlanManager.getUpsellMessage("on_context_limit"),
-                      )
-                    }
-                  />
-                )}
-              </div>
-              <div className="relative">
-                {showHandAnimation && (
-                  <div className="absolute -top-8 md:-top-10 left-1/2 -translate-x-1/2 animate-bounce text-xl md:text-2xl pointer-events-none z-20 filter drop-shadow-sm">
-                    👇
-                  </div>
-                )}
-                <button
-                  onClick={addContextWord}
-                  disabled={
-                    !currentWord.trim() ||
-                    contextWords.length >= MAX_CONTEXT ||
-                    isContextLocked
-                  }
-                  className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-200 transition-colors disabled:opacity-50"
-                  title="Añadir palabra"
-                  aria-label="Añadir palabra al contexto"
-                >
-                  <span className="text-xl font-bold" aria-hidden="true">
-                    {isContextLocked ? "🔒" : "+"}
-                  </span>
-                </button>
-              </div>
-            </div>
+          {/* Sección de Palabras de Contexto (Solo si NO es Pensamiento, ya que ahí va arriba) */}
+          {!isPensamiento && renderContextInputSection()}
 
-            <div className="flex flex-wrap gap-2">
-              {contextWords.map((word, idx) => (
-                <div
-                  key={idx}
-                  className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in-up shadow-sm"
-                >
-                  <span>{word}</span>
-                  <button
-                    onClick={() => removeContextWord(word)}
-                    className="hover:text-blue-200 transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              {contextWords.length === 0 && (
-                <span className="text-[10px] text-slate-400 font-medium italic">
-                  Opcional: añade palabras para personalizar el mensaje.
-                </span>
-              )}
-            </div>
-          </div>
           {isResponder && (
             <div className="animate-fade-in-up space-y-4">
               <div>
@@ -1013,7 +1227,8 @@ const Generator: React.FC<GeneratorProps> = ({
         </div>
 
         {/* Toggle Regalos */}
-        <div
+        {(!isPensamiento || !isForPost) && (
+          <div
           className="flex items-center gap-3 mb-6 cursor-pointer group w-fit mx-auto md:mx-0"
           onClick={() => setShowGifts(!showGifts)}
         >
@@ -1040,6 +1255,7 @@ const Generator: React.FC<GeneratorProps> = ({
             🎁 Ver sugerencias de regalos
           </span>
         </div>
+        )}
 
         {safetyError && (
           <div
@@ -1270,5 +1486,6 @@ const Generator: React.FC<GeneratorProps> = ({
     </div>
   );
 };
+
 
 export default Generator;

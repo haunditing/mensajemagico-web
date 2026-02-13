@@ -70,119 +70,6 @@ const PricingPage: React.FC = () => {
     });
   };
 
-  const handleSubscribe = async (gateway: string) => {
-    if (!ENABLE_UPGRADES) {
-      alert("Las nuevas suscripciones están temporalmente deshabilitadas.");
-      return;
-    }
-
-    if (!user) {
-      navigate("/login", { state: { from: location.pathname } }); // Para volver después del login
-      return;
-    }
-
-    setIsPaymentLoading(true);
-    try {
-      // --- 1. Mercado Pago ---
-      if (gateway === "mercadopago") {
-        const planId =
-          billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
-
-        // Obtener Device ID generado por el script de MP (si existe)
-        const deviceId = (window as any).MP_DEVICE_SESSION_ID;
-
-        const response = await api.post("/api/mercadopago/create_preference", {
-          userId: user._id,
-          planId,
-          country: country || "US",
-          deviceId,
-        });
-
-        const data = response?.data || response;
-
-        if (data?.init_point) {
-          // Detección robusta de entorno de desarrollo (Localhost, IPs locales, Ngrok)
-          const isDev =
-            window.location.hostname === "localhost" ||
-            window.location.hostname === "127.0.0.1" ||
-            window.location.hostname.startsWith("192.168.") ||
-            window.location.hostname.includes("ngrok");
-
-          const redirectUrl =
-            isDev && data.sandbox_init_point
-              ? data.sandbox_init_point
-              : data.init_point;
-          window.location.href = redirectUrl;
-          return; // Mantenemos loading true mientras redirige
-        } else {
-          throw new Error(
-            "No se pudo obtener el enlace de pago de Mercado Pago.",
-          );
-        }
-      }
-
-      // --- 2. Stripe ---
-      if (gateway === "stripe") {
-        await handleUpgrade(user._id, billingInterval);
-        return; // handleUpgrade maneja la redirección
-      }
-
-      // --- 3. Wompi ---
-      if (gateway === "wompi") {
-        await loadWompiScript();
-
-        const planId =
-          billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
-
-        // 1. Obtener datos de firma del backend
-        const response = await api.post("/api/checkout", {
-          userId: user._id,
-          planId,
-        });
-
-        const data = response.data || response;
-
-        console.log("💰 Wompi Checkout Data:", data); // Verificación de precio
-
-        // 2. Configurar Widget
-        const checkout = new window.WidgetCheckout({
-          currency: data.currency,
-          amountInCents: data.amountInCents,
-          reference: data.reference,
-          publicKey: data.publicKey,
-          signature: { integrity: data.signature },
-          redirectUrl: data.redirectUrl,
-          customerData: {
-            email: user.email,
-            fullName: user.email.split("@")[0], // Fallback simple
-          },
-        });
-
-        // 3. Abrir Widget
-        checkout.open((result: any) => {
-          const transaction = result.transaction;
-          console.log("Transaction Result:", transaction);
-        });
-
-        setIsPaymentLoading(false);
-        return;
-      }
-
-      throw new Error("Método de pago no reconocido.");
-    } catch (error: any) {
-      console.error("Error de pago:", error);
-      setIsPaymentLoading(false);
-
-      // Manejo robusto de errores
-      let errorMsg = error.message || "Hubo un problema al iniciar el pago.";
-      if (error.response?.data?.error) errorMsg = error.response.data.error;
-      if (error.response?.data?.details)
-        errorMsg += `: ${error.response.data.details}`;
-
-      showToast(errorMsg, "payment_error" as any);
-    }
-  };
-
   // Movemos la lógica de hooks ANTES del return condicional para evitar error de React
   const freeConfig = availablePlans?.freemium || {};
   const premiumConfig = availablePlans?.premium || {};
@@ -321,6 +208,123 @@ const PricingPage: React.FC = () => {
     },
     [priceConfig],
   );
+
+  const handleSubscribe = async (gateway: string) => {
+    if (!ENABLE_UPGRADES) {
+      alert("Las nuevas suscripciones están temporalmente deshabilitadas.");
+      return;
+    }
+
+    if (!user) {
+      navigate("/login", { state: { from: location.pathname } }); // Para volver después del login
+      return;
+    }
+
+    setIsPaymentLoading(true);
+    try {
+      // --- 1. Mercado Pago ---
+      if (gateway === "mercadopago") {
+        const planId =
+          billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+
+        // Obtener Device ID generado por el script de MP (si existe)
+        const deviceId = (window as any).MP_DEVICE_SESSION_ID;
+
+        const response = await api.post("/api/mercadopago/create_preference", {
+          userId: user._id,
+          planId,
+          country: country || "US",
+          deviceId,
+        });
+
+        const data = response?.data || response;
+
+        if (data?.init_point) {
+          // Detección robusta de entorno de desarrollo (Localhost, IPs locales, Ngrok)
+          const isDev =
+            window.location.hostname === "localhost" ||
+            window.location.hostname === "127.0.0.1" ||
+            window.location.hostname.startsWith("192.168.") ||
+            window.location.hostname.includes("ngrok");
+
+          const redirectUrl =
+            isDev && data.sandbox_init_point
+              ? data.sandbox_init_point
+              : data.init_point;
+          window.location.href = redirectUrl;
+          return; // Mantenemos loading true mientras redirige
+        } else {
+          throw new Error(
+            "No se pudo obtener el enlace de pago de Mercado Pago.",
+          );
+        }
+      }
+
+      // --- 2. Stripe ---
+      if (gateway === "stripe") {
+        await handleUpgrade(user._id, billingInterval);
+        return; // handleUpgrade maneja la redirección
+      }
+
+      // --- 3. Wompi ---
+      if (gateway === "wompi") {
+        await loadWompiScript();
+
+        const planId =
+          billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+
+        // Enviar el monto calculado (con oferta si aplica)
+        const amount = billingInterval === "monthly" ? priceConfig.monthly : priceConfig.yearly;
+
+        // 1. Obtener datos de firma del backend
+        const response = await api.post("/api/checkout", {
+          userId: user._id,
+          planId,
+          amount, // Enviamos el monto explícito para que el backend use el precio de oferta
+        });
+
+        const data = response.data || response;
+
+        console.log("💰 Wompi Checkout Data:", data); // Verificación de precio
+
+        // 2. Configurar Widget
+        const checkout = new window.WidgetCheckout({
+          currency: data.currency,
+          amountInCents: data.amountInCents,
+          reference: data.reference,
+          publicKey: data.publicKey,
+          signature: { integrity: data.signature },
+          redirectUrl: data.redirectUrl,
+          customerData: {
+            email: user.email,
+            fullName: user.email.split("@")[0], // Fallback simple
+          },
+        });
+
+        // 3. Abrir Widget
+        checkout.open((result: any) => {
+          const transaction = result.transaction;
+          console.log("Transaction Result:", transaction);
+        });
+
+        setIsPaymentLoading(false);
+        return;
+      }
+
+      throw new Error("Método de pago no reconocido.");
+    } catch (error: any) {
+      console.error("Error de pago:", error);
+      setIsPaymentLoading(false);
+
+      // Manejo robusto de errores
+      let errorMsg = error.message || "Hubo un problema al iniciar el pago.";
+      if (error.response?.data?.error) errorMsg = error.response.data.error;
+      if (error.response?.data?.details)
+        errorMsg += `: ${error.response.data.details}`;
+
+      showToast(errorMsg, "payment_error" as any);
+    }
+  };
 
   if (authLoading || !availablePlans) {
     return (

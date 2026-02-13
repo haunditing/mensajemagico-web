@@ -50,7 +50,12 @@ export const generateMessage = async (
      * El Backend usará su `PlanService` para decidir el modelo y las instrucciones.
      */
     if (process.env.NODE_ENV === 'development') {
-      console.log("🚀 Sending to AI:", { styleInstructions, creativityLevel, avoidTopics });
+      console.log("🚀 Sending to AI:", { 
+        intention: config.intention,
+        styleInstructions, 
+        creativityLevel, 
+        avoidTopics 
+      });
     }
 
     const response = await api.post("/api/magic/generate", {
