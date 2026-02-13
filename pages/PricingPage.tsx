@@ -171,6 +171,93 @@ const PricingPage: React.FC = () => {
     }
   };
 
+  // Movemos la lógica de hooks ANTES del return condicional para evitar error de React
+  const freeConfig = availablePlans?.freemium || {};
+  const premiumConfig = availablePlans?.premium || {};
+
+  // --- Lógica de Precios Localizados ---
+  const isColombia = country === "CO";
+  const rawOfferDate = premiumConfig.pricing_hooks?.offer_end_date;
+
+  // Lógica de expiración de oferta automática
+  const { isOfferActive, displayDate } = React.useMemo(() => {
+    if (!rawOfferDate) return { isOfferActive: false, displayDate: null };
+
+    // Intentamos parsear formato ISO (YYYY-MM-DD) para automatización
+    const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (isoDateRegex.test(rawOfferDate)) {
+      const [year, month, day] = rawOfferDate.split('-').map(Number);
+      const expiryDate = new Date(year, month - 1, day, 23, 59, 59); // Final del día local
+      
+      if (new Date() > expiryDate) {
+        return { isOfferActive: false, displayDate: null };
+      }
+      
+      // Formatear para mostrar (ej. "15 de octubre")
+      try {
+        const formatter = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' });
+        return { isOfferActive: true, displayDate: formatter.format(expiryDate) };
+      } catch (e) {
+        return { isOfferActive: true, displayDate: rawOfferDate };
+      }
+    }
+
+    // Si es texto libre (ej. "Pronto"), se muestra siempre
+    return { isOfferActive: true, displayDate: rawOfferDate };
+  }, [rawOfferDate]);
+
+  // Optimización: Memorizar la configuración de precios para evitar recálculos en cada render
+  const priceConfig = React.useMemo(() => {
+    const monthlyUSD = premiumConfig.pricing_hooks?.mercadopago_price_monthly_usd || premiumConfig.pricing?.monthly || 4.99;
+    const yearlyUSD = premiumConfig.pricing_hooks?.mercadopago_price_yearly_usd || premiumConfig.pricing?.yearly || 47.9;
+    
+    const monthlyUSDOriginal = premiumConfig.pricing_hooks?.mercadopago_price_monthly_usd_original;
+    const yearlyUSDOriginal = premiumConfig.pricing_hooks?.mercadopago_price_yearly_usd_original;
+
+    const monthlyCOP = premiumConfig.pricing_hooks?.mercadopago_price_monthly || 19000;
+    const yearlyCOP = premiumConfig.pricing_hooks?.mercadopago_price_yearly || 190000;
+    const monthlyCOPOriginal = premiumConfig.pricing_hooks?.mercadopago_price_monthly_original;
+    const yearlyCOPOriginal = premiumConfig.pricing_hooks?.mercadopago_price_yearly_original;
+
+    // Helper para resolver el precio activo (Oferta vs Original)
+    const resolvePrice = (active: number, original: number | undefined) => {
+      if (isOfferActive) return active;
+      return original || active;
+    };
+
+    const finalMonthly = isColombia 
+      ? resolvePrice(monthlyCOP, monthlyCOPOriginal)
+      : resolvePrice(monthlyUSD, monthlyUSDOriginal);
+
+    const finalYearly = isColombia
+      ? resolvePrice(yearlyCOP, yearlyCOPOriginal)
+      : resolvePrice(yearlyUSD, yearlyUSDOriginal);
+
+    return {
+      monthly: finalMonthly,
+      yearly: finalYearly,
+      monthlyOriginal: isOfferActive
+        ? (isColombia ? monthlyCOPOriginal : monthlyUSDOriginal)
+        : undefined,
+      yearlyOriginal: isOfferActive
+        ? (isColombia ? yearlyCOPOriginal : yearlyUSDOriginal)
+        : undefined,
+      yearly_monthly_equivalent: finalYearly / 12,
+      offerEndDate: isOfferActive ? displayDate : undefined,
+      currency: isColombia ? "COP" : "USD",
+      locale: isColombia ? "es-CO" : "en-US",
+    };
+  }, [isColombia, isOfferActive, displayDate, premiumConfig]);
+
+  // Optimización: Memorizar el formateador para evitar recrear Intl.NumberFormat
+  const formatPrice = React.useCallback((amount: number) => {
+    return new Intl.NumberFormat(priceConfig.locale, {
+      style: "currency",
+      currency: priceConfig.currency,
+      minimumFractionDigits: priceConfig.currency === "COP" ? 0 : 2,
+    }).format(amount);
+  }, [priceConfig]);
+
   if (authLoading || !availablePlans) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
@@ -179,46 +266,15 @@ const PricingPage: React.FC = () => {
     );
   }
 
-  const freeConfig = availablePlans.freemium || {};
-  const premiumConfig = availablePlans.premium || {};
-
-  // --- Lógica de Precios Localizados ---
-  const isColombia = country === "CO";
-
-  const priceConfig = {
-    monthly: isColombia
-      ? premiumConfig.pricing_hooks?.mercadopago_price_monthly
-      : premiumConfig.pricing?.monthly,
-    yearly: isColombia
-      ? premiumConfig.pricing_hooks?.mercadopago_price_yearly
-      : premiumConfig.pricing?.yearly,
-    yearly_monthly_equivalent: isColombia
-      ? (premiumConfig.pricing_hooks?.mercadopago_price_yearly ?? 0) / 12
-      : premiumConfig.pricing?.yearly_monthly_equivalent,
-    currency: isColombia ? "COP" : "USD",
-    locale: isColombia ? "es-CO" : "en-US",
-  };
-
-  // Fallbacks por si la config no carga
-  if (!priceConfig.monthly) priceConfig.monthly = isColombia ? 19000 : 4.99;
-  if (!priceConfig.yearly) priceConfig.yearly = isColombia ? 190000 : 47.9;
-  if (!priceConfig.yearly_monthly_equivalent)
-    priceConfig.yearly_monthly_equivalent = isColombia
-      ? priceConfig.yearly / 12
-      : 3.99;
-
-  const formatPrice = (amount: number) => {
-    return new Intl.NumberFormat(priceConfig.locale, {
-      style: "currency",
-      currency: priceConfig.currency,
-      minimumFractionDigits: priceConfig.currency === "COP" ? 0 : 2,
-    }).format(amount);
-  };
-
   const currentDisplayPrice =
     billingInterval === "monthly"
       ? priceConfig.monthly
       : priceConfig.yearly_monthly_equivalent;
+
+  const currentOriginalPrice =
+    billingInterval === "monthly"
+      ? priceConfig.monthlyOriginal
+      : (priceConfig.yearlyOriginal ? priceConfig.yearlyOriginal / 12 : undefined);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in-up">
@@ -325,6 +381,19 @@ const PricingPage: React.FC = () => {
             <p className="text-slate-400">
               Para creadores de contenido y románticos.
             </p>
+            {currentOriginalPrice && (
+              <div className="mt-4 mb-[-10px] flex flex-col items-start gap-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-500 line-through text-lg font-bold">{formatPrice(currentOriginalPrice)}</span>
+                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">OFERTA</span>
+                </div>
+                {priceConfig.offerEndDate && (
+                  <span className="text-[10px] text-red-400 font-bold bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
+                    ⏳ Válido hasta el {priceConfig.offerEndDate}
+                  </span>
+                )}
+              </div>
+            )}
             <div className="mt-6 flex items-baseline gap-1">
               <span className="text-4xl font-black text-white">
                 {formatPrice(currentDisplayPrice)}
