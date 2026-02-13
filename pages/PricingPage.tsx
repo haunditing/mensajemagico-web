@@ -276,8 +276,14 @@ const PricingPage: React.FC = () => {
       ? resolvePrice(yearlyCOP, yearlyCOPOriginal)
       : resolvePrice(yearlyUSD, yearlyUSDOriginal);
 
+    const referenceMonthly = isColombia
+      ? monthlyCOPOriginal || monthlyCOP
+      : monthlyUSDOriginal || monthlyUSD;
+
+    const yearlySavings = referenceMonthly * 12 - finalYearly;
+
     const discountPercentage = Math.round(
-      (1 - finalYearly / (finalMonthly * 12)) * 100
+      (1 - finalYearly / (referenceMonthly * 12)) * 100
     );
 
     return {
@@ -299,6 +305,7 @@ const PricingPage: React.FC = () => {
       currency: isColombia ? "COP" : "USD",
       locale: isColombia ? "es-CO" : "en-US",
       discountPercentage: discountPercentage > 0 ? discountPercentage : 0,
+      yearlySavings: yearlySavings > 0 ? yearlySavings : 0,
     };
   }, [isColombia, isOfferActive, displayDate, premiumConfig]);
 
@@ -432,135 +439,138 @@ const PricingPage: React.FC = () => {
         </div>
 
         {/* Premium Plan */}
-        <div className="bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 shadow-2xl shadow-blue-900/20 flex flex-col relative overflow-hidden">
-          <div className="absolute top-0 right-0 bg-gradient-to-bl from-blue-600 to-purple-600 text-white text-xs font-bold px-4 py-2 rounded-bl-2xl">
-            RECOMENDADO
+        <div className="bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 shadow-2xl shadow-blue-900/20 flex flex-col relative">
+          <div className="absolute top-0 inset-x-0 flex justify-center -mt-3 z-20">
+            <span
+              className={`bg-gradient-to-r ${isOfferActive ? "from-rose-600 to-orange-600" : "from-blue-600 to-purple-600"} text-white text-[10px] font-bold px-4 py-1 rounded-full shadow-lg uppercase tracking-widest border border-slate-800`}
+            >
+              {isOfferActive ? "🔥 Oferta Especial" : "Recomendado"}
+            </span>
           </div>
 
-          <div className="mb-8 relative z-10">
-            <h3 className="text-2xl font-bold text-white mb-2">Premium</h3>
-            <p className="text-slate-400">
+          <div className="mb-8 relative z-10 mt-2">
+            <h3 className="text-2xl font-bold text-white mb-1">Premium</h3>
+            <p className="text-slate-400 text-sm mb-6">
               Para creadores de contenido y románticos.
             </p>
-            {currentOriginalPrice && (
-              <div className="mt-4 mb-[-10px] flex flex-col items-start gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-500 line-through text-lg font-bold">
-                    {formatPrice(currentOriginalPrice)}
-                  </span>
-                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
-                    {isOfferActive ? "OFERTA" : "AHORRO"}
-                  </span>
-                </div>
-                {priceConfig.offerDuration > 0 && (
-                  <span
-                    className={`text-xs font-bold px-2 py-0.5 rounded border max-w-full text-left leading-tight ${
-                      isChristmas
-                        ? "text-emerald-700 bg-emerald-50 border-emerald-200"
-                        : isValentine
-                          ? "text-rose-600 bg-rose-50 border-rose-200"
-                          : isHalloween
-                            ? "text-orange-700 bg-orange-50 border-orange-200"
-                            : isBlackFriday
-                              ? "text-slate-900 bg-slate-100 border-slate-300"
-                              : "text-indigo-600 bg-indigo-50 border-indigo-100"
-                    }`}
-                  >
-                    {isChristmas
-                      ? "🎄"
-                      : isValentine
-                        ? "💖"
-                        : isHalloween
-                          ? "🎃"
-                          : isBlackFriday
-                            ? "🛍️"
-                            : "✨"}{" "}
-                    {billingInterval === "yearly"
-                      ? "Primer año"
-                      : `Precio especial por ${priceConfig.offerDuration} meses`}
-                  </span>
-                )}
-                {priceConfig.offerEndDate && (
-                  <span className="text-[10px] text-red-400 font-bold bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20 max-w-full text-left">
-                    ⏳ Válido hasta el {priceConfig.offerEndDate}
-                  </span>
-                )}
-              </div>
-            )}
-            <div className="mt-6 flex items-baseline gap-1">
-              <span className="text-4xl font-black text-white">
+
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-black text-white tracking-tight">
                 {formatPrice(currentDisplayPrice)}
               </span>
               <span className="text-slate-500 font-medium">/mes</span>
             </div>
+
+            {currentOriginalPrice && (
+              <div className="flex flex-col items-start gap-1 mt-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-600 line-through text-sm font-medium">
+                    {formatPrice(currentOriginalPrice)}
+                  </span>
+                  <span
+                    className={`${isOfferActive ? "text-rose-400 bg-rose-500/10" : "text-green-400 bg-green-500/10"} text-xs font-bold px-2 py-0.5 rounded-full`}
+                  >
+                    {isOfferActive
+                      ? billingInterval === "yearly"
+                        ? "OFERTA PRIMER AÑO"
+                        : priceConfig.offerDuration > 0
+                          ? `OFERTA POR ${priceConfig.offerDuration} MESES`
+                          : "OFERTA LIMITADA"
+                      : `AHORRAS ${priceConfig.discountPercentage}%`}
+                  </span>
+                </div>
+                {isOfferActive && priceConfig.offerEndDate && (
+                  <p className="text-[10px] text-rose-300 font-bold flex items-center gap-1 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
+                    <span>⏳</span> Válido hasta el {priceConfig.offerEndDate}
+                  </p>
+                )}
+              </div>
+            )}
+
             {billingInterval === "yearly" && (
-              <p className="text-xs text-blue-400 mt-2 font-bold">
-                Facturado {formatPrice(priceConfig.yearly)} anualmente
-              </p>
+              <div className="mt-6 bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
+                <p className="text-sm text-blue-200 font-medium">
+                  Facturado{" "}
+                  <span className="text-white font-bold">
+                    {formatPrice(priceConfig.yearly)}
+                  </span>{" "}
+                  al año
+                </p>
+                {priceConfig.yearlySavings > 0 && (
+                  <p className="text-xs text-green-400 mt-1 font-bold">
+                    ¡Te ahorras {formatPrice(priceConfig.yearlySavings)} en
+                    total!
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
-          <ul className="space-y-4 mb-6 md:mb-8 flex-1 relative z-10">
-            <li className="flex items-center gap-3 text-slate-200">
-              <span className="text-blue-400 text-xl">✓</span>
+          <ul className="space-y-4 mb-8 flex-1 relative z-10">
+            <li className="flex items-start gap-3 text-white">
+              <span className="text-xl">💬</span>
               <span>
                 <strong>
                   {premiumConfig.access?.daily_limit > 100
-                    ? "Mensajes ilimitados"
+                    ? "Inspiración Ilimitada"
                     : `${premiumConfig.access?.daily_limit} mensajes diarios`}
                 </strong>
+                <span className="text-slate-400 text-sm block font-normal">
+                  Nunca te quedes sin palabras para tu pareja o audiencia.
+                </span>
               </span>
             </li>
-            <li className="flex items-center gap-3 text-slate-200">
-              <span className="text-blue-400 text-xl">✓</span>
+            <li className="flex items-start gap-3 text-white">
+              <span className="text-xl">✨</span>
               <span>
-                Acceso a{" "}
-                <strong>
-                  {premiumConfig.access?.exclusive_tones === "all"
-                    ? "todos las ocasiones y tonos"
-                    : "ocasiones y tonos exclusivos"}
-                </strong>
+                <strong>Editor Mágico</strong>{" "}
+                <span className="text-slate-400 text-sm block font-normal">
+                  La IA pule tus textos manteniendo tu esencia única.
+                </span>
               </span>
             </li>
-            <li className="flex items-center gap-3 text-slate-200">
-              <span className="text-blue-400 text-xl">✓</span>
+            <li className="flex items-start gap-3 text-white">
+              <span className="text-xl">🧠</span>
               <span>
-                <strong>Recordatorios</strong>
+                <strong>Guardián de Sentimientos</strong>{" "}
+                <span className="text-slate-400 text-sm block font-normal">
+                  Inteligencia emocional para cuidar tus relaciones.
+                </span>
               </span>
             </li>
-            <li className="flex items-center gap-3 text-slate-200">
-              <span className="text-blue-400 text-xl">✓</span>
+            <li className="flex items-start gap-3 text-slate-300">
+              <span className="text-xl">🌎</span>
               <span>
-                <strong className="relative inline-flex items-center gap-2">
-                  Guardián de Sentimientos
-                  <span className="text-lg animate-pulse">🔮</span>
-                </strong>{" "}
-                (Análisis de relaciones)
+                <strong>Acento Local</strong>
+                <span className="text-slate-500 text-xs block font-normal">
+                  Conecta auténticamente con modismos regionales.
+                </span>
               </span>
             </li>
-            <li className="flex items-center gap-3 text-slate-200">
-              <span className="text-blue-400 text-xl">✓</span>
+            <li className="flex items-start gap-3 text-slate-300">
+              <span className="text-xl">⏰</span>
               <span>
-                <strong>Editor Mágico</strong> (La IA aprende tu estilo)
+                <strong>Fechas Importantes</strong>
+                <span className="text-slate-500 text-xs block font-normal">
+                  Recordatorios para que nunca olvides un momento especial.
+                </span>
               </span>
             </li>
-            <li className="flex items-center gap-3 text-slate-200">
-              <span className="text-blue-400 text-xl">✓</span>
+            <li className="flex items-start gap-3 text-slate-300">
+              <span className="text-xl">🔓</span>
               <span>
-                <strong>Modo Regional</strong> (Contexto local inteligente)
+                <strong>Versatilidad Total</strong>
+                <span className="text-slate-500 text-xs block font-normal">
+                  Acceso a todos los tonos: romántico, divertido, profesional...
+                </span>
               </span>
             </li>
-            <li className="flex items-center gap-3 text-slate-200">
-              <span className="text-blue-400 text-xl">✓</span>
-              <span>
-                {!premiumConfig.monetization?.show_ads
-                  ? "Sin anuncios"
-                  : "Con anuncios"}{" "}
-                ni marcas de agua
-              </span>
+            <li className="flex items-center gap-3 text-slate-400 text-sm mt-6 pt-6 border-t border-slate-800">
+              <span className="text-lg">🚫</span>
+              <span>Sin anuncios ni marcas de agua</span>
             </li>
-            <li className="flex items-center gap-3 text-slate-200">
-              <span className="text-blue-400 text-xl">✓</span>
+            <li className="flex items-center gap-3 text-slate-400 text-sm">
+              <span className="text-lg">🛟</span>
               <span>Soporte prioritario</span>
             </li>
           </ul>
@@ -571,18 +581,20 @@ const PricingPage: React.FC = () => {
             planLevel={planLevel}
           />
 
-          <div className="mt-4 text-center relative z-10">
+          <div className="mt-6 text-center relative z-10">
             <Link
               to="/contacto"
-              className="text-xs text-slate-500 hover:text-slate-300 transition-colors underline decoration-slate-700 underline-offset-4"
+              className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors bg-slate-800/50 px-4 py-2 rounded-full hover:bg-slate-800"
             >
-              ¿Necesitas ayuda con el pago?
+              <span>👋</span> ¿Necesitas ayuda con el pago?
             </Link>
           </div>
 
           {/* Background decoration */}
-          <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] pointer-events-none">
+            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl"></div>
+            <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
+          </div>
         </div>
       </div>
     </div>

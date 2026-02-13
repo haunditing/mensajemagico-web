@@ -7,7 +7,13 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(() => {
+    try {
+      return localStorage.getItem("termsAccepted") === "true";
+    } catch {
+      return false;
+    }
+  });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
@@ -109,7 +115,13 @@ const LoginPage: React.FC = () => {
               type="checkbox"
               id="terms-login"
               checked={acceptedTerms}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              onChange={(e) => {
+                const isChecked = e.target.checked;
+                setAcceptedTerms(isChecked);
+                try {
+                  localStorage.setItem("termsAccepted", String(isChecked));
+                } catch {}
+              }}
               className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
             />
             <label htmlFor="terms-login" className="text-sm text-slate-600 cursor-pointer">

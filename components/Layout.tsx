@@ -11,6 +11,7 @@ import CookieBanner from "./CookieBanner";
 import OccasionIcon from "./OccasionIcon";
 import UserMenu from "./UserMenu";
 import NotificationManager from "./NotificationManager";
+import OfferBanner from "./OfferBanner";
 
 const MagicWandIcon = ({ className }: { className?: string }) => (
   <svg
@@ -249,6 +250,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
     <div className="min-h-screen flex flex-col selection:bg-blue-100 selection:text-blue-900">
       <NotificationManager />
+      <OfferBanner />
       {/* Header Principal */}
       <header className="bg-white/90 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-50 shadow-sm transition-all duration-300">
         <div className="max-w-screen-2xl mx-auto">
