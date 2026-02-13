@@ -70,21 +70,27 @@ const HomePage: React.FC = () => {
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
+  const isHalloween = CONFIG.THEME.IS_HALLOWEEN;
+  const isBlackFriday = CONFIG.THEME.IS_BLACK_FRIDAY;
 
   console.log(
-    `[HomePage] Renderizado. San Valentín: ${isValentine}, Navidad: ${isChristmas}`,
+    `[HomePage] Renderizado. San Valentín: ${isValentine}, Navidad: ${isChristmas}, Halloween: ${isHalloween}, Black Friday: ${isBlackFriday}`
   );
 
   return (
     <main className="animate-fade-in-up">
       {/* Hero Section */}
       <section className="text-center mb-16 md:mb-24 relative">
-        {(isValentine || isChristmas) && (
+        {(isValentine || isChristmas || isHalloween || isBlackFriday) && (
           <FallingParticles
             count={20}
             emojis={
               isValentine
                 ? ["❤️", "💖", "💘", "💝", "🌹"]
+                : isHalloween
+                ? ["🎃", "👻", "🦇", "🕷️", "🍬"]
+                : isBlackFriday
+                ? ["🛍️", "🏷️", "💸", "🖤", "✨"]
                 : ["❄️", "❅", "🌨️", "☃️"]
             }
             iterationCount={isValentine ? 2 : "infinite"}

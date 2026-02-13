@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 
 interface FallingParticlesProps {
   count?: number;
@@ -7,7 +7,7 @@ interface FallingParticlesProps {
   iterationCount?: number | "infinite";
 }
 
-const FallingParticles: React.FC<FallingParticlesProps> = ({ 
+const FallingParticles: React.FC<FallingParticlesProps> = React.memo(({ 
   count = 15, 
   emojis = ['❤️', '💖', '💘', '💝'],
   className = "",
@@ -23,6 +23,9 @@ const FallingParticles: React.FC<FallingParticlesProps> = ({
     opacity: number;
   }>>([]);
 
+  // Serializar emojis para evitar re-renderizados innecesarios si el array cambia de referencia
+  const emojisKey = useMemo(() => JSON.stringify(emojis), [emojis]);
+
   useEffect(() => {
     setParticles(
       Array.from({ length: count }).map((_, i) => ({
@@ -35,10 +38,10 @@ const FallingParticles: React.FC<FallingParticlesProps> = ({
         opacity: 0.3 + Math.random() * 0.7 // Opacidad entre 0.3 y 1
       }))
     );
-  }, [count, emojis]);
+  }, [count, emojisKey]);
 
   return (
-    <div className={`absolute inset-0 pointer-events-none overflow-hidden -z-10 ${className}`}>
+    <div className={`absolute inset-0 pointer-events-none overflow-hidden -z-10 ${className}`} aria-hidden="true">
       <style>
         {`
           @keyframes fall-fade {
@@ -63,6 +66,7 @@ const FallingParticles: React.FC<FallingParticlesProps> = ({
             fontSize: `${p.size}rem`,
             ['--particle-opacity' as any]: p.opacity,
             animationIterationCount: iterationCount,
+            willChange: 'transform, opacity', // Optimización de GPU
           }}
         >
           {p.emoji}
@@ -70,6 +74,6 @@ const FallingParticles: React.FC<FallingParticlesProps> = ({
       ))}
     </div>
   );
-};
+});
 
 export default FallingParticles;

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { handleUpgrade } from "../services/paymentService"; // Stripe habilitado
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
-import { ENABLE_UPGRADES } from "../config";
+import { ENABLE_UPGRADES, CONFIG } from "../config";
 import { useLocalization } from "../context/LocalizationContext";
 import { api } from "../context/api";
 import PaymentGateways from "../components/PaymentGateways";
@@ -24,6 +24,11 @@ const PricingPage: React.FC = () => {
     "monthly",
   );
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+
+  const isValentine = CONFIG.THEME.IS_VALENTINE;
+  const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
+  const isHalloween = CONFIG.THEME.IS_HALLOWEEN;
+  const isBlackFriday = CONFIG.THEME.IS_BLACK_FRIDAY;
 
   useEffect(() => {
     // Fix para bfcache: Si el usuario vuelve atrás, aseguramos que el loading esté apagado
@@ -51,16 +56,16 @@ const PricingPage: React.FC = () => {
   // Helper para cargar el script de Wompi dinámicamente
   const loadWompiScript = () => {
     return new Promise((resolve, reject) => {
-      if (document.getElementById('wompi-script')) {
+      if (document.getElementById("wompi-script")) {
         resolve(true);
         return;
       }
-      const script = document.createElement('script');
-      script.id = 'wompi-script';
-      script.src = 'https://checkout.wompi.co/widget.js';
+      const script = document.createElement("script");
+      script.id = "wompi-script";
+      script.src = "https://checkout.wompi.co/widget.js";
       script.async = true;
       script.onload = () => resolve(true);
-      script.onerror = () => reject(new Error('Error cargando Wompi'));
+      script.onerror = () => reject(new Error("Error cargando Wompi"));
       document.body.appendChild(script);
     });
   };
@@ -80,8 +85,9 @@ const PricingPage: React.FC = () => {
     try {
       // --- 1. Mercado Pago ---
       if (gateway === "mercadopago") {
-        const planId = billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
-        
+        const planId =
+          billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+
         // Obtener Device ID generado por el script de MP (si existe)
         const deviceId = (window as any).MP_DEVICE_SESSION_ID;
 
@@ -96,17 +102,22 @@ const PricingPage: React.FC = () => {
 
         if (data?.init_point) {
           // Detección robusta de entorno de desarrollo (Localhost, IPs locales, Ngrok)
-          const isDev = 
-            window.location.hostname === "localhost" || 
+          const isDev =
+            window.location.hostname === "localhost" ||
             window.location.hostname === "127.0.0.1" ||
             window.location.hostname.startsWith("192.168.") ||
             window.location.hostname.includes("ngrok");
 
-          const redirectUrl = isDev && data.sandbox_init_point ? data.sandbox_init_point : data.init_point;
+          const redirectUrl =
+            isDev && data.sandbox_init_point
+              ? data.sandbox_init_point
+              : data.init_point;
           window.location.href = redirectUrl;
           return; // Mantenemos loading true mientras redirige
         } else {
-          throw new Error("No se pudo obtener el enlace de pago de Mercado Pago.");
+          throw new Error(
+            "No se pudo obtener el enlace de pago de Mercado Pago.",
+          );
         }
       }
 
@@ -119,17 +130,18 @@ const PricingPage: React.FC = () => {
       // --- 3. Wompi ---
       if (gateway === "wompi") {
         await loadWompiScript();
-        
-        const planId = billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
-        
+
+        const planId =
+          billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+
         // 1. Obtener datos de firma del backend
-        const response = await api.post('/api/checkout', {
+        const response = await api.post("/api/checkout", {
           userId: user._id,
-          planId
+          planId,
         });
-        
+
         const data = response.data || response;
-        
+
         console.log("💰 Wompi Checkout Data:", data); // Verificación de precio
 
         // 2. Configurar Widget
@@ -142,31 +154,31 @@ const PricingPage: React.FC = () => {
           redirectUrl: data.redirectUrl,
           customerData: {
             email: user.email,
-            fullName: user.email.split('@')[0], // Fallback simple
-          }
+            fullName: user.email.split("@")[0], // Fallback simple
+          },
         });
 
         // 3. Abrir Widget
         checkout.open((result: any) => {
           const transaction = result.transaction;
-          console.log('Transaction Result:', transaction);
+          console.log("Transaction Result:", transaction);
         });
-        
+
         setIsPaymentLoading(false);
         return;
       }
 
       throw new Error("Método de pago no reconocido.");
-
     } catch (error: any) {
       console.error("Error de pago:", error);
       setIsPaymentLoading(false);
-      
+
       // Manejo robusto de errores
       let errorMsg = error.message || "Hubo un problema al iniciar el pago.";
       if (error.response?.data?.error) errorMsg = error.response.data.error;
-      if (error.response?.data?.details) errorMsg += `: ${error.response.data.details}`;
-      
+      if (error.response?.data?.details)
+        errorMsg += `: ${error.response.data.details}`;
+
       showToast(errorMsg, "payment_error" as any);
     }
   };
@@ -178,25 +190,38 @@ const PricingPage: React.FC = () => {
   // --- Lógica de Precios Localizados ---
   const isColombia = country === "CO";
   const rawOfferDate = premiumConfig.pricing_hooks?.offer_end_date;
+  const rawOfferDuration = premiumConfig.pricing_hooks?.offer_duration_months;
 
   // Lógica de expiración de oferta automática
   const { isOfferActive, displayDate } = React.useMemo(() => {
-    if (!rawOfferDate) return { isOfferActive: false, displayDate: null };
+    if (!rawOfferDate) {
+      // Si no hay fecha límite pero sí duración, asumimos que es una oferta activa permanente
+      if (rawOfferDuration && Number(rawOfferDuration) > 0) {
+        return { isOfferActive: true, displayDate: null };
+      }
+      return { isOfferActive: false, displayDate: null };
+    }
 
     // Intentamos parsear formato ISO (YYYY-MM-DD) para automatización
     const isoDateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (isoDateRegex.test(rawOfferDate)) {
-      const [year, month, day] = rawOfferDate.split('-').map(Number);
+      const [year, month, day] = rawOfferDate.split("-").map(Number);
       const expiryDate = new Date(year, month - 1, day, 23, 59, 59); // Final del día local
-      
+
       if (new Date() > expiryDate) {
         return { isOfferActive: false, displayDate: null };
       }
-      
+
       // Formatear para mostrar (ej. "15 de octubre")
       try {
-        const formatter = new Intl.DateTimeFormat('es-ES', { day: 'numeric', month: 'long' });
-        return { isOfferActive: true, displayDate: formatter.format(expiryDate) };
+        const formatter = new Intl.DateTimeFormat("es-ES", {
+          day: "numeric",
+          month: "long",
+        });
+        return {
+          isOfferActive: true,
+          displayDate: formatter.format(expiryDate),
+        };
       } catch (e) {
         return { isOfferActive: true, displayDate: rawOfferDate };
       }
@@ -204,20 +229,38 @@ const PricingPage: React.FC = () => {
 
     // Si es texto libre (ej. "Pronto"), se muestra siempre
     return { isOfferActive: true, displayDate: rawOfferDate };
-  }, [rawOfferDate]);
+  }, [rawOfferDate, rawOfferDuration]);
 
   // Optimización: Memorizar la configuración de precios para evitar recálculos en cada render
   const priceConfig = React.useMemo(() => {
-    const monthlyUSD = premiumConfig.pricing_hooks?.mercadopago_price_monthly_usd || premiumConfig.pricing?.monthly || 4.99;
-    const yearlyUSD = premiumConfig.pricing_hooks?.mercadopago_price_yearly_usd || premiumConfig.pricing?.yearly || 47.9;
-    
-    const monthlyUSDOriginal = premiumConfig.pricing_hooks?.mercadopago_price_monthly_usd_original;
-    const yearlyUSDOriginal = premiumConfig.pricing_hooks?.mercadopago_price_yearly_usd_original;
+    const parsePrice = (val: any) => {
+      const num = Number(val);
+      return !isNaN(num) && num > 0 ? num : undefined;
+    };
 
-    const monthlyCOP = premiumConfig.pricing_hooks?.mercadopago_price_monthly || 19000;
-    const yearlyCOP = premiumConfig.pricing_hooks?.mercadopago_price_yearly || 190000;
-    const monthlyCOPOriginal = premiumConfig.pricing_hooks?.mercadopago_price_monthly_original;
-    const yearlyCOPOriginal = premiumConfig.pricing_hooks?.mercadopago_price_yearly_original;
+    const monthlyUSD =
+      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_monthly_usd) ||
+      parsePrice(premiumConfig.pricing?.monthly) || 4.99;
+    const yearlyUSD =
+      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_yearly_usd) ||
+      parsePrice(premiumConfig.pricing?.yearly) || 47.9;
+
+    const monthlyUSDOriginal =
+      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_monthly_usd_original);
+    const yearlyUSDOriginal =
+      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_yearly_usd_original);
+
+    const monthlyCOP =
+      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_monthly) || 19000;
+    const yearlyCOP =
+      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_yearly) || 190000;
+    const monthlyCOPOriginal =
+      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_monthly_original);
+    const yearlyCOPOriginal =
+      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_yearly_original);
+
+    const offerDuration =
+      Number(premiumConfig.pricing_hooks?.offer_duration_months) || 0;
 
     // Helper para resolver el precio activo (Oferta vs Original)
     const resolvePrice = (active: number, original: number | undefined) => {
@@ -225,7 +268,7 @@ const PricingPage: React.FC = () => {
       return original || active;
     };
 
-    const finalMonthly = isColombia 
+    const finalMonthly = isColombia
       ? resolvePrice(monthlyCOP, monthlyCOPOriginal)
       : resolvePrice(monthlyUSD, monthlyUSDOriginal);
 
@@ -233,30 +276,44 @@ const PricingPage: React.FC = () => {
       ? resolvePrice(yearlyCOP, yearlyCOPOriginal)
       : resolvePrice(yearlyUSD, yearlyUSDOriginal);
 
+    const discountPercentage = Math.round(
+      (1 - finalYearly / (finalMonthly * 12)) * 100
+    );
+
     return {
       monthly: finalMonthly,
       yearly: finalYearly,
       monthlyOriginal: isOfferActive
-        ? (isColombia ? monthlyCOPOriginal : monthlyUSDOriginal)
+        ? isColombia
+          ? monthlyCOPOriginal
+          : monthlyUSDOriginal
         : undefined,
       yearlyOriginal: isOfferActive
-        ? (isColombia ? yearlyCOPOriginal : yearlyUSDOriginal)
+        ? isColombia
+          ? yearlyCOPOriginal
+          : yearlyUSDOriginal
         : undefined,
+      offerDuration: isOfferActive ? offerDuration : 0,
       yearly_monthly_equivalent: finalYearly / 12,
       offerEndDate: isOfferActive ? displayDate : undefined,
       currency: isColombia ? "COP" : "USD",
       locale: isColombia ? "es-CO" : "en-US",
+      discountPercentage: discountPercentage > 0 ? discountPercentage : 0,
     };
   }, [isColombia, isOfferActive, displayDate, premiumConfig]);
 
   // Optimización: Memorizar el formateador para evitar recrear Intl.NumberFormat
-  const formatPrice = React.useCallback((amount: number) => {
-    return new Intl.NumberFormat(priceConfig.locale, {
-      style: "currency",
-      currency: priceConfig.currency,
-      minimumFractionDigits: priceConfig.currency === "COP" ? 0 : 2,
-    }).format(amount);
-  }, [priceConfig]);
+  const formatPrice = React.useCallback(
+    (amount: number) => {
+      return new Intl.NumberFormat(priceConfig.locale, {
+        style: "currency",
+        currency: priceConfig.currency,
+        minimumFractionDigits: priceConfig.currency === "COP" ? 0 : 2,
+        maximumFractionDigits: priceConfig.currency === "COP" ? 0 : 2,
+      }).format(amount);
+    },
+    [priceConfig],
+  );
 
   if (authLoading || !availablePlans) {
     return (
@@ -274,7 +331,9 @@ const PricingPage: React.FC = () => {
   const currentOriginalPrice =
     billingInterval === "monthly"
       ? priceConfig.monthlyOriginal
-      : (priceConfig.yearlyOriginal ? priceConfig.yearlyOriginal / 12 : undefined);
+      : priceConfig.yearlyOriginal
+        ? priceConfig.yearlyOriginal / 12
+        : undefined;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in-up">
@@ -312,9 +371,11 @@ const PricingPage: React.FC = () => {
             }`}
           >
             Anual
-            <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full">
-              -20%
-            </span>
+            {priceConfig.discountPercentage > 0 && (
+              <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full">
+                -{priceConfig.discountPercentage}%
+              </span>
+            )}
           </button>
         </div>
       </div>
@@ -384,11 +445,43 @@ const PricingPage: React.FC = () => {
             {currentOriginalPrice && (
               <div className="mt-4 mb-[-10px] flex flex-col items-start gap-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-slate-500 line-through text-lg font-bold">{formatPrice(currentOriginalPrice)}</span>
-                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">OFERTA</span>
+                  <span className="text-slate-500 line-through text-lg font-bold">
+                    {formatPrice(currentOriginalPrice)}
+                  </span>
+                  <span className="bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full animate-pulse">
+                    OFERTA
+                  </span>
                 </div>
+                {priceConfig.offerDuration > 0 && (
+                  <span
+                    className={`text-xs font-bold px-2 py-0.5 rounded border max-w-full text-left leading-tight ${
+                      isChristmas
+                        ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+                        : isValentine
+                          ? "text-rose-600 bg-rose-50 border-rose-200"
+                          : isHalloween
+                            ? "text-orange-700 bg-orange-50 border-orange-200"
+                            : isBlackFriday
+                              ? "text-slate-900 bg-slate-100 border-slate-300"
+                              : "text-indigo-600 bg-indigo-50 border-indigo-100"
+                    }`}
+                  >
+                    {isChristmas
+                      ? "🎄"
+                      : isValentine
+                        ? "💖"
+                        : isHalloween
+                          ? "🎃"
+                          : isBlackFriday
+                            ? "🛍️"
+                            : "✨"}{" "}
+                    {billingInterval === "yearly"
+                      ? "Primer año"
+                      : `Precio especial por ${priceConfig.offerDuration} meses`}
+                  </span>
+                )}
                 {priceConfig.offerEndDate && (
-                  <span className="text-[10px] text-red-400 font-bold bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
+                  <span className="text-[10px] text-red-400 font-bold bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20 max-w-full text-left">
                     ⏳ Válido hasta el {priceConfig.offerEndDate}
                   </span>
                 )}
@@ -472,11 +565,20 @@ const PricingPage: React.FC = () => {
             </li>
           </ul>
 
-          <PaymentGateways 
-            onSelectGateway={handleSubscribe} 
+          <PaymentGateways
+            onSelectGateway={handleSubscribe}
             isLoading={isPaymentLoading}
             planLevel={planLevel}
           />
+
+          <div className="mt-4 text-center relative z-10">
+            <Link
+              to="/contacto"
+              className="text-xs text-slate-500 hover:text-slate-300 transition-colors underline decoration-slate-700 underline-offset-4"
+            >
+              ¿Necesitas ayuda con el pago?
+            </Link>
+          </div>
 
           {/* Background decoration */}
           <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl pointer-events-none"></div>

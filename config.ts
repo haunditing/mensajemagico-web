@@ -30,6 +30,18 @@ const CHRISTMAS_SEASON = {
   END_DAY: 25,
 };
 
+const HALLOWEEN_SEASON = {
+  MONTH: 9, // Octubre (0-indexado)
+  START_DAY: 24,
+  END_DAY: 31,
+};
+
+const BALCK_FRIDAY_SEASON = {
+  MONTH: 10, // Noviembre (0-indexado)
+  START_DAY: 23,
+  END_DAY: 30,
+};
+
 const getActiveSeason = () => {
   const now = new Date();
   const month = now.getMonth();
@@ -49,6 +61,22 @@ const getActiveSeason = () => {
     day <= CHRISTMAS_SEASON.END_DAY
   ) {
     return "christmas";
+  }
+   if (
+    month === HALLOWEEN_SEASON.MONTH &&
+    day >= HALLOWEEN_SEASON.START_DAY &&
+    day <= HALLOWEEN_SEASON.END_DAY
+  ) {
+    return "halloween";
+  
+  }
+     if (
+    month === BALCK_FRIDAY_SEASON.MONTH &&
+    day >= BALCK_FRIDAY_SEASON.START_DAY &&
+    day <= BALCK_FRIDAY_SEASON.END_DAY
+  ) {
+    return "black-friday";
+  
   }
 
   return null;
@@ -107,6 +135,8 @@ export const CONFIG = {
     ACTIVE_SEASON: getActiveSeason(),
     IS_VALENTINE: getActiveSeason() === "valentine",
     IS_CHRISTMAS: getActiveSeason() === "christmas",
+    IS_HALLOWEEN: getActiveSeason() === "halloween",
+    IS_BLACK_FRIDAY: getActiveSeason() === "black-friday",
   },
 
   // --- MÉTRICAS ---

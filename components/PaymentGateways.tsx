@@ -140,7 +140,7 @@ const PaymentGateways: React.FC<PaymentGatewaysProps> = ({ onSelectGateway, isLo
               {/* Text */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`font-bold text-sm ${isSelected ? "text-slate-900" : "text-slate-700"}`}>
+                  <span className={`font-bold text-sm leading-tight ${isSelected ? "text-slate-900" : "text-slate-700"}`}>
                     {gateway.name}
                   </span>
                   {gateway.badge && (
@@ -150,7 +150,7 @@ const PaymentGateways: React.FC<PaymentGatewaysProps> = ({ onSelectGateway, isLo
                   )}
                 </div>
                 {gateway.description && (
-                  <p className="text-xs text-slate-400 font-medium truncate">{gateway.description}</p>
+                  <p className="text-xs text-slate-400 font-medium leading-tight mt-0.5">{gateway.description}</p>
                 )}
               </div>
             </div>

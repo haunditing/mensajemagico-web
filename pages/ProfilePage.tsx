@@ -418,6 +418,19 @@ const ProfilePage: React.FC = () => {
                 </span>
               </div>
 
+              {/* Información de Promoción */}
+              {(user as any).promoEndsAt && new Date((user as any).promoEndsAt) > new Date() && (
+                <div className="bg-indigo-50 p-3 rounded-lg border border-indigo-100 flex items-start gap-3">
+                  <span className="text-lg">🏷️</span>
+                  <div>
+                    <p className="text-indigo-900 font-bold text-sm">Tarifa Promocional</p>
+                    <p className="text-indigo-700 text-xs mt-0.5">
+                      Tu precio especial es válido hasta el <strong>{new Date((user as any).promoEndsAt).toLocaleDateString()}</strong>.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {subscription.cancelAtPeriodEnd ? (
                 <div className="bg-amber-50 p-4 rounded-lg border border-amber-100">
                   <p className="text-amber-800 text-sm mb-3">
