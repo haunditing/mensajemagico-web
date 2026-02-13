@@ -26,10 +26,13 @@ export const generateMessage = async (
   userId?: string,
   userLocation?: string,
   contactId?: string,
+  styleInstructions?: string,
+  creativityLevel?: string,
+  avoidTopics?: string,
 ): Promise<GenerationResponse> => {
   // 1. Generar Llave de Caché para optimización
   const cacheKey =
-    `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}`
+    `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}-${styleInstructions || ''}-${creativityLevel || ''}-${avoidTopics || ''}`
       .toLowerCase()
       .replace(/\s+/g, "-");
 
@@ -46,6 +49,10 @@ export const generateMessage = async (
      * IMPORTANTE: Enviamos solo los datos crudos.
      * El Backend usará su `PlanService` para decidir el modelo y las instrucciones.
      */
+    if (process.env.NODE_ENV === 'development') {
+      console.log("🚀 Sending to AI:", { styleInstructions, creativityLevel, avoidTopics });
+    }
+
     const response = await api.post("/api/magic/generate", {
       userId,
       occasion: config.occasion,
@@ -56,6 +63,9 @@ export const generateMessage = async (
       formatInstruction: config.formatInstruction,
       userLocation, // Enviamos la ubicación detectada al backend
       contactId, // Enviamos el ID del contacto para el Guardián
+      styleInstructions, // Instrucciones de estilo dinámicas (Anti-cliché)
+      creativityLevel, // Nivel de temperatura (high/low/balanced)
+      avoidTopics, // Lista de temas/palabras a evitar extraída del historial
       intention: config.intention, // Enviamos la intención calculada
       relationalHealth: config.relationalHealth,
       grammaticalGender: config.grammaticalGender,

@@ -362,6 +362,71 @@ const Generator: React.FC<GeneratorProps> = ({
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
 
+    // --- LÓGICA DEL GUARDIÁN: MEMORIA DE ESTILO Y VARIABILIDAD ---
+    let styleInstructions = "";
+    let creativityLevel = "balanced";
+    let avoidTopics = "";
+
+    // 1. Ajuste de Temperatura (Creatividad) basado en el tono
+    const currentTone = tone as string;
+    if (["divertido", "coqueto", "alegre", "fresco", "funny", "flirty"].some(t => currentTone.toLowerCase().includes(t))) {
+      creativityLevel = "high"; // Más arriesgado (0.9)
+    } else if (["sobrio", "directo", "formal", "fuerte", "direct", "sober"].some(t => currentTone.toLowerCase().includes(t))) {
+      creativityLevel = "low"; // Más preciso (0.5)
+    }
+
+    // 2. Variación Gramatical (Trigger de Apertura Aleatorio)
+    const openingTriggers = [
+      "Opción A: Empezar con una pregunta para generar curiosidad.",
+      "Opción B: Empezar con una exclamación o una afirmación emotiva.",
+      "Opción C: Empezar con un 'Me acordé de...' o evocando un recuerdo compartido.",
+    ];
+    const selectedTrigger =
+      openingTriggers[Math.floor(Math.random() * openingTriggers.length)];
+
+    // 3. Análisis de Historial y Construcción del Prompt del Guardián
+    // --- MODO DE PRUEBA: Simular historial repetitivo si no hay datos reales ---
+    const mockHistory = [
+      "Hola amor, espero que tengas un lindo día con mucho sol.",
+      "Buenos días cariño, espero que el sol ilumine tu camino.",
+      "Hola vida, espero que disfrutes este hermoso sol."
+    ];
+    const hasRealHistory = selectedContact && selectedContact.history && selectedContact.history.length > 0;
+    
+    if (hasRealHistory) {
+      // Tomamos los últimos 3 mensajes (reales o simulados)
+      const lastMessages = hasRealHistory 
+        ? selectedContact.history.slice(-3).map((h: any) => h.content || "")
+        : mockHistory;
+      
+      // Estrategia 1: Lista de Exclusión (Extraer palabras clave usadas)
+      // Filtramos palabras de más de 4 letras para evitar conectores
+      const allWords = lastMessages.join(" ").toLowerCase().match(/[a-záéíóúñü]{5,}/g) || [];
+      const uniqueKeywords = Array.from(new Set(allWords)).slice(0, 15).join(", ");
+      avoidTopics = uniqueKeywords;
+
+      // Estrategia 2: Nuevo Formato de Prompt de Contraste
+      styleInstructions += `[Contexto para el Guardián:
+      Estás escribiendo a ${selectedContact?.name || "Tu Contacto"} (Relación: ${selectedContact?.relationship || 'Pareja'}).
+      
+      Historial Reciente (PARA EVITAR REPETICIÓN):
+      En los últimos mensajes ya se mencionaron: '${uniqueKeywords}'.
+      
+      Misión: > Genera un nuevo mensaje en tono ${tone} pero PROHIBIDO usar las palabras del historial reciente. Busca un nuevo ángulo: quizás una emoción específica o un detalle del entorno sin usar clichés.
+      
+      Instrucción de Apertura: ${selectedTrigger}]`;
+    } else {
+      // Instrucción por defecto para nuevos contactos o sin historial
+      styleInstructions += `[ESTILO: Sé espontáneo. Evita saludos robóticos. ${selectedTrigger}]`;
+    }
+
+    // DEBUG: Verificar lógica del Guardián en consola
+    console.group("🛡️ Guardian Debug");
+    console.log("Creativity Level:", creativityLevel);
+    console.log("Style Instructions:", styleInstructions);
+    console.log("Avoid Topics (Exclusion List):", avoidTopics);
+    console.groupEnd();
+
     let relLabel = "";
     if (isPensamiento) {
       relLabel =
@@ -392,16 +457,16 @@ const Generator: React.FC<GeneratorProps> = ({
       VE: "Bolívares",
     };
     const localCurrency = currencyMap[country] || "Dólares";
-    const formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido (sin bloques de código markdown) con esta estructura: {
+    const formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido y MINIFICADO (sin espacios extra) con esta estructura: {
       "selected_strategy": "string",
       "generated_messages": [{ "tone": "string", "content": "string", "locked": boolean }],
-      "guardian_insight": "string (Consejo del Guardián)"${
+      "guardian_insight": "string (Explica qué elemento nuevo usaste para no sonar repetitivo)"${
         showGifts
           ? `,
       "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}" }]`
           : ""
       }
-    }. ${showGifts ? "Máximo 3 regalos." : "NO incluyas regalos."} Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
+    }. ${showGifts ? "Máximo 2 regalos (solo si es muy relevante)." : "NO incluyas regalos."} Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
 
     let generatedContent = "";
     try {
@@ -427,6 +492,9 @@ const Generator: React.FC<GeneratorProps> = ({
         user?._id,
         userLocation, // Pasamos la ubicación detectada
         selectedContactId, // Pasamos el ID del contacto seleccionado
+        styleInstructions, // Pasamos las instrucciones de estilo dinámicas
+        creativityLevel, // Pasamos el nivel de creatividad calculado
+        avoidTopics, // Pasamos la lista de exclusión explícita
       );
 
       generatedContent = response.content;
