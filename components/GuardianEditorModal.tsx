@@ -87,32 +87,6 @@ const GuardianEditorModal: React.FC<GuardianEditorModalProps> = ({
   // Validación de Seguridad Relacional (Guardrail)
   const isRisky = relationalHealth < 4 && (text.length < 10 || text.toUpperCase() === text);
 
-  const insertText = (insertion: string) => {
-    setText(prev => {
-      const trimmed = prev.trim();
-      return trimmed.endsWith('.') ? `${trimmed} ${insertion}` : `${trimmed}, ${insertion}`;
-    });
-  };
-
-  const prependText = (prefix: string) => {
-    setText(prev => `${prefix} ${prev}`);
-  };
-
-  // Píldoras de Sabor
-  const flavorPills = [
-    { label: "☀️ Clima", text: "con este calor que está haciendo" },
-    { label: "🌧️ Lluvia", text: "con este aguacero que cae" },
-    { label: "🍻 Plan", text: "para ir por algo frío ahorita" },
-    { label: "🚶 Vuelta", text: "para dar una vuelta cuando baje el sol" },
-  ];
-
-  // Vulnerabilidad Asistida
-  const vulnerabilityOpeners = [
-    "Sé que he estado perdido...",
-    "He estado pensando en lo que pasó...",
-    "No quiero que sigamos así...",
-  ];
-
   const handleFinalize = async () => {
     setIsSaving(true);
     try {
@@ -147,16 +121,6 @@ const GuardianEditorModal: React.FC<GuardianEditorModalProps> = ({
           <button onClick={onClose} className="text-slate-400 hover:text-slate-600 transition-colors">✕</button>
         </div>
 
-        {relationalHealth < 4 && (
-          <div className="mb-3 flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-            {vulnerabilityOpeners.map((opener, idx) => (
-              <button key={idx} onClick={() => prependText(opener)} className="whitespace-nowrap px-3 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-bold rounded-full border border-indigo-100 hover:bg-indigo-100 transition-colors">
-                + {opener}
-              </button>
-            ))}
-          </div>
-        )}
-
         <div className="relative flex-grow">
           <textarea
             value={text}
@@ -168,14 +132,6 @@ const GuardianEditorModal: React.FC<GuardianEditorModalProps> = ({
           <div className={`absolute bottom-3 right-3 text-[10px] font-bold transition-colors ${text.length > MAX_CHARS ? "text-red-500" : text.length > MAX_CHARS * 0.9 ? "text-orange-500" : "text-slate-400"}`}>
             {text.length} / {MAX_CHARS}
           </div>
-        </div>
-
-        <div className="mt-3 flex flex-wrap gap-2">
-          {flavorPills.map((pill, idx) => (
-            <button key={idx} onClick={() => insertText(pill.text)} className="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] font-bold rounded-md hover:bg-slate-200 hover:text-slate-700 transition-colors" title={`Añadir: "${pill.text}"`}>
-              + {pill.label}
-            </button>
-          ))}
         </div>
 
         {isRisky && (
