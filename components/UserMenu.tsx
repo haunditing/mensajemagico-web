@@ -96,8 +96,37 @@ const UserMenu: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 p-2 z-50 animate-fade-in-up origin-top-right">
-          <div className="px-3 py-2 border-b border-slate-50 dark:border-slate-700 mb-1">
+        <>
+          {/* Overlay oscuro para móviles */}
+          <div 
+            className="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-40 md:hidden animate-fade-in"
+            onClick={() => setIsOpen(false)}
+          />
+
+          <div className="
+            bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800 z-50
+            
+            /* Estilos Móvil (Bottom Sheet) */
+            fixed bottom-0 left-0 right-0 w-full rounded-t-[2rem] p-5 border-t shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.1)] md:shadow-none
+            max-h-[85vh] overflow-y-auto 
+            animate-slide-up-mobile
+
+            /* Estilos Escritorio (Dropdown) */
+            md:absolute md:right-0 md:top-full md:mt-2 md:w-64 md:rounded-2xl md:rounded-t-2xl md:shadow-xl md:border md:p-2 md:animate-fade-in-up md:origin-top-right md:bottom-auto md:left-auto md:h-auto md:overflow-visible
+          ">
+          <style>{`
+            @keyframes slide-up-mobile {
+              0% { transform: translateY(100%); }
+              100% { transform: translateY(0); }
+            }
+            @media (max-width: 767px) {
+              .animate-slide-up-mobile {
+                animation: slide-up-mobile 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+              }
+            }
+          `}</style>
+
+          <div className="px-3 py-2 border-b border-slate-50 dark:border-slate-800 mb-2 md:mb-1">
             <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mb-1">
               Tu Plan
             </p>
@@ -179,6 +208,7 @@ const UserMenu: React.FC = () => {
             </button>
           </div>
         </div>
+        </>
       )}
     </div>
   );
