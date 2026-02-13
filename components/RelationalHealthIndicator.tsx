@@ -41,7 +41,7 @@ const RelationalHealthIndicator: React.FC<RelationalHealthIndicatorProps> = ({
             {/* Gradiente lineal vertical para simular el llenado */}
             <linearGradient id={gradientId} x1="0" x2="0" y1="1" y2="0">
               <stop offset={`${percentage}%`} stopColor={color} />
-              <stop offset={`${percentage}%`} stopColor="#e2e8f0" />{" "}
+              <stop offset={`${percentage}%`} stopColor="var(--heart-empty, #e2e8f0)" />{" "}
               {/* slate-200 para la parte vacía */}
             </linearGradient>
           </defs>

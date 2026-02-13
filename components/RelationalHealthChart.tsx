@@ -41,7 +41,7 @@ const RelationalHealthChart: React.FC<RelationalHealthChartProps> = ({
 
   if (dataPoints.length < 2) {
     return (
-      <div className={`flex items-center justify-center h-32 bg-slate-50 rounded-xl border border-slate-100 text-slate-400 text-xs ${className}`}>
+      <div className={`flex items-center justify-center h-32 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs ${className}`}>
         Necesitas más interacciones para ver la evolución.
       </div>
     );
@@ -61,12 +61,12 @@ const RelationalHealthChart: React.FC<RelationalHealthChartProps> = ({
 
   return (
     <div className={`w-full ${className}`}>
-      <div className="relative w-full aspect-[2/1] bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+      <div className="relative w-full aspect-[2/1] bg-white dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm overflow-hidden">
         {/* Líneas guía */}
         <div className="absolute inset-0 flex flex-col justify-between p-4 opacity-10 pointer-events-none">
-          <div className="border-t border-slate-900 w-full"></div>
-          <div className="border-t border-slate-900 w-full"></div>
-          <div className="border-t border-slate-900 w-full"></div>
+          <div className="border-t border-slate-900 dark:border-slate-100 w-full"></div>
+          <div className="border-t border-slate-900 dark:border-slate-100 w-full"></div>
+          <div className="border-t border-slate-900 dark:border-slate-100 w-full"></div>
         </div>
 
         <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-full" preserveAspectRatio="none">
@@ -88,12 +88,12 @@ const RelationalHealthChart: React.FC<RelationalHealthChartProps> = ({
           <defs>
             <linearGradient id="gradientHealth" x1="0" x2="0" y1="0" y2="1">
               <stop offset="0%" stopColor="#f43f5e" />
-              <stop offset="100%" stopColor="#ffffff" />
+              <stop offset="100%" stopColor="#f43f5e" stopOpacity="0" />
             </linearGradient>
           </defs>
         </svg>
       </div>
-      <div className="flex justify-between text-[10px] text-slate-400 mt-2 px-2">
+      <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 mt-2 px-2">
         <span>{dataPoints[0].date}</span>
         <span>{dataPoints[dataPoints.length - 1].date}</span>
       </div>

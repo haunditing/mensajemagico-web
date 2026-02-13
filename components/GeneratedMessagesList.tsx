@@ -46,13 +46,13 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
         return (
           <div
             key={msg.id}
-            className={`bg-white border border-slate-200 rounded-2xl p-6 md:p-8 animate-fade-in-up shadow-sm relative overflow-hidden ${
-              isPensamiento ? "text-center border-blue-200" : ""
+            className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 md:p-8 animate-fade-in-up shadow-sm relative overflow-hidden ${
+              isPensamiento ? "text-center border-blue-200 dark:border-blue-700" : ""
             }`}
           >
             <div className="mb-8 relative z-10 group">
               <p
-                className={`text-slate-800 leading-relaxed font-medium whitespace-pre-wrap ${
+                className={`text-slate-800 dark:text-slate-200 leading-relaxed font-medium whitespace-pre-wrap ${
                   isPensamiento
                     ? "text-xl md:text-2xl italic text-center"
                     : "text-base md:text-lg"
@@ -62,7 +62,7 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
               </p>
 
               {msg.usedLexicalDNA && (
-                <div className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100 animate-fade-in select-none">
+                <div className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-800 animate-fade-in select-none">
                   <span className="text-xs">✨</span>
                   <span>Este mensaje incluye tu toque personal</span>
                 </div>
@@ -71,7 +71,7 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
               {!isError && (
                 <button
                   onClick={() => onEditMessage(msg.id)}
-                  className="absolute top-0 right-0 p-2 bg-white/80 backdrop-blur-sm rounded-lg text-slate-400 hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-all shadow-sm border border-slate-100"
+                  className="absolute top-0 right-0 p-2 bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-lg text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all shadow-sm border border-slate-100 dark:border-slate-700"
                   title="Editar mensaje"
                 >
                   <svg
@@ -91,7 +91,7 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
               )}
             </div>
 
-            <div className="pt-6 border-t border-slate-100 relative z-10 flex flex-col gap-4">
+            <div className="pt-6 border-t border-slate-100 dark:border-slate-800 relative z-10 flex flex-col gap-4">
               <div className="flex items-center justify-between gap-4">
                 <ShareBar
                   content={msg.content}
@@ -108,7 +108,7 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
                     className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
                       isFav
                         ? "bg-red-50 text-red-500"
-                        : "bg-slate-50 text-slate-400 hover:text-red-400"
+                        : "bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-red-400"
                     }`}
                     title="Guardar en favoritos"
                   >
@@ -123,10 +123,10 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
 
               {!isPensamiento && (
                 <div className="mt-6 flex flex-col gap-1 w-full text-left">
-                  <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest">
+                  <span className="text-[9px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-widest">
                     Aviso legal
                   </span>
-                  <p className="text-[10px] text-slate-300 leading-tight">
+                  <p className="text-[10px] text-slate-300 dark:text-slate-600 leading-tight">
                     Tú decides cómo usar este mensaje. No somos responsables de
                     las consecuencias sociales de su envío.
                   </p>

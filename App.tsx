@@ -43,6 +43,7 @@ import SignupPage from "./pages/SignupPage";
 import { UpsellProvider } from "./context/UpsellContext";
 import UpsellModal from "./components/UpsellModal";
 import ToastNotification from "./components/ToastNotification";
+import { ThemeProvider } from "./context/ThemeContext";
 import { ToastProvider } from "./context/ToastContext";
 import { FavoritesProvider } from "./context/FavoritesContext";
 import FavoritesPage from "./pages/FavoritesPage";
@@ -60,47 +61,49 @@ const { BrowserRouter: Router, Routes, Route } = ReactRouterDOM;
 const App: React.FC = () => {
   return (
     <Router>
-      <UpsellProvider>
-        <ToastProvider>
-          <FavoritesProvider>
-            <Layout>
-              <UpsellModal />
-              <ToastNotification />
-              <Routes>
-                <Route path="/" element={<HomePage />} />
-                <Route path="/mensajes/:slug" element={<OccasionPage />} />
-                <Route
-                  path="/mensajes/:slug/:relSlug"
-                  element={<RelationPage />}
-                />
-                <Route path="/privacidad" element={<PrivacyPage />} />
-                <Route path="/contacto" element={<ContactPage />} />
-                <Route path="/terminos" element={<TermsPage />} />
-                <Route path="/success" element={<SuccessPage />} />
-                <Route path="/payment-error" element={<PaymentErrorPage />} />
-                <Route path="/pricing" element={<PricingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/signup" element={<SignupPage />} />
-                <Route path="/favoritos" element={<FavoritesPage />} />
-                <Route
-                  path="/forgot-password"
-                  element={<ForgotPasswordPage />}
-                />
-                <Route
-                  path="/reset-password/:token"
-                  element={<ResetPasswordPage />}
-                />
-                <Route path="/perfil" element={<ProfilePage />} />
-                <Route path="/recordatorios" element={<RemindersPage />} />
-                <Route path="/configuracion" element={<SettingsPage />} />
-                <Route path="/contactos" element={<ContactsPage />} />
-                <Route path="/faq" element={<FaqPage />} />
-                <Route path="*" element={<HomePage />} />
-              </Routes>
-            </Layout>
-          </FavoritesProvider>
-        </ToastProvider>
-      </UpsellProvider>
+      <ThemeProvider>
+        <UpsellProvider>
+          <ToastProvider>
+            <FavoritesProvider>
+              <Layout>
+                <UpsellModal />
+                <ToastNotification />
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/mensajes/:slug" element={<OccasionPage />} />
+                  <Route
+                    path="/mensajes/:slug/:relSlug"
+                    element={<RelationPage />}
+                  />
+                  <Route path="/privacidad" element={<PrivacyPage />} />
+                  <Route path="/contacto" element={<ContactPage />} />
+                  <Route path="/terminos" element={<TermsPage />} />
+                  <Route path="/success" element={<SuccessPage />} />
+                  <Route path="/payment-error" element={<PaymentErrorPage />} />
+                  <Route path="/pricing" element={<PricingPage />} />
+                  <Route path="/login" element={<LoginPage />} />
+                  <Route path="/signup" element={<SignupPage />} />
+                  <Route path="/favoritos" element={<FavoritesPage />} />
+                  <Route
+                    path="/forgot-password"
+                    element={<ForgotPasswordPage />}
+                  />
+                  <Route
+                    path="/reset-password/:token"
+                    element={<ResetPasswordPage />}
+                  />
+                  <Route path="/perfil" element={<ProfilePage />} />
+                  <Route path="/recordatorios" element={<RemindersPage />} />
+                  <Route path="/configuracion" element={<SettingsPage />} />
+                  <Route path="/contactos" element={<ContactsPage />} />
+                  <Route path="/faq" element={<FaqPage />} />
+                  <Route path="*" element={<HomePage />} />
+                </Routes>
+              </Layout>
+            </FavoritesProvider>
+          </ToastProvider>
+        </UpsellProvider>
+      </ThemeProvider>
     </Router>
   );
 };

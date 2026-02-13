@@ -17,23 +17,23 @@ interface GiftRecommendationsProps {
 
 const GiftCardSkeleton: React.FC = () => {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden animate-pulse flex flex-col h-full">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-pulse flex flex-col h-full">
       {/* Image Placeholder */}
-      <div className="h-32 w-full bg-slate-200 shrink-0"></div>
+      <div className="h-32 w-full bg-slate-200 dark:bg-slate-800 shrink-0"></div>
       <div className="p-5 flex flex-col flex-grow">
         {/* Title Placeholder */}
-        <div className="h-4 bg-slate-200 rounded w-3/4 mb-3"></div>
-        <div className="h-4 bg-slate-200 rounded w-1/2 mb-4"></div>
+        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-3/4 mb-3"></div>
+        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-1/2 mb-4"></div>
         
         {/* Reason Placeholder */}
         <div className="space-y-2 mb-4 flex-grow">
-          <div className="h-3 bg-slate-200 rounded"></div>
-          <div className="h-3 bg-slate-200 rounded"></div>
-          <div className="h-3 bg-slate-200 rounded w-5/6"></div>
+          <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded"></div>
+          <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded"></div>
+          <div className="h-3 bg-slate-200 dark:bg-slate-800 rounded w-5/6"></div>
         </div>
         
         {/* Button Placeholder */}
-        <div className="h-10 bg-slate-300 rounded-xl mt-auto"></div>
+        <div className="h-10 bg-slate-300 dark:bg-slate-700 rounded-xl mt-auto"></div>
       </div>
     </div>
   );
@@ -49,15 +49,15 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
   }
 
   return (
-    <div className="mt-10 pt-8 border-t border-slate-100 animate-fade-in">
+    <div className="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800 animate-fade-in">
       <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-3">
           <div className="bg-[#FF9900]/10 p-2 rounded-lg text-xl">🎁</div>
           <div>
-            <h4 className="text-sm font-black text-slate-900 uppercase tracking-widest">
+            <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
               Ideas de Regalo
             </h4>
-            <p className="text-xs text-slate-500 font-medium">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               Seleccionadas por nuestra IA para esta ocasión
             </p>
           </div>
@@ -77,7 +77,7 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
         </div>
       )}
       
-      <p className="text-[10px] text-slate-400 mt-8 text-center italic opacity-70">
+      <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-8 text-center italic opacity-70">
         {CONFIG.AMAZON.DISCLAIMER}
       </p>
     </div>
@@ -90,24 +90,24 @@ const GiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ gift, c
       href={generateAmazonLink(gift.search_term, country)}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      className="group relative bg-white rounded-2xl border border-slate-200 overflow-hidden hover:border-[#FF9900]/50 hover:shadow-xl hover:shadow-[#FF9900]/10 transition-all duration-300 flex flex-col h-full hover:-translate-y-1"
+      className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:border-[#FF9900]/50 hover:shadow-xl hover:shadow-[#FF9900]/10 transition-all duration-300 flex flex-col h-full hover:-translate-y-1"
     >
       {/* Contenedor de Imagen */}
-      <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center group-hover:from-[#FF9900]/5 group-hover:to-[#FF9900]/10 transition-colors duration-300">
+      <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center group-hover:from-[#FF9900]/5 group-hover:to-[#FF9900]/10 transition-colors duration-300">
         <div className="text-5xl transform group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">🎁</div>
         
         {/* Etiqueta de Precio */}
-        <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-800 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm border border-slate-100">
+        <div className="absolute top-3 right-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-800 dark:text-slate-200 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700">
           {gift.price_range}
         </div>
       </div>
 
       <div className="p-5 flex flex-col flex-grow">
-        <h5 className="font-bold text-slate-900 text-sm mb-2 leading-snug group-hover:text-[#C77700] transition-colors line-clamp-2">
+        <h5 className="font-bold text-slate-900 dark:text-white text-sm mb-2 leading-snug group-hover:text-[#C77700] transition-colors line-clamp-2">
           {gift.title}
         </h5>
 
-        <p className="text-xs text-slate-500 leading-relaxed mb-4 flex-grow line-clamp-3">
+        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4 flex-grow line-clamp-3">
           {gift.reason}
         </p>
 

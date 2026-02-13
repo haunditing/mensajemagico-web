@@ -27,7 +27,7 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
       onClick={onClick}
       disabled={isLoading || !!safetyError || (!!user && remainingCredits <= 0) || isOccasionLocked}
       className={`w-full h-14 md:h-16 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all
-        ${isLoading || safetyError || (!!user && remainingCredits <= 0) || isOccasionLocked ? "bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200" : "bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-[0.98]"}`}
+        ${isLoading || safetyError || (!!user && remainingCredits <= 0) || isOccasionLocked ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700" : "bg-blue-600 dark:bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500 shadow-lg shadow-blue-600/20 dark:shadow-blue-900/30 active:scale-[0.98]"}`}
     >
       {isLoading ? (
         <div className="flex items-center gap-2">

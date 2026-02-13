@@ -55,17 +55,17 @@ const ValentineBanner: React.FC = () => {
 
   return (
     <div className="w-full max-w-3xl mx-auto mb-10 animate-fade-in-up px-4">
-      <div className="bg-gradient-to-r from-rose-500 via-red-500 to-pink-600 rounded-2xl p-1 shadow-xl shadow-rose-500/20 transform hover:scale-[1.01] transition-transform duration-300">
-        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-white relative overflow-hidden">
+      <div className="bg-gradient-to-r from-rose-500 via-red-500 to-pink-600 dark:from-rose-600 dark:via-red-600 dark:to-pink-700 rounded-2xl p-1 shadow-xl shadow-rose-500/20 dark:shadow-rose-900/30 transform hover:scale-[1.01] transition-transform duration-300">
+        <div className="bg-white/10 dark:bg-black/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-white relative overflow-hidden">
           <div className="flex items-center gap-4 relative z-10">
-            <div className="bg-white/20 p-3 rounded-full backdrop-blur-md">
+            <div className="bg-white/20 dark:bg-black/20 p-3 rounded-full backdrop-blur-md">
               <span className="text-3xl animate-pulse">💘</span>
             </div>
             <div className="text-left">
               <h2 className="text-xl sm:text-2xl font-black tracking-tight">
                 ¡Feliz San Valentín!
               </h2>
-              <p className="text-rose-100 text-sm sm:text-base font-medium leading-tight">
+              <p className="text-rose-100 dark:text-rose-50 text-sm sm:text-base font-medium leading-tight">
                 Hoy es el día. Sorprende a quien amas.
               </p>
             </div>
@@ -73,7 +73,7 @@ const ValentineBanner: React.FC = () => {
 
           <Link
             to="/mensajes/amor"
-            className="relative z-10 bg-white text-rose-600 px-6 py-3 rounded-xl font-bold text-sm sm:text-base shadow-lg hover:bg-rose-50 hover:shadow-xl transition-all active:scale-95 whitespace-nowrap"
+            className="relative z-10 bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 px-6 py-3 rounded-xl font-bold text-sm sm:text-base shadow-lg hover:bg-rose-50 dark:hover:bg-slate-800 hover:shadow-xl transition-all active:scale-95 whitespace-nowrap"
           >
             Crear Carta Ahora →
           </Link>

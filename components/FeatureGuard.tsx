@@ -55,7 +55,7 @@ const FeatureGuard: React.FC<FeatureGuardProps> = ({ children, featureKey, type 
   return (
     <div className="relative inline-flex">
       {child}
-      <div className="absolute -top-1 -right-1 bg-white rounded-full shadow-sm border border-slate-100 p-0.5 z-10 pointer-events-none">
+      <div className="absolute -top-1 -right-1 bg-white dark:bg-slate-800 rounded-full shadow-sm border border-slate-100 dark:border-slate-700 p-0.5 z-10 pointer-events-none">
         <span className="text-[10px]">🔒</span>
       </div>
     </div>

@@ -17,17 +17,17 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
 }) => {
   // Diccionario de colores temáticos
   const colors: Record<string, string> = {
-    "pensamiento-del-dia": "text-indigo-500",
-    "responder-un-mensaje": "text-sky-500",
-    "no-me-dejes-en-visto": "text-emerald-500",
-    "un-saludo": "text-orange-300",
-    perdoname: "text-amber-500",
-    amor: "text-rose-500",
-    cumpleanos: "text-orange-500",
-    anniversary: "text-cyan-500",
-    "dia-de-la-madre": "text-pink-500",
-    "dia-del-padre": "text-blue-500",
-    navidad: "text-red-500",
+    "pensamiento-del-dia": "text-indigo-500 dark:text-indigo-400",
+    "responder-un-mensaje": "text-sky-500 dark:text-sky-400",
+    "no-me-dejes-en-visto": "text-emerald-500 dark:text-emerald-400",
+    "un-saludo": "text-orange-400 dark:text-orange-300",
+    perdoname: "text-amber-500 dark:text-amber-400",
+    amor: "text-rose-500 dark:text-rose-400",
+    cumpleanos: "text-orange-500 dark:text-orange-400",
+    anniversary: "text-cyan-500 dark:text-cyan-400",
+    "dia-de-la-madre": "text-pink-500 dark:text-pink-400",
+    "dia-del-padre": "text-blue-500 dark:text-blue-400",
+    navidad: "text-red-500 dark:text-red-400",
   };
 
   const iconColorClass = isActive
@@ -141,12 +141,12 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
     cumpleanos: (
       <>
         <g className="confetti-particles">
-          <circle cx="4" cy="4" r="1" className="text-blue-400" fill="currentColor" />
-          <circle cx="20" cy="4" r="1" className="text-green-400" fill="currentColor" />
-          <circle cx="2" cy="12" r="1" className="text-yellow-400" fill="currentColor" />
-          <circle cx="22" cy="12" r="1" className="text-purple-400" fill="currentColor" />
-          <circle cx="4" cy="20" r="1" className="text-red-400" fill="currentColor" />
-          <circle cx="20" cy="20" r="1" className="text-pink-400" fill="currentColor" />
+          <circle cx="4" cy="4" r="1" className="text-blue-400 dark:text-blue-300" fill="currentColor" />
+          <circle cx="20" cy="4" r="1" className="text-green-400 dark:text-green-300" fill="currentColor" />
+          <circle cx="2" cy="12" r="1" className="text-yellow-400 dark:text-yellow-300" fill="currentColor" />
+          <circle cx="22" cy="12" r="1" className="text-purple-400 dark:text-purple-300" fill="currentColor" />
+          <circle cx="4" cy="20" r="1" className="text-red-400 dark:text-red-300" fill="currentColor" />
+          <circle cx="20" cy="20" r="1" className="text-pink-400 dark:text-pink-300" fill="currentColor" />
         </g>
         <path
           d="M20 12V22H4V12M18 12V7C18 4.79086 16.2091 3 14 3H10C7.79086 3 6 4.79086 6 7V12"
@@ -258,12 +258,12 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
     navidad: (
       <>
         <g className="snow-particles">
-          <circle cx="12" cy="2" r="1" className="text-sky-200" fill="currentColor" />
-          <circle cx="7" cy="6" r="0.8" className="text-sky-200" fill="currentColor" />
-          <circle cx="17" cy="6" r="0.8" className="text-sky-200" fill="currentColor" />
-          <circle cx="5" cy="11" r="0.6" className="text-sky-200" fill="currentColor" />
-          <circle cx="19" cy="11" r="0.6" className="text-sky-200" fill="currentColor" />
-          <circle cx="12" cy="16" r="0.6" className="text-sky-200" fill="currentColor" />
+          <circle cx="12" cy="2" r="1" className="text-sky-200 dark:text-sky-100" fill="currentColor" />
+          <circle cx="7" cy="6" r="0.8" className="text-sky-200 dark:text-sky-100" fill="currentColor" />
+          <circle cx="17" cy="6" r="0.8" className="text-sky-200 dark:text-sky-100" fill="currentColor" />
+          <circle cx="5" cy="11" r="0.6" className="text-sky-200 dark:text-sky-100" fill="currentColor" />
+          <circle cx="19" cy="11" r="0.6" className="text-sky-200 dark:text-sky-100" fill="currentColor" />
+          <circle cx="12" cy="16" r="0.6" className="text-sky-200 dark:text-sky-100" fill="currentColor" />
         </g>
         <path
           d="M12 3L5 18H19L12 3Z"

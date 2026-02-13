@@ -17,7 +17,7 @@ const RelationshipSelector: React.FC<RelationshipSelectorProps> = ({
 }) => {
   return (
     <div className="relative">
-      <label className="block text-sm font-bold text-slate-700 mb-2">
+      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
         Destinatario
       </label>
       {selectedContact && (
@@ -38,9 +38,9 @@ const RelationshipSelector: React.FC<RelationshipSelectorProps> = ({
       <select
         value={relationshipId}
         onChange={onRelationshipChange}
-        className="w-full h-12 md:h-14 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
+        className="w-full h-12 md:h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
       >
-        <option value="new_contact" className="font-bold text-blue-600">
+        <option value="new_contact" className="font-bold text-blue-600 dark:text-blue-400">
           + Nuevo Contacto
         </option>
         {contacts.length > 0 && (

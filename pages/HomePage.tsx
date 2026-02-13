@@ -99,7 +99,7 @@ const HomePage: React.FC = () => {
 
         {isValentine && <ValentineBanner />}
 
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-slate-900 mb-6 tracking-tight leading-[1.1]">
+        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight leading-[1.1]">
           {isValentine ? (
             <>
               Palabras que enamoran, <br className="hidden md:block" />
@@ -125,7 +125,7 @@ const HomePage: React.FC = () => {
         {isValentine && <ValentineCountdown />}
         {isChristmas && <ChristmasCountdown />}
 
-        <p className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
+        <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
           {isValentine
             ? "Sorprende a tu pareja o crush con mensajes únicos creados por IA. La inspiración perfecta para este 14 de febrero."
             : isChristmas
@@ -178,9 +178,9 @@ const HomePage: React.FC = () => {
         <div className="mt-6">
           <button
             onClick={() => user ? setIsContactModalOpen(true) : triggerUpsell("Regístrate para que el Guardián pueda recordar a tus contactos.")}
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors group"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group"
           >
-            <span className="bg-indigo-50 text-indigo-600 w-6 h-6 rounded-full flex items-center justify-center text-xs group-hover:scale-110 transition-transform">+</span>
+            <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 w-6 h-6 rounded-full flex items-center justify-center text-xs group-hover:scale-110 transition-transform">+</span>
             ✨ Agregar a alguien especial para seguimiento del Guardián
           </button>
         </div>
@@ -192,10 +192,10 @@ const HomePage: React.FC = () => {
       {/* Grid de Ocasiones */}
       <section className="mt-16">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl font-bold text-slate-900">
+          <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
             Categorías Populares
           </h2>
-          <div className="h-px bg-slate-200 flex-grow ml-6 hidden sm:block"></div>
+          <div className="h-px bg-slate-200 dark:bg-slate-800 flex-grow ml-6 hidden sm:block"></div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -208,9 +208,9 @@ const HomePage: React.FC = () => {
               <Link
                 key={occasion.id}
                 to={`/mensajes/${occasion.slug}`}
-                className={`group bg-white rounded-2xl border border-slate-200 p-6 flex flex-col hover:shadow-xl transition-all duration-300 
-                  ${isVisto ? "hover:border-green-400 hover:shadow-green-500/5" : ""}
-                  ${isResponder ? "hover:border-blue-500 border-blue-50" : "hover:border-blue-400 hover:shadow-blue-500/5"}
+                className={`group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col hover:shadow-xl transition-all duration-300 
+                  ${isVisto ? "hover:border-green-400 dark:hover:border-green-500 hover:shadow-green-500/5" : ""}
+                  ${isResponder ? "hover:border-blue-500 dark:hover:border-blue-500 border-blue-50 dark:border-blue-900/30" : "hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-blue-500/5"}
                 `}
               >
                 <div
@@ -223,29 +223,29 @@ const HomePage: React.FC = () => {
                   />
                 </div>
                 <h3
-                  className={`text-xl font-bold text-slate-900 mb-2 transition-colors 
-                  ${isVisto ? "group-hover:text-green-600" : ""}
-                  ${isResponder ? "group-hover:text-blue-600" : "group-hover:text-blue-600"}
+                  className={`text-xl font-bold text-slate-900 dark:text-white mb-2 transition-colors 
+                  ${isVisto ? "group-hover:text-green-600 dark:group-hover:text-green-400" : ""}
+                  ${isResponder ? "group-hover:text-blue-600 dark:group-hover:text-blue-400" : "group-hover:text-blue-600 dark:group-hover:text-blue-400"}
                 `}
                 >
                   {occasion.name}
                   {isResponder && (
-                    <span className="ml-2 text-[10px] bg-blue-100 text-blue-600 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                    <span className="ml-2 text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full uppercase tracking-tighter">
                       Nuevo
                     </span>
                   )}
                   {isGreeting && (
-                    <span className="ml-2 text-[10px] bg-purple-100 text-purple-600 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                    <span className="ml-2 text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full uppercase tracking-tighter">
                       Nuevo
                     </span>
                   )}
                 </h3>
-                <p className="text-slate-500 text-sm font-medium leading-relaxed mb-6 flex-grow">
+                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-6 flex-grow">
                   {occasion.description}
                 </p>
                 <div
                   className={`flex items-center gap-2 font-bold text-xs uppercase tracking-widest 
-                  ${isVisto ? "text-green-600" : "text-blue-600"}
+                  ${isVisto ? "text-green-600 dark:text-green-400" : "text-blue-600 dark:text-blue-400"}
                 `}
                 >
                   Crear ahora <span>→</span>
@@ -261,7 +261,7 @@ const HomePage: React.FC = () => {
       </div>*/}
 
       {/* Feature Section */}
-      <section className="bg-slate-900 rounded-3xl p-8 md:p-16 text-white text-center relative overflow-hidden mt-16">
+      <section className="bg-slate-900 rounded-3xl p-8 md:p-16 text-white text-center relative overflow-hidden mt-16 dark:border dark:border-slate-800">
         <div className="relative z-10 max-w-xl mx-auto">
           <h2 className="text-2xl md:text-4xl font-bold mb-6">
             ¿Bloqueo al escribir?

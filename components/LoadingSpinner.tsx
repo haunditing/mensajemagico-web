@@ -3,7 +3,7 @@ import React from 'react';
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
-  color?: 'blue' | 'white' | 'slate';
+  color?: 'blue' | 'white' | 'slate' | 'current';
 }
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ 
@@ -18,9 +18,10 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   };
 
   const colorClasses = {
-    blue: 'border-slate-200 border-t-blue-600',
+    blue: 'border-slate-200 dark:border-slate-700 border-t-blue-600 dark:border-t-blue-500',
     white: 'border-white/30 border-t-white',
-    slate: 'border-slate-200 border-t-slate-500',
+    slate: 'border-slate-200 dark:border-slate-700 border-t-slate-500 dark:border-t-slate-400',
+    current: 'border-current/30 border-t-current', // Se adapta al color de texto del padre
   };
 
   return (

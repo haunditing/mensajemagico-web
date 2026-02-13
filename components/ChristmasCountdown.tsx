@@ -61,7 +61,7 @@ const ChristmasCountdown: React.FC = () => {
 };
 
 const TimeUnit = ({ value, label }: { value: number; label: string }) => (
-  <div className="flex flex-col items-center bg-white/90 backdrop-blur-sm p-2 sm:p-3 rounded-xl shadow-sm border border-red-100 min-w-[60px] sm:min-w-[70px]">
+  <div className="flex flex-col items-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm p-2 sm:p-3 rounded-xl shadow-sm border border-red-100 dark:border-red-900/30 min-w-[60px] sm:min-w-[70px]">
     <span className="text-xl sm:text-3xl font-black tabular-nums text-red-600">{value}</span>
     <span className="text-[10px] sm:text-xs uppercase tracking-wider text-green-600 font-semibold">
       {label}

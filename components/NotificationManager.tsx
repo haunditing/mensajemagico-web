@@ -118,15 +118,15 @@ const NotificationManager: React.FC = () => {
       {/* Banner de Permisos */}
       {user && permission === "default" && isVisible && notificationsEnabled && (
         <div className="fixed bottom-4 right-4 z-50 animate-fade-in-up">
-          <div className="bg-white p-4 rounded-2xl shadow-xl border border-blue-100 flex items-center gap-4 max-w-sm relative">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-xl border border-blue-100 dark:border-blue-900 flex items-center gap-4 max-w-sm relative">
             <button 
               onClick={() => setIsVisible(false)}
-              className="absolute -top-2 -right-2 w-6 h-6 bg-slate-200 rounded-full text-slate-500 text-xs flex items-center justify-center hover:bg-slate-300"
+              className="absolute -top-2 -right-2 w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 text-xs flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-600"
             >✕</button>
             <div className="text-2xl">🔔</div>
             <div className="flex-1">
-              <p className="text-sm font-bold text-slate-800">Activa las notificaciones</p>
-              <p className="text-xs text-slate-500 leading-tight">Te avisaremos en tu navegador cuando llegue una fecha importante.</p>
+              <p className="text-sm font-bold text-slate-800 dark:text-white">Activa las notificaciones</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-tight">Te avisaremos en tu navegador cuando llegue una fecha importante.</p>
             </div>
             <button 
               onClick={requestPermission}

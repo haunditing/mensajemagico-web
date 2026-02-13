@@ -1,1 +1,11 @@
 @import "tailwindcss";
+
+/* Habilitar modo oscuro manual por clase (necesario en Tailwind v4) */
+@variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  /* Transición suave global para colores, fondos y bordes */
+  *, ::before, ::after {
+    @apply transition-colors duration-300 ease-in-out;
+  }
+}

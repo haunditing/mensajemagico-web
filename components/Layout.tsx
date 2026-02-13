@@ -80,18 +80,18 @@ const CountrySelector = () => {
     <div className="relative" ref={selectorRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full gap-3 bg-white border rounded-xl px-4 py-3 text-xs font-bold transition-all duration-200 group shadow-sm
-          ${isOpen ? "border-blue-500 ring-2 ring-blue-100" : "border-slate-200 hover:border-blue-300 hover:shadow-md"}
+        className={`flex items-center justify-between w-full gap-3 bg-white dark:bg-slate-800 border rounded-xl px-4 py-3 text-xs font-bold transition-all duration-200 group shadow-sm
+          ${isOpen ? "border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900" : "border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md"}
         `}
       >
         <div className="flex items-center gap-3">
           <span className="text-lg leading-none">{selected.flag}</span>
-          <span className="text-slate-700 group-hover:text-slate-900">
+          <span className="text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">
             {selected.label}
           </span>
         </div>
         <svg
-          className={`w-4 h-4 text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180 text-blue-500" : "group-hover:text-blue-400"}`}
+          className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-300 ${isOpen ? "rotate-180 text-blue-500" : "group-hover:text-blue-400"}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -106,7 +106,7 @@ const CountrySelector = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 w-full min-w-[200px] bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 overflow-hidden z-50 animate-fade-in-up origin-bottom">
+        <div className="absolute bottom-full left-0 mb-2 w-full min-w-[200px] bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-hidden z-50 animate-fade-in-up origin-bottom">
           <div className="p-1.5 max-h-[300px] overflow-y-auto custom-scrollbar">
             {countries.map((c) => (
               <button
@@ -118,8 +118,8 @@ const CountrySelector = () => {
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left mb-0.5 last:mb-0
                   ${
                     currentCountry === c.code
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
                   }
                 `}
               >
@@ -247,12 +247,43 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
 
+  // Sincronizar meta tag theme-color con el tema actual (para móviles)
+  useEffect(() => {
+    const updateThemeColor = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      // slate-900 (#0f172a) para oscuro, white (#ffffff) para claro
+      const color = isDark ? "#0f172a" : "#ffffff";
+      
+      let meta = document.querySelector("meta[name='theme-color']");
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.setAttribute("name", "theme-color");
+        document.head.appendChild(meta);
+      }
+      meta.setAttribute("content", color);
+    };
+
+    updateThemeColor(); // Ejecutar al montar
+
+    // Observar cambios en la clase 'dark' del elemento html para reaccionar a cambios de tema
+    const observer = new MutationObserver(updateThemeColor);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    return () => observer.disconnect();
+  }, []);
+
+  const selectionClass = isValentine
+    ? "selection:bg-rose-200 selection:text-rose-900 dark:selection:bg-rose-500 dark:selection:text-white"
+    : isChristmas
+      ? "selection:bg-red-200 selection:text-red-900 dark:selection:bg-red-500 dark:selection:text-white"
+      : "selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-indigo-500 dark:selection:text-white";
+
   return (
-    <div className="min-h-screen flex flex-col selection:bg-blue-100 selection:text-blue-900">
+    <div className={`min-h-screen flex flex-col ${selectionClass} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300`}>
       <NotificationManager />
       <OfferBanner />
       {/* Header Principal */}
-      <header className="bg-white/90 backdrop-blur-xl border-b border-slate-100 sticky top-0 z-50 shadow-sm transition-all duration-300">
+      <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 sticky top-0 z-50 shadow-sm transition-all duration-300">
         <div className="max-w-screen-2xl mx-auto">
           {/* Fila Superior: Logo y Controles */}
           <div className="px-4 sm:px-6 lg:px-8 flex h-16 md:h-20 items-center justify-between">
@@ -276,7 +307,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 <MagicWandIcon className="w-6 h-6 md:w-7 md:h-7 transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
               </div>
               <div className="flex flex-col">
-                <span className="font-extrabold text-lg md:text-xl tracking-tight text-slate-900 leading-none">
+                <span className="font-extrabold text-lg md:text-xl tracking-tight text-slate-900 dark:text-white leading-none">
                   {siteName}
                 </span>
                 {isValentine && isValentineDay && (
@@ -302,7 +333,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                         ${
                           isActive
                             ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                            : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                         }`}
                     >
                       <OccasionIcon
@@ -320,7 +351,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
 
           {/* Navegación Móvil Horizontal */}
-          <div className="lg:hidden border-t border-slate-50 nav-mask">
+          <div className="lg:hidden border-t border-slate-50 dark:border-slate-800 nav-mask">
             <nav className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-4 snap-x items-center justify-start">
               {OCCASIONS.map((o) => {
                 const localized = getLocalizedOccasion(o, currentCountry);
@@ -337,7 +368,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       ${
                         isActive
                           ? "bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-600/30 scale-105"
-                          : "bg-white text-slate-500 border-slate-200 hover:border-slate-300"
+                          : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                       }`}
                   >
                     <OccasionIcon
@@ -354,14 +385,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       </header>
 
       <main className="flex-grow">
-        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
+        <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 min-w-0">
           {children}
         </div>
       </main>
 
       <MetricsDisplay />
 
-      <footer className="bg-white border-t border-slate-100 pt-16 pb-12">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 pt-16 pb-12 transition-colors duration-300">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-12">
             <div className="md:col-span-5">
@@ -369,20 +400,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 to="/"
                 className="inline-flex items-center gap-2.5 mb-6 group"
               >
-                <div className="w-8 h-8 bg-slate-900 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-blue-600 transition-colors text-white">
+                <div className="w-8 h-8 bg-slate-900 dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-blue-600 transition-colors text-white">
                   <MagicWandIcon className="w-5 h-5 transition-all duration-300 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
                 </div>
-                <span className="font-bold text-xl tracking-tight">
+                <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">
                   {siteName}
                 </span>
               </Link>
-              <p className="text-slate-500 max-w-sm text-sm leading-relaxed mb-8 font-medium">
+              <p className="text-slate-500 dark:text-slate-400 max-w-sm text-sm leading-relaxed mb-8 font-medium">
                 Plataforma impulsada por IA para crear conexiones significativas
                 a través de las palabras.
               </p>
 
               <div className="inline-flex flex-col gap-3">
-                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400">
+                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500">
                   Selecciona tu Región
                 </span>
                 <CountrySelector />
@@ -391,7 +422,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             <div className="grid grid-cols-2 md:col-span-7 gap-8">
               <div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-8">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-8">
                   Categorías
                 </h3>
                 <ul className="space-y-4 text-sm font-semibold">
@@ -401,9 +432,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                       <li key={o.id}>
                         <Link
                           to={`/mensajes/${o.slug}`}
-                          className="text-slate-600 hover:text-blue-600 transition-colors inline-flex items-center gap-2"
+                          className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors inline-flex items-center gap-2"
                         >
-                          <span className="w-1 h-1 bg-slate-200 rounded-full"></span>
+                          <span className="w-1 h-1 bg-slate-200 dark:bg-slate-700 rounded-full"></span>
                           {localized.name}
                         </Link>
                       </li>
@@ -412,14 +443,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </ul>
               </div>
               <div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-8">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-8">
                   Institucional
                 </h3>
                 <ul className="space-y-4 text-sm font-semibold">
                   <li>
                     <Link
                       to="/privacidad"
-                      className="text-slate-600 hover:text-blue-600 transition-colors"
+                      className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       Aviso de Privacidad
                     </Link>
@@ -427,7 +458,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <li>
                     <Link
                       to="/terminos"
-                      className="text-slate-600 hover:text-blue-600 transition-colors"
+                      className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       Términos de Uso
                     </Link>
@@ -435,7 +466,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <li>
                     <Link
                       to="/contacto"
-                      className="text-slate-600 hover:text-blue-600 transition-colors"
+                      className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       Centro de Contacto
                     </Link>
@@ -443,7 +474,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   <li>
                     <Link
                       to="/faq"
-                      className="text-slate-600 hover:text-blue-600 transition-colors"
+                      className="text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     >
                       Preguntas Frecuentes
                     </Link>
@@ -453,8 +484,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             </div>
           </div>
 
-          <div className="mt-16 pt-8 border-t border-slate-50 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-xs text-slate-400 font-bold tracking-tight">
+          <div className="mt-16 pt-8 border-t border-slate-50 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-6">
+            <p className="text-xs text-slate-400 dark:text-slate-500 font-bold tracking-tight">
               &copy; {new Date().getFullYear()} {siteName}. Diseñado con ❤️ para
               el mundo.
             </p>

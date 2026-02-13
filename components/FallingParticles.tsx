@@ -55,7 +55,7 @@ const FallingParticles: React.FC<FallingParticlesProps> = React.memo(({
       {particles.map((p: any) => (
         <div
           key={p.id}
-          className="absolute top-[-10%]"
+          className="absolute top-[-10%] dark:drop-shadow-[0_0_5px_rgba(255,255,255,0.3)]"
           style={{
             left: `${p.left}%`,
             animationName: 'fall-fade',

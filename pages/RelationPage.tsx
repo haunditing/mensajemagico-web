@@ -34,31 +34,31 @@ const RelationPage: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 animate-fade-in-up">
-      <nav className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mb-8 flex items-center gap-3">
-        <Link to="/" className="hover:text-blue-600 transition-colors">
+      <nav className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-8 flex items-center gap-3">
+        <Link to="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
           Inicio
         </Link>
-        <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+        <span className="w-1 h-1 bg-slate-300 dark:bg-slate-600 rounded-full"></span>
         <Link
           to={`/mensajes/${rawOccasion.slug}`}
-          className="hover:text-blue-600"
+          className="hover:text-blue-600 dark:hover:text-blue-400"
         >
           {localized.name}
         </Link>
-        <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
-        <span className="text-slate-900">{relationship.label}</span>
+        <span className="w-1 h-1 bg-slate-300 dark:bg-slate-600 rounded-full"></span>
+        <span className="text-slate-900 dark:text-white">{relationship.label}</span>
       </nav>
 
       <header className="mb-12">
-        <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 px-4 py-1.5 rounded-full text-xs font-bold mb-6 border border-blue-100">
+        <div className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-4 py-1.5 rounded-full text-xs font-bold mb-6 border border-blue-100 dark:border-blue-800">
           <span>{rawOccasion.icon}</span>
           Especial de {localized.name}
         </div>
-        <h1 className="text-4xl md:text-6xl font-black text-slate-900 tracking-tight leading-[1.1] mb-6">
+        <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-6">
           Mensajes de {localized.name} para mi{" "}
           <span className="text-gradient">{relationship.label}</span>
         </h1>
-        <p className="text-xl md:text-2xl text-slate-600 font-light leading-relaxed max-w-3xl">
+        <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 font-light leading-relaxed max-w-3xl">
           Específicamente diseñados para sorprender a tu{" "}
           {relationship.label.toLowerCase()} en {localized.name}. Encuentra
           frases profundas, divertidas o cortas listas para compartir.
@@ -72,7 +72,7 @@ const RelationPage: React.FC = () => {
         initialRelationship={relationship}
       />
 
-      <section className="mt-20 bg-slate-900 rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden">
+      <section className="mt-20 bg-slate-900 rounded-[3rem] p-10 md:p-16 text-white relative overflow-hidden dark:border dark:border-slate-800">
         <div className="relative z-10">
           <h2 className="text-3xl font-bold mb-6">
             Más para tu {relationship.label.toLowerCase()}

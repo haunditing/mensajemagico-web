@@ -73,7 +73,7 @@ const OfferBanner: React.FC = () => {
   if (!isOfferActive) return null;
 
   return (
-    <div className="bg-gradient-to-r from-rose-600 to-orange-600 text-white py-2.5 px-4 text-center relative z-40 shadow-md animate-slide-down">
+    <div className="bg-gradient-to-r from-rose-600 to-orange-600 dark:from-rose-900 dark:to-orange-900 text-white py-2.5 px-4 text-center relative z-40 shadow-md dark:shadow-none animate-slide-down">
       <style>{`
         @keyframes slide-down {
           0% { transform: translateY(-100%); opacity: 0; }
@@ -92,7 +92,7 @@ const OfferBanner: React.FC = () => {
         </p>
         <Link 
           to="/pricing" 
-          className="bg-white text-rose-600 px-3 py-1 rounded-full text-xs font-bold hover:bg-rose-50 transition-colors shadow-sm flex items-center gap-1"
+          className="bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 px-3 py-1 rounded-full text-xs font-bold hover:bg-rose-50 dark:hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-1"
         >
           Ver oferta <span>→</span>
         </Link>

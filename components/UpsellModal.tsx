@@ -65,20 +65,20 @@ const UpsellModal: React.FC = () => {
         ref={modalRef}
         role="dialog"
         aria-modal="true"
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden"
+        className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-purple-600" />
 
-        <h3 className="text-2xl font-bold text-gray-900 mb-2">
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
           🚀 Desbloquea esta función
         </h3>
-        <p className="text-gray-600 mb-6 text-lg leading-relaxed">{message}</p>
+        <p className="text-gray-600 dark:text-gray-300 mb-6 text-lg leading-relaxed">{message}</p>
 
         <div className="flex gap-3">
           <button
             onClick={closeUpsell}
-            className="flex-1 px-4 py-3 text-gray-600 font-semibold hover:bg-gray-100 rounded-xl transition-colors"
+            className="flex-1 px-4 py-3 text-gray-600 dark:text-gray-400 font-semibold hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-colors"
           >
             Quizás luego
           </button>

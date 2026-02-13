@@ -60,7 +60,7 @@ const FaqItem: React.FC<{ item: FaqItemData }> = ({ item }) => {
   const headerId = `faq-header-${id}`;
 
   return (
-    <div className="border-b border-slate-200 py-6">
+    <div className="border-b border-slate-200 dark:border-slate-800 py-6">
       <h3>
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -70,7 +70,7 @@ const FaqItem: React.FC<{ item: FaqItemData }> = ({ item }) => {
         className="w-full flex justify-between items-center text-left focus:outline-none group"
       >
         <div className="flex items-center gap-3">
-          <span className="text-lg font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
+          <span className="text-lg font-bold text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
             {item.question}
           </span>
           {item.badge && (
@@ -104,7 +104,7 @@ const FaqItem: React.FC<{ item: FaqItemData }> = ({ item }) => {
       {/* Contenedor de respuesta corregido de <p> a <div> para evitar errores de nesting */}
       {isOpen && (
         <div id={contentId} role="region" aria-labelledby={headerId} className="mt-4 animate-fade-in-up">
-          <div className="text-slate-600 leading-relaxed">{item.answer}</div>
+          <div className="text-slate-600 dark:text-slate-300 leading-relaxed">{item.answer}</div>
         </div>
       )}
     </div>
@@ -116,10 +116,10 @@ const FaqSection: React.FC = () => {
   return (
     <section id="faq" className="py-16">
       <div className="text-center mb-12">
-        <h2 className="text-3xl font-black text-slate-900 mb-4">
+        <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-4">
           Preguntas Frecuentes
         </h2>
-        <p className="text-lg text-slate-500 max-w-2xl mx-auto">
+        <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
           Respuestas rápidas a tus dudas sobre nuestra Inteligencia Relacional
           para generar mensajes mágicos.
         </p>

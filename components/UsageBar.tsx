@@ -22,7 +22,7 @@ const UsageBar: React.FC = () => {
   // Si el límite es muy alto (Premium ilimitado), mostrar un badge especial
   if (dailyLimit > 100)
     return (
-      <div className="w-full mb-6 text-center text-xs font-bold text-blue-600 bg-blue-50 py-2 rounded-lg border border-blue-100">
+      <div className="w-full mb-6 text-center text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 py-2 rounded-lg border border-blue-100 dark:border-blue-900/50">
         ✨ Créditos Ilimitados
       </div>
     );
@@ -42,15 +42,15 @@ const UsageBar: React.FC = () => {
 
   return (
     <div className="w-full mb-6 animate-fade-in-up">
-      <div className="flex justify-between text-xs font-bold text-slate-500 mb-1.5">
+      <div className="flex justify-between text-xs font-bold text-slate-500 dark:text-slate-400 mb-1.5">
         <span>Créditos diarios</span>
         <span
-          className={`transition-transform duration-300 ${animateText ? "scale-125 text-slate-800" : ""}`}
+          className={`transition-transform duration-300 ${animateText ? "scale-125 text-slate-800 dark:text-slate-200" : ""}`}
         >
           {remainingCredits} / {dailyLimit}
         </span>
       </div>
-      <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200 shadow-inner">
+      <div className="h-2.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden border border-slate-200 dark:border-slate-700 shadow-inner">
         <div
           className={`h-full transition-all duration-700 ease-out ${barColor} relative`}
           style={{ width: `${percentage}%` }}

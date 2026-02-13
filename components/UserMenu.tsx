@@ -3,12 +3,14 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import PlanBadge from "./PlanBadge";
 import { ENABLE_UPGRADES } from "../config";
+import { useTheme } from "../context/ThemeContext";
 
 const UserMenu: React.FC = () => {
   const { user, planLevel, logout, isPremium } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { theme, setTheme } = useTheme();
 
   // Cerrar menú al hacer clic fuera
   useEffect(() => {
@@ -27,18 +29,35 @@ const UserMenu: React.FC = () => {
     navigate("/");
   };
 
+  const toggleTheme = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (theme === "light") setTheme("dark");
+    else if (theme === "dark") setTheme("system");
+    else setTheme("light");
+  };
+
+  const getThemeIcon = () => {
+    if (theme === "light") return "☀️";
+    if (theme === "dark") return "🌙";
+    return "💻";
+  };
+
+  const themeLabel = theme === "light" ? "Modo Claro" : theme === "dark" ? "Modo Oscuro" : "Sistema";
+
   if (!user) {
     return (
       <div className="flex items-center gap-2 sm:gap-3">
         <Link
           to="/login"
-          className="text-xs sm:text-sm font-bold text-slate-600 hover:text-slate-900 transition-colors px-2 py-2"
+          className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-2"
         >
           Entrar
         </Link>
         <Link
           to="/signup"
-          className="bg-slate-900 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-900/20 active:scale-95"
+          className="bg-slate-900 dark:bg-slate-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-600 transition-all shadow-lg shadow-slate-900/20 dark:shadow-none active:scale-95"
         >
           Empezar
         </Link>
@@ -50,19 +69,19 @@ const UserMenu: React.FC = () => {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1 pr-2 sm:pr-3 rounded-full border border-slate-200 hover:border-slate-300 transition-all bg-white"
+        className="flex items-center gap-2 p-1 pr-2 sm:pr-3 rounded-full border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800"
       >
         <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white ${isPremium ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-slate-400"}`}
+          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white ${isPremium ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-slate-400 dark:bg-slate-600"}`}
         >
           {user.email[0].toUpperCase()}
         </div>
-        <span className="text-xs font-bold text-slate-700 max-w-[100px] truncate hidden sm:block">
+        <span className="text-xs font-bold text-slate-700 dark:text-slate-200 max-w-[100px] truncate hidden sm:block">
           {user.email.split("@")[0]}
         </span>
         <PlanBadge feature="monetization.show_ads" expectedValue={false} label="PRO" />
         <svg
-          className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -77,14 +96,14 @@ const UserMenu: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 p-2 z-50 animate-fade-in-up origin-top-right">
-          <div className="px-3 py-2 border-b border-slate-50 mb-1">
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">
+        <div className="absolute right-0 top-full mt-2 w-56 bg-white dark:bg-slate-800 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700 p-2 z-50 animate-fade-in-up origin-top-right">
+          <div className="px-3 py-2 border-b border-slate-50 dark:border-slate-700 mb-1">
+            <p className="text-xs text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider mb-1">
               Tu Plan
             </p>
             <div className="flex items-center justify-between">
               <span
-                className={`text-sm font-black ${isPremium ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600" : "text-slate-700"}`}
+                className={`text-sm font-black ${isPremium ? "text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600" : "text-slate-700 dark:text-slate-200"}`}
               >
                 {planLevel === "premium" ? "Premium ✨" : "Gratis"}
               </span>
@@ -92,7 +111,7 @@ const UserMenu: React.FC = () => {
                 <Link
                   to="/pricing"
                   onClick={() => setIsOpen(false)}
-                  className="text-[10px] bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold hover:bg-blue-100 transition-colors"
+                  className="text-[10px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-bold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                 >
                   Mejorar
                 </Link>
@@ -105,7 +124,7 @@ const UserMenu: React.FC = () => {
               <Link
                 to="/pricing"
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-600 transition-colors"
+                className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 transition-colors"
               >
                 <span>💎</span> Ver Planes
               </Link>
@@ -113,41 +132,48 @@ const UserMenu: React.FC = () => {
             <Link
               to="/favoritos"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-600 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 transition-colors"
             >
               <span>❤️</span> Mis Favoritos
             </Link>
             <Link
               to="/contactos"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-600 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 transition-colors"
             >
               <span>📒</span> Mis Contactos
             </Link>
             <Link
               to="/recordatorios"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-600 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 transition-colors"
             >
               <span>📅</span> Recordatorios
             </Link>
             <Link
               to="/perfil"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-600 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 transition-colors"
             >
               <span>👤</span> Mi Perfil
             </Link>
             <Link
               to="/configuracion"
               onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 text-sm font-medium text-slate-600 transition-colors"
+              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 transition-colors"
             >
               <span>⚙️</span> Configuración
             </Link>
             <button
+              onClick={toggleTheme}
+              type="button"
+              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300 transition-colors w-full text-left"
+            >
+              <span>{getThemeIcon()}</span> {themeLabel}
+            </button>
+            <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 text-sm font-medium text-red-600 transition-colors w-full text-left"
+              className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 text-sm font-medium text-red-600 dark:text-red-400 transition-colors w-full text-left"
             >
               <span>🚪</span> Cerrar Sesión
             </button>

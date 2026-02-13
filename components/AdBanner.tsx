@@ -40,8 +40,8 @@ const AdBanner: React.FC<AdBannerProps> = ({ position, hasContent = true, classN
   };
 
   return (
-    <div className={`ad-banner-wrapper my-6 flex flex-col items-center justify-center ${className}`}>
-      <span className="text-[10px] text-slate-300 uppercase tracking-widest mb-1">Publicidad</span>
+    <div className={`ad-banner-wrapper my-6 flex flex-col items-center justify-center p-4 bg-slate-50 dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-700 ${className}`}>
+      <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Publicidad</span>
       <ins
         ref={adRef}
         className="adsbygoogle"

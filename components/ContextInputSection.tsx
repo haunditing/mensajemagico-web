@@ -119,23 +119,23 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
       <div className="flex justify-between items-end mb-2">
         <label
           htmlFor="context-word-input"
-          className="block text-sm font-bold text-slate-700"
+          className="block text-sm font-bold text-slate-700 dark:text-slate-300"
         >
           {isPensamiento
             ? "¿Sobre qué quieres reflexionar?"
             : "Añade detalles o palabras clave"}{" "}
           {isContextLocked && (
-            <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full ml-2">
+            <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-full ml-2">
               Premium 💎
             </span>
           )}
         </label>
         {!isContextLocked && (
           <div className="flex flex-col items-end gap-1">
-            <span className={`text-xs font-bold transition-colors ${willExceedLimit ? "text-red-500" : "text-slate-400"}`}>
+            <span className={`text-xs font-bold transition-colors ${willExceedLimit ? "text-red-500 dark:text-red-400" : "text-slate-400 dark:text-slate-500"}`}>
               {totalWordCount}/{maxContext} palabras
             </span>
-            <div className="w-20 h-1 bg-slate-100 rounded-full overflow-hidden">
+            <div className="w-20 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
               <div 
                 className={`h-full transition-all duration-300 ${willExceedLimit ? "bg-red-500" : percentage > 80 ? "bg-amber-400" : "bg-blue-500"}`}
                 style={{ width: `${percentage}%` }}
@@ -160,7 +160,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
                   : "Ej: playa, pizza, 5 años..."
             }
             disabled={currentContextCount >= maxContext || isContextLocked}
-            className={`w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isContextLocked ? "bg-slate-100 text-slate-400" : ""}`}
+            className={`w-full h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isContextLocked ? "bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 disabled:opacity-100 placeholder:text-slate-500 dark:placeholder:text-slate-400" : ""}`}
           />
           {isContextLocked && (
             <div
@@ -184,7 +184,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
               willExceedLimit ||
               isContextLocked
             }
-            className="w-12 h-12 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center hover:bg-blue-200 transition-colors disabled:opacity-50"
+            className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50"
             title="Añadir palabra"
             aria-label="Añadir palabra al contexto"
           >
@@ -199,20 +199,20 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
         {contextWords.map((word, idx) => (
           <div
             key={idx}
-            className="bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in-up shadow-sm"
+            className="bg-blue-600 dark:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in-up shadow-sm"
             title={word}
           >
             <span>{word.length > 30 ? `${word.substring(0, 27)}...` : word}</span>
             <button
               onClick={() => onRemoveWord(word)}
-              className="hover:text-blue-200 transition-colors"
+              className="hover:text-blue-200 dark:hover:text-blue-300 transition-colors"
             >
               ✕
             </button>
           </div>
         ))}
         {contextWords.length === 0 && (
-          <span className="text-[10px] text-slate-400 font-medium italic">
+          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium italic">
             Opcional: añade palabras para personalizar el mensaje.
           </span>
         )}
@@ -225,7 +225,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
             <button
               key={topic}
               onClick={() => onTrendingTopicClick(topic)}
-              className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full hover:bg-slate-200 transition-colors border border-slate-200"
+              className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
             >
               + {topic}
             </button>

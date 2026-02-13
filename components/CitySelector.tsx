@@ -155,29 +155,29 @@ const CitySelector: React.FC<CitySelectorProps> = ({
             setShowSuggestions(true)
           }
           placeholder={placeholder}
-          className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-blue-500 outline-none transition-all pr-10"
+          className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all pr-10"
         />
         {isLoading && (
           <div className="absolute right-3 top-1/2 -translate-y-1/2">
-            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-blue-500 dark:border-blue-400 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
       </div>
 
       {showSuggestions && (suggestions.length > 0 || !isLoading) && (
-        <ul className="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto z-50 animate-fade-in">
+        <ul className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-lg max-h-48 overflow-y-auto z-50 animate-fade-in">
           {suggestions.length > 0 ? (
             suggestions.map((city, index) => (
               <li
                 key={index}
                 onClick={() => handleSelect(city)}
-                className="px-4 py-2 hover:bg-blue-50 cursor-pointer text-sm text-slate-700 transition-colors border-b border-slate-50 last:border-0"
+                className="px-4 py-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 cursor-pointer text-sm text-slate-700 dark:text-slate-300 transition-colors border-b border-slate-50 dark:border-slate-700 last:border-0"
               >
                 {city}
               </li>
             ))
           ) : (
-            <li className="px-4 py-3 text-sm text-slate-500 italic text-center">
+            <li className="px-4 py-3 text-sm text-slate-500 dark:text-slate-400 italic text-center">
               No se encontraron ciudades.
             </li>
           )}

@@ -40,7 +40,7 @@ const PlanBadge: React.FC<PlanBadgeProps> = ({
 
   return (
     <span
-      className={`inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide bg-gradient-to-r from-amber-400 to-orange-500 text-white shadow-sm ${className}`}
+      className={`inline-flex items-center justify-center px-2 py-0.5 rounded-full text-[10px] font-black tracking-wide bg-gradient-to-r from-amber-400 to-orange-500 dark:from-amber-500 dark:to-orange-600 text-white shadow-sm ${className}`}
     >
       {label}
     </span>

@@ -16,10 +16,10 @@ const ToastNotification: React.FC = () => {
   if (!isVisible) return null;
 
   const styles: Record<string, string> = {
-    success: "bg-slate-900 text-white shadow-blue-900/20",
-    error: "bg-red-500 text-white shadow-red-500/20",
-    info: "bg-blue-600 text-white shadow-blue-600/20",
-    payment_error: "bg-rose-600 text-white shadow-rose-600/20",
+    success: "bg-slate-900 dark:bg-slate-800 text-white shadow-blue-900/20",
+    error: "bg-red-500 dark:bg-red-600 text-white shadow-red-500/20",
+    info: "bg-blue-600 dark:bg-blue-500 text-white shadow-blue-600/20",
+    payment_error: "bg-rose-600 dark:bg-rose-500 text-white shadow-rose-600/20",
   };
 
   const icons: Record<string, string> = {
@@ -38,7 +38,7 @@ const ToastNotification: React.FC = () => {
       <div
         role={role}
         aria-live={ariaLive}
-        className={`${styles[type] || styles.info} px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-bold text-sm border border-white/10 backdrop-blur-sm`}
+        className={`${styles[type] || styles.info} px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-bold text-sm border border-white/10 dark:border-white/5 backdrop-blur-sm`}
       >
         <span className="text-lg">{icons[type] || icons.info}</span>
         <span>{message}</span>

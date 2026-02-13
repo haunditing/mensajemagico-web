@@ -317,59 +317,59 @@ const RemindersPage: React.FC = () => {
     return (
       <div
         key={reminder._id}
-        className={`p-5 rounded-2xl border transition-all hover:shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4
+        className={`p-5 rounded-2xl border transition-all hover:shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 dark:bg-opacity-10
           ${isOverdueItem 
-            ? "bg-red-50/50 border-red-200" 
+            ? "bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30" 
             : isHoliday 
-              ? "bg-blue-50/50 border-blue-100" 
-              : "bg-white border-slate-200"
+              ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30" 
+              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
           }
         `}
       >
         <div className="flex items-start gap-4">
           <div
             className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0
-            ${isOverdueItem ? "bg-red-100 text-red-600" : isHoliday ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-600"}
+            ${isOverdueItem ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400" : isHoliday ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}
           `}
           >
             {getIcon(reminder.type)}
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h3 className={`font-bold text-lg ${isOverdueItem ? "text-red-700" : "text-slate-900"}`}>
+              <h3 className={`font-bold text-lg ${isOverdueItem ? "text-red-700 dark:text-red-300" : "text-slate-900 dark:text-white"}`}>
                 {reminder.title}
               </h3>
               {isOverdueItem && (
-                <span className="text-[10px] bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                <span className="text-[10px] bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
                   Vencido
                 </span>
               )}
               {isHoliday && !isOverdueItem && (
-                <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
+                <span className="text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-0.5 rounded-full font-bold uppercase tracking-wide">
                   Festivo
                 </span>
               )}
               {reminder.isRecurring && !isHoliday && (
-                <span className="text-[10px] bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full font-bold">
+                <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 px-2 py-0.5 rounded-full font-bold">
                   Anual
                 </span>
               )}
             </div>
-            <p className={`${isOverdueItem ? "text-red-500" : "text-slate-500"} font-medium text-sm flex items-center gap-2`}>
+            <p className={`${isOverdueItem ? "text-red-500 dark:text-red-400" : "text-slate-500 dark:text-slate-400"} font-medium text-sm flex items-center gap-2`}>
               <span>🗓️ {formatDate(displayDate)}</span>
               {reminder.notificationTime && (
-                <span className={`text-xs px-2 py-0.5 rounded ${isOverdueItem ? "bg-red-100 text-red-600" : "bg-slate-100 text-slate-600"}`}>
+                <span className={`text-xs px-2 py-0.5 rounded ${isOverdueItem ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
                   ⏰ {reminder.notificationTime}
                 </span>
               )}
             </p>
             {reminder.notes && (
-              <p className="text-slate-400 text-xs mt-2 italic">
+              <p className="text-slate-400 dark:text-slate-500 text-xs mt-2 italic">
                 "{reminder.notes}"
               </p>
             )}
             {reminder.socialPlatform && (
-              <p className="text-indigo-500 text-xs mt-1 font-bold flex items-center gap-1">
+              <p className="text-indigo-500 dark:text-indigo-400 text-xs mt-1 font-bold flex items-center gap-1">
                 <span>📱</span> Publicar en {reminder.socialPlatform}
               </p>
             )}
@@ -380,7 +380,7 @@ const RemindersPage: React.FC = () => {
           {isOverdueItem && (
             <button
               onClick={() => handleComplete(reminder._id)}
-              className="w-9 h-9 flex items-center justify-center text-green-600 hover:bg-green-100 hover:text-green-700 rounded-lg transition-all border border-green-200 bg-white"
+              className="w-9 h-9 flex items-center justify-center text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/30 hover:text-green-700 dark:hover:text-green-300 rounded-lg transition-all border border-green-200 dark:border-green-900/50 bg-white dark:bg-slate-800"
               title="Marcar como completado"
             >
               ✅
@@ -391,13 +391,13 @@ const RemindersPage: React.FC = () => {
             <div className="flex gap-2">
               <Link
                 to="/mensajes/un-saludo"
-                className="px-3 py-2 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-50 transition-colors whitespace-nowrap flex items-center gap-1"
+                className="px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors whitespace-nowrap flex items-center gap-1"
               >
                 <span>👋</span> Saludar
               </Link>
               <Link
                 to="/mensajes/pensamiento-del-dia"
-                className="px-3 py-2 bg-slate-900 text-white text-xs font-bold rounded-lg hover:bg-slate-800 transition-colors whitespace-nowrap flex items-center gap-1"
+                className="px-3 py-2 bg-slate-900 dark:bg-slate-700 text-white text-xs font-bold rounded-lg hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors whitespace-nowrap flex items-center gap-1"
               >
                 <span>🧘</span> Pensamiento
               </Link>
@@ -405,7 +405,7 @@ const RemindersPage: React.FC = () => {
           ) : (
             <Link
               to={`/mensajes/${getOccasionSlug(reminder.type)}${reminder.socialPlatform ? `?share=${reminder.socialPlatform}` : ""}`}
-              className={`px-4 py-2 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap ${isOverdueItem ? "bg-red-600 hover:bg-red-700" : "bg-slate-900 hover:bg-slate-800"}`}
+              className={`px-4 py-2 text-white text-sm font-bold rounded-lg transition-colors whitespace-nowrap ${isOverdueItem ? "bg-red-600 dark:bg-red-700 hover:bg-red-700 dark:hover:bg-red-600" : "bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600"}`}
             >
               Escribir Mensaje
             </Link>
@@ -415,7 +415,7 @@ const RemindersPage: React.FC = () => {
           {!isHoliday && (
             <button
               onClick={() => { setSnoozeTarget(reminder); setCustomSnoozeDate(""); }}
-              className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isOverdueItem ? "text-red-500 hover:bg-red-100" : "text-slate-400 hover:text-indigo-500 hover:bg-indigo-50"}`}
+              className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isOverdueItem ? "text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30" : "text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"}`}
               title="Posponer"
             >
               ⏰
@@ -425,7 +425,7 @@ const RemindersPage: React.FC = () => {
           {!isHoliday && (
             <button
               onClick={() => handleEdit(reminder)}
-              className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-all"
+              className="w-9 h-9 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
               title="Editar"
             >
               ✏️
@@ -433,7 +433,7 @@ const RemindersPage: React.FC = () => {
           )}
           <button
             onClick={() => handleDelete(reminder._id)}
-            className="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+            className="w-9 h-9 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
             title="Eliminar"
           >
             🗑️
@@ -447,12 +447,12 @@ const RemindersPage: React.FC = () => {
     return (
       <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 text-center animate-fade-in-up">
         <div className="text-6xl mb-4">🔒</div>
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+        <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">
           Inicia sesión para ver tus recordatorios
         </h2>
         <Link
           to="/login"
-          className="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 transition-colors mt-4"
+          className="bg-blue-600 dark:bg-blue-500 text-white px-8 py-3 rounded-xl font-bold hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors mt-4"
         >
           Iniciar Sesión
         </Link>
@@ -464,10 +464,10 @@ const RemindersPage: React.FC = () => {
     <div className="max-w-4xl mx-auto px-4 py-8 animate-fade-in-up">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
         <div>
-          <h1 className="text-3xl font-black text-slate-900">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white">
             {isPremium ? "Mis Recordatorios" : "Agenda Mágica"}
           </h1>
-          <p className="text-slate-500 mt-1">
+          <p className="text-slate-500 dark:text-slate-400 mt-1">
             {isPremium 
               ? "Tu asistente personal para fechas importantes." 
               : "Nunca más olvides un cumpleaños o fecha especial."}
@@ -475,7 +475,7 @@ const RemindersPage: React.FC = () => {
         </div>
         <button
           onClick={() => isPremium ? setShowForm(!showForm) : triggerUpsell("Crea recordatorios personalizados con Premium.")}
-          className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition-all active:scale-95 flex items-center gap-2"
+          className="bg-blue-600 dark:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-2"
         >
           {showForm ? "✕ Cerrar" : isPremium ? "+ Nuevo Recordatorio" : "🔓 Desbloquear Agenda"}
         </button>
@@ -483,7 +483,7 @@ const RemindersPage: React.FC = () => {
 
       {/* Banner de Próximo Evento (Solo Premium con datos) */}
       {isPremium && nextEvent && (
-        <div className="mb-10 bg-gradient-to-r from-indigo-600 to-blue-600 rounded-3xl p-6 text-white shadow-xl shadow-blue-900/20 relative overflow-hidden">
+        <div className="mb-10 bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-indigo-700 dark:to-blue-700 rounded-3xl p-6 text-white shadow-xl shadow-blue-900/20 dark:shadow-none relative overflow-hidden">
           <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="text-center sm:text-left">
               <span className="text-blue-200 text-xs font-bold uppercase tracking-widest">Próximo Evento</span>
@@ -505,7 +505,7 @@ const RemindersPage: React.FC = () => {
               </div>
               <Link
                 to={`/mensajes/${getOccasionSlug(nextEvent.type)}${nextEvent.socialPlatform ? `?share=${nextEvent.socialPlatform}` : ""}`}
-                className="bg-white text-blue-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-50 transition-all active:scale-95"
+                className="bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-50 dark:hover:bg-slate-800 transition-all active:scale-95"
               >
                 Preparar Mensaje
               </Link>
@@ -516,34 +516,34 @@ const RemindersPage: React.FC = () => {
       )}
 
       {showForm && (
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-lg mb-8 animate-fade-in">
-          <h3 className="text-lg font-bold text-slate-800 mb-4">
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-lg mb-8 animate-fade-in">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-4">
             {editingId ? "Editar Recordatorio" : "Crear Recordatorio"}
           </h3>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
                   Título
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="Ej: Cumpleaños de Mamá"
                   required
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
                   Fecha
                 </label>
                 <input
                   type="date"
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                   required
                 />
               </div>
@@ -551,13 +551,13 @@ const RemindersPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
                   Tipo
                 </label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   <option value="custom">Personalizado</option>
                   <option value="birthday">Cumpleaños</option>
@@ -571,9 +571,9 @@ const RemindersPage: React.FC = () => {
                     type="checkbox"
                     checked={isRecurring}
                     onChange={(e) => setIsRecurring(e.target.checked)}
-                    className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300"
+                    className="w-5 h-5 rounded text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600 bg-white dark:bg-slate-800"
                   />
-                  <span className="text-sm font-bold text-slate-700">
+                  <span className="text-sm font-bold text-slate-700 dark:text-slate-300">
                     Repetir cada año
                   </span>
                 </label>
@@ -582,20 +582,20 @@ const RemindersPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Hora de Aviso</label>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Hora de Aviso</label>
                 <input
                   type="time"
                   value={notificationTime}
                   onChange={(e) => setNotificationTime(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Publicar en (Opcional)</label>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Publicar en (Opcional)</label>
                 <select
                   value={socialPlatform}
                   onChange={(e) => setSocialPlatform(e.target.value)}
-                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
                 >
                   <option value="">Ninguna</option>
                   <option value="WhatsApp">WhatsApp</option>
@@ -608,13 +608,13 @@ const RemindersPage: React.FC = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
                 Notas (Opcional)
               </label>
               <textarea
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
-                className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none h-20 resize-none"
+                className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none h-20 resize-none"
                 placeholder="Ideas de regalo, planes..."
               />
             </div>
@@ -624,7 +624,7 @@ const RemindersPage: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => { resetForm(); setShowForm(false); }}
-                  className="px-6 py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 transition-all"
+                  className="px-6 py-3 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
                 >
                   Cancelar
                 </button>
@@ -632,7 +632,7 @@ const RemindersPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={submitting}
-                className="bg-slate-900 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 transition-all disabled:opacity-50"
+                className="bg-slate-900 dark:bg-slate-700 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-slate-600 transition-all disabled:opacity-50"
               >
                 {submitting ? "Guardando..." : editingId ? "Actualizar" : "Guardar Recordatorio"}
               </button>
@@ -647,11 +647,11 @@ const RemindersPage: React.FC = () => {
         </div>
       ) : !isPremium ? (
         // Estado de Venta (No Premium)
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-slate-50 p-8 text-center">
-          <div className="absolute inset-0 bg-white/50 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center p-6">
-            <div className="bg-white p-4 rounded-full shadow-xl mb-4 text-4xl">🔒</div>
-            <h3 className="text-2xl font-black text-slate-900 mb-2">Tus Recordatorios Personales</h3>
-            <p className="text-slate-600 max-w-md mb-6">
+        <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-8 text-center">
+          <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center p-6">
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-full shadow-xl mb-4 text-4xl">🔒</div>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Tus Recordatorios Personales</h3>
+            <p className="text-slate-600 dark:text-slate-300 max-w-md mb-6">
               Desbloquea el plan Premium para guardar cumpleaños, aniversarios y recibir avisos automáticos antes de que sea tarde.
             </p>
             <Link to="/pricing" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-blue-500/30 transition-all active:scale-95">
@@ -662,21 +662,21 @@ const RemindersPage: React.FC = () => {
           <div className="opacity-30 filter blur-sm pointer-events-none select-none" aria-hidden="true">
              <div className="space-y-4">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 flex gap-4 items-center">
-                    <div className="w-12 h-12 bg-slate-200 rounded-lg"></div>
-                    <div className="flex-1 h-4 bg-slate-200 rounded w-3/4"></div>
+                  <div key={i} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex gap-4 items-center">
+                    <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
+                    <div className="flex-1 h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
                   </div>
                 ))}
              </div>
           </div>
         </div>
       ) : reminders.length === 0 ? (
-        <div className="text-center py-12 bg-slate-50 rounded-3xl border border-slate-100">
+        <div className="text-center py-12 bg-slate-50 dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800">
           <div className="text-4xl mb-4">📅</div>
-          <h3 className="text-xl font-bold text-slate-700 mb-2">
+          <h3 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-2">
             No tienes recordatorios
           </h3>
-          <p className="text-slate-500">
+          <p className="text-slate-500 dark:text-slate-400">
             Agrega fechas importantes para recibir ayuda con tus mensajes.
           </p>
         </div>
@@ -685,7 +685,7 @@ const RemindersPage: React.FC = () => {
           {/* Sección de Vencidos */}
           {overdueReminders.length > 0 && (
             <div className="animate-fade-in">
-              <h3 className="text-red-600 font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
+              <h3 className="text-red-600 dark:text-red-400 font-bold mb-4 flex items-center gap-2 text-sm uppercase tracking-wider">
                 <span>⚠️</span> Requieren Atención ({overdueReminders.length})
               </h3>
               <div className="grid gap-4">
@@ -704,44 +704,44 @@ const RemindersPage: React.FC = () => {
       {/* Modal de Snooze */}
       {snoozeTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setSnoozeTarget(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative overflow-hidden" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900 mb-1">Posponer "{snoozeTarget.title}"</h3>
-            <p className="text-sm text-slate-500 mb-6">¿Cuándo quieres que te avisemos de nuevo?</p>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Posponer "{snoozeTarget.title}"</h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">¿Cuándo quieres que te avisemos de nuevo?</p>
             
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <button onClick={() => handleSnooze(snoozeTarget._id, 1)} className="p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-slate-700 font-bold text-sm transition-all flex flex-col items-center gap-1">
+              <button onClick={() => handleSnooze(snoozeTarget._id, 1)} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1">
                 <span className="text-xl">🌅</span> Mañana
               </button>
-              <button onClick={() => handleSnooze(snoozeTarget._id, 3)} className="p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-slate-700 font-bold text-sm transition-all flex flex-col items-center gap-1">
+              <button onClick={() => handleSnooze(snoozeTarget._id, 3)} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1">
                 <span className="text-xl">🗓️</span> 3 Días
               </button>
-              <button onClick={() => handleSnooze(snoozeTarget._id, 7)} className="p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-slate-700 font-bold text-sm transition-all flex flex-col items-center gap-1">
+              <button onClick={() => handleSnooze(snoozeTarget._id, 7)} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1">
                 <span className="text-xl">📅</span> 1 Semana
               </button>
-              <button onClick={() => handleSnooze(snoozeTarget._id, 30)} className="p-3 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 text-slate-700 font-bold text-sm transition-all flex flex-col items-center gap-1">
+              <button onClick={() => handleSnooze(snoozeTarget._id, 30)} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1">
                 <span className="text-xl">📆</span> 1 Mes
               </button>
             </div>
 
-            <div className="border-t border-slate-100 pt-4">
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">O elige una fecha</label>
+            <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">O elige una fecha</label>
               <div className="flex gap-2">
                 <input 
                   type="date" 
-                  className="flex-1 px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-sm"
+                  className="flex-1 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                   onChange={(e) => setCustomSnoozeDate(e.target.value)}
                 />
                 <button 
                   onClick={() => customSnoozeDate && handleSnooze(snoozeTarget._id, undefined, customSnoozeDate)}
                   disabled={!customSnoozeDate}
-                  className="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-slate-900 dark:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-800 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Ok
                 </button>
               </div>
             </div>
             
-            <button onClick={() => setSnoozeTarget(null)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 transition-colors">
+            <button onClick={() => setSnoozeTarget(null)} className="absolute top-4 right-4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
               ✕
             </button>
           </div>
@@ -750,12 +750,12 @@ const RemindersPage: React.FC = () => {
 
       {/* Sección de Festivos Sugeridos */}
       {!loading && holidays.length > 0 && (
-        <div className="mt-12 border-t border-slate-100 pt-8">
-          <h2 className="text-xl font-bold text-slate-900 mb-2 flex items-center gap-2">
+        <div className="mt-12 border-t border-slate-100 dark:border-slate-800 pt-8">
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
             <span>🎉</span> Festivos Sugeridos en {COUNTRY_NAMES[country] || country}
           </h2>
           {!isPremium && (
-            <p className="text-sm text-slate-500 mb-6">
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
               Estos son los eventos que podríamos rastrear por ti automáticamente.
             </p>
           )}
@@ -767,13 +767,13 @@ const RemindersPage: React.FC = () => {
               return (
                 <div
                   key={idx}
-                  className="bg-white p-4 rounded-xl border border-slate-200 flex justify-between items-center hover:border-blue-300 transition-colors"
+                  className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex justify-between items-center hover:border-blue-300 dark:hover:border-blue-500 transition-colors"
                 >
                   <div>
-                    <h4 className="font-bold text-slate-800 text-sm">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-200 text-sm">
                       {holiday.title}
                     </h4>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
                       {formatDate(holiday.date)}
                     </p>
                   </div>
@@ -782,8 +782,8 @@ const RemindersPage: React.FC = () => {
                     disabled={isAdded || isProcessing}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                       isAdded
-                        ? "bg-green-100 text-green-700 cursor-default"
-                        : "bg-blue-50 text-blue-600 hover:bg-blue-100 active:scale-95"
+                        ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 cursor-default"
+                        : "bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/50 active:scale-95"
                     }`}
                   >
                     {isAdded

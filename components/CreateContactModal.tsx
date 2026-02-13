@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { api } from "../context/api";
 import { useToast } from "../context/ToastContext";
 import { RELATIONSHIPS } from "../constants";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface CreateContactModalProps {
   isOpen: boolean;
@@ -128,30 +129,30 @@ const CreateContactModal: React.FC<CreateContactModalProps> = ({
         ref={modalRef}
         role="dialog"
         aria-modal="true"
-        className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 relative overflow-hidden" 
+        className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative overflow-hidden" 
         onClick={(e) => e.stopPropagation()}
       >
-        <h3 className="text-lg font-bold text-slate-900 mb-1">{contactToEdit ? "Editar Contacto" : "Nuevo Contacto"}</h3>
-        <p className="text-sm text-slate-500 mb-4">El Guardián aprenderá de tu relación con esta persona.</p>
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{contactToEdit ? "Editar Contacto" : "Nuevo Contacto"}</h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">El Guardián aprenderá de tu relación con esta persona.</p>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">Nombre</label>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Nombre</label>
             <input 
               value={name} 
               onChange={(e) => setName(e.target.value)} 
-              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none" 
+              className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" 
               placeholder="Ej: María"
               required 
               autoFocus
             />
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">Relación</label>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Relación</label>
             <select
               value={relationship} 
               onChange={(e) => setRelationship(e.target.value)} 
-              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+              className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
               required 
             >
               <option value="" disabled>Selecciona el tipo de relación</option>
@@ -161,11 +162,11 @@ const CreateContactModal: React.FC<CreateContactModalProps> = ({
             </select>
           </div>
           <div>
-            <label className="block text-xs font-bold text-slate-500 mb-1">Género (Opcional)</label>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-1">Género (Opcional)</label>
             <select
               value={grammaticalGender}
               onChange={(e) => setGrammaticalGender(e.target.value)}
-              className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+              className="w-full px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
             >
               <option value="neutral">Neutro / No especificar</option>
               <option value="female">Femenino (Ella)</option>
@@ -174,8 +175,17 @@ const CreateContactModal: React.FC<CreateContactModalProps> = ({
           </div>
           
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors">Cancelar</button>
-            <button type="submit" disabled={loading} className="flex-1 px-4 py-2 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-colors disabled:opacity-50">{loading ? "..." : (contactToEdit ? "Actualizar" : "Guardar")}</button>
+            <button type="button" onClick={onClose} className="flex-1 px-4 py-2 text-slate-600 dark:text-slate-400 font-bold hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">Cancelar</button>
+            <button type="submit" disabled={loading} className="flex-1 px-4 py-2 bg-slate-900 dark:bg-slate-700 text-white font-bold rounded-xl hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors disabled:opacity-50 flex items-center justify-center gap-2">
+              {loading ? (
+                <>
+                  <LoadingSpinner size="sm" color="current" />
+                  <span>Guardando...</span>
+                </>
+              ) : (
+                contactToEdit ? "Actualizar" : "Guardar"
+              )}
+            </button>
           </div>
         </form>
       </div>

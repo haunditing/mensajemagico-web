@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../context/api";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const SignupPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -57,25 +58,25 @@ const SignupPage: React.FC = () => {
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 animate-fade-in-up">
-      <div className="bg-white p-8 md:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 max-w-md w-full border border-slate-100">
+      <div className="bg-white dark:bg-slate-900 p-8 md:p-10 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none max-w-md w-full border border-slate-100 dark:border-slate-800">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-black text-slate-900 mb-2">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-2">
             Crea tu cuenta
           </h1>
-          <p className="text-slate-500">
+          <p className="text-slate-500 dark:text-slate-400">
             Empieza a generar mensajes ilimitados.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-sm font-bold flex items-center gap-2">
+          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm font-bold flex items-center gap-2">
             <span>⚠️</span> {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
               Correo Electrónico
             </label>
             <input
@@ -83,13 +84,13 @@ const SignupPage: React.FC = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-800"
+              className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-800 dark:text-slate-200"
               placeholder="tu@email.com"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
               Contraseña
             </label>
             <div className="relative">
@@ -98,13 +99,13 @@ const SignupPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-800 pr-10"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-800 dark:text-slate-200 pr-10"
                 placeholder="Mínimo 6 caracteres"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               >
                 {showPassword ? (
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -121,7 +122,7 @@ const SignupPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 mb-2">
+            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
               Confirmar Contraseña
             </label>
             <div className="relative">
@@ -130,13 +131,13 @@ const SignupPage: React.FC = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-800 pr-10"
+                className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-800 dark:text-slate-200 pr-10"
                 placeholder="Repite tu contraseña"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               >
                 {showConfirmPassword ? (
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
@@ -164,30 +165,37 @@ const SignupPage: React.FC = () => {
                   localStorage.setItem("termsAccepted", String(isChecked));
                 } catch {}
               }}
-              className="mt-1 w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+              className="mt-1 w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-blue-600 focus:ring-blue-500 cursor-pointer bg-white dark:bg-slate-800"
             />
-            <label htmlFor="terms" className="text-sm text-slate-600 cursor-pointer">
-              Acepto los <Link to="/terminos" className="text-blue-600 hover:underline font-bold">Términos y Condiciones</Link> y la <Link to="/privacidad" className="text-blue-600 hover:underline font-bold">Política de Privacidad</Link>.
+            <label htmlFor="terms" className="text-sm text-slate-600 dark:text-slate-400 cursor-pointer">
+              Acepto los <Link to="/terminos" className="text-blue-600 dark:text-blue-400 hover:underline font-bold">Términos y Condiciones</Link> y la <Link to="/privacidad" className="text-blue-600 dark:text-blue-400 hover:underline font-bold">Política de Privacidad</Link>.
             </label>
           </div>
 
           <button
             type="submit"
             disabled={isLoading}
-            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all active:scale-[0.98]
-              ${isLoading ? "bg-slate-400 cursor-not-allowed" : "bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-blue-500/30"}
+            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-2
+              ${isLoading ? "bg-slate-400 dark:bg-slate-600 cursor-not-allowed" : "bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-blue-500/30"}
             `}
           >
-            {isLoading ? "Creando cuenta..." : "Registrarse"}
+            {isLoading ? (
+              <>
+                <LoadingSpinner size="sm" color="current" />
+                <span>Creando cuenta...</span>
+              </>
+            ) : (
+              "Registrarse"
+            )}
           </button>
         </form>
 
         <div className="mt-8 text-center">
-          <p className="text-slate-500 text-sm">
+          <p className="text-slate-500 dark:text-slate-400 text-sm">
             ¿Ya tienes cuenta?{" "}
             <Link
               to="/login"
-              className="text-blue-600 font-bold hover:underline"
+              className="text-blue-600 dark:text-blue-400 font-bold hover:underline"
             >
               Inicia Sesión
             </Link>

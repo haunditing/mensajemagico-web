@@ -94,7 +94,7 @@ const WompiCheckoutButton: React.FC<WompiCheckoutButtonProps> = ({
       disabled={loading}
       className={`bg-[#10069f] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-[#1a0e8a] transition-all flex items-center justify-center gap-2 ${className}`}
     >
-      {loading ? <LoadingSpinner size="sm" color="white" /> : (
+      {loading ? <LoadingSpinner size="sm" color="current" /> : (
         <>
           <span>🇨🇴</span> {buttonText}
         </>

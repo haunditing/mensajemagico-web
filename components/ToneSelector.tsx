@@ -33,7 +33,7 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
 
   return (
     <div role="group" aria-labelledby={labelId}>
-      <label id={labelId} className="block text-sm font-bold text-slate-700 mb-2">
+      <label id={labelId} className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
         {isPensamiento
           ? "Estado emocional"
           : isGreeting
@@ -47,7 +47,7 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
             {Object.entries(EMOTIONAL_GROUPS).map(
               ([groupName, stateIds]) => (
                 <div key={groupName} className="flex flex-col gap-1.5">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider" id={`group-${groupName.replace(/\s+/g, '-')}`}>
+                  <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider" id={`group-${groupName.replace(/\s+/g, '-')}`}>
                     {groupName}
                   </span>
                   <div className="flex flex-wrap gap-2" role="group" aria-labelledby={`group-${groupName.replace(/\s+/g, '-')}`}>
@@ -65,8 +65,8 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                           onClick={() => setTone(state.id as any)}
                           className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
                             isSelected
-                              ? "bg-slate-800 text-white border-slate-800 shadow-md"
-                              : "bg-white text-slate-600 border-slate-200 hover:border-slate-400"
+                              ? "bg-slate-800 dark:bg-slate-200 text-white dark:text-slate-900 border-slate-800 dark:border-slate-200 shadow-md"
+                              : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500"
                           }`}
                         >
                           {state.label}
@@ -90,8 +90,8 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                 onClick={() => setTone(t.id as any)}
                 className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
                   isSelected
-                    ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                    : "bg-white text-slate-600 border-slate-200 hover:border-blue-400"
+                    ? "bg-blue-600 dark:bg-blue-500 text-white border-blue-600 dark:border-blue-500 shadow-md"
+                    : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500"
                 }`}
               >
                 {t.label}
@@ -113,8 +113,8 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                   onClick={() => setTone(t.value)}
                   className={`px-4 py-2 rounded-full text-sm font-bold transition-all border ${
                     isSelected
-                      ? "bg-blue-600 text-white border-blue-600 shadow-md"
-                      : "bg-white text-slate-600 border-slate-200 hover:border-blue-400"
+                      ? "bg-blue-600 dark:bg-blue-500 text-white border-blue-600 dark:border-blue-500 shadow-md"
+                      : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500"
                   }`}
                 >
                   {t.label}
@@ -125,7 +125,7 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
         )}
       </div>
       {guardianWarning && (
-        <div role="alert" className="mt-3 p-2 bg-amber-50 border border-amber-100 rounded-lg text-xs text-amber-700 font-medium flex items-start gap-2 animate-fade-in">
+        <div role="alert" className="mt-3 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-900/30 rounded-lg text-xs text-amber-700 dark:text-amber-400 font-medium flex items-start gap-2 animate-fade-in">
           <span aria-hidden="true">🛡️</span>
           <span>{guardianWarning}</span>
         </div>

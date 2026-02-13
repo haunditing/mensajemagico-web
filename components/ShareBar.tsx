@@ -135,55 +135,55 @@ const ShareBar: React.FC<ShareBarProps> = ({
       icon: <Icons.WhatsApp />,
       label: "Compartir por WhatsApp",
       color: "text-[#25D366]",
-      bg: "bg-[#25D366]/10 hover:bg-[#25D366]/20",
+      bg: "bg-[#25D366]/10 hover:bg-[#25D366]/20 dark:bg-[#25D366]/20 dark:hover:bg-[#25D366]/30",
     },
     [SharePlatform.INSTAGRAM]: {
       icon: <Icons.Instagram />,
       label: "Compartir en Instagram",
       color: "text-[#E4405F]",
-      bg: "bg-[#E4405F]/10 hover:bg-[#E4405F]/20",
+      bg: "bg-[#E4405F]/10 hover:bg-[#E4405F]/20 dark:bg-[#E4405F]/20 dark:hover:bg-[#E4405F]/30",
     },
     [SharePlatform.FACEBOOK]: {
       icon: <Icons.Facebook />,
       label: "Compartir en Facebook",
-      color: "text-[#1877F2]",
-      bg: "bg-[#1877F2]/10 hover:bg-[#1877F2]/20",
+      color: "text-[#1877F2] dark:text-blue-400",
+      bg: "bg-[#1877F2]/10 hover:bg-[#1877F2]/20 dark:bg-[#1877F2]/20 dark:hover:bg-[#1877F2]/30",
     },
     [SharePlatform.TELEGRAM]: {
       icon: <Icons.Telegram />,
       label: "Compartir por Telegram",
       color: "text-[#24A1DE]",
-      bg: "bg-[#24A1DE]/10 hover:bg-[#24A1DE]/20",
+      bg: "bg-[#24A1DE]/10 hover:bg-[#24A1DE]/20 dark:bg-[#24A1DE]/20 dark:hover:bg-[#24A1DE]/30",
     },
     [SharePlatform.X]: {
       icon: <Icons.X />,
       label: "Compartir en X",
-      color: "text-slate-900",
-      bg: "bg-slate-100 hover:bg-slate-200",
+      color: "text-slate-900 dark:text-white",
+      bg: "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700",
     },
     [SharePlatform.EMAIL]: {
       icon: <Icons.Mail />,
       label: "Enviar por Email",
-      color: "text-slate-500",
-      bg: "bg-slate-100 hover:bg-slate-200",
+      color: "text-slate-500 dark:text-slate-300",
+      bg: "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700",
     },
     [SharePlatform.SMS]: {
       icon: <Icons.SMS />,
       label: "Enviar por SMS",
-      color: "text-indigo-500",
-      bg: "bg-indigo-50 hover:bg-indigo-100",
+      color: "text-indigo-500 dark:text-indigo-400",
+      bg: "bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50",
     },
     [SharePlatform.COPY]: {
       icon: <Icons.Copy />,
       label: "Copiar al portapapeles",
-      color: "text-slate-700",
-      bg: "bg-slate-100 hover:bg-slate-200",
+      color: "text-slate-700 dark:text-slate-300",
+      bg: "bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700",
     },
     [SharePlatform.NATIVE]: {
       icon: <Icons.Share />,
       label: "Otras opciones de envío",
-      color: "text-blue-600",
-      bg: "bg-blue-50 hover:bg-blue-100",
+      color: "text-blue-600 dark:text-blue-400",
+      bg: "bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50",
     },
   };
 
@@ -221,7 +221,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
     <div
       className={`w-full ${className} ${disabled ? "opacity-40 grayscale pointer-events-none" : ""}`}
     >
-      <p id={labelId} className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 text-center sm:text-left">
+      <p id={labelId} className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 text-center sm:text-left">
         {disabled ? "Opciones desactivadas" : "Enviar Mensaje"}
       </p>
       <div 

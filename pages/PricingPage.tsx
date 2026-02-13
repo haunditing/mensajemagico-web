@@ -349,26 +349,26 @@ const PricingPage: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in-up">
       <div className="text-center mb-16">
-        <h1 className="text-4xl md:text-6xl font-black text-slate-900 mb-6 tracking-tight">
+        <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-6 tracking-tight">
           Elige tu nivel de{" "}
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
             Magia
           </span>
         </h1>
-        <p className="text-xl text-slate-500 max-w-2xl mx-auto">
+        <p className="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
           Desbloquea todo el potencial de nuestra IA y crea mensajes ilimitados.
         </p>
       </div>
 
       {/* Billing Toggle */}
       <div className="flex justify-center mb-12">
-        <div className="bg-slate-100 p-1 rounded-xl flex items-center relative">
+        <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex items-center relative">
           <button
             onClick={() => setBillingInterval("monthly")}
             className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${
               billingInterval === "monthly"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-900"
+                ? "bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
             }`}
           >
             Mensual
@@ -377,13 +377,13 @@ const PricingPage: React.FC = () => {
             onClick={() => setBillingInterval("yearly")}
             className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${
               billingInterval === "yearly"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-900"
+                ? "bg-white dark:bg-slate-600 text-slate-900 dark:text-white shadow-sm"
+                : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
             }`}
           >
             Anual
             {priceConfig.discountPercentage > 0 && (
-              <span className="bg-green-100 text-green-700 text-[10px] px-2 py-0.5 rounded-full">
+              <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-[10px] px-2 py-0.5 rounded-full">
                 -{priceConfig.discountPercentage}%
               </span>
             )}
@@ -393,38 +393,38 @@ const PricingPage: React.FC = () => {
 
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Free Plan */}
-        <div className="bg-white rounded-[2.5rem] p-6 md:p-8 border border-slate-200 shadow-sm flex flex-col">
+        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
           <div className="mb-8">
-            <h3 className="text-2xl font-bold text-slate-900 mb-2">Gratis</h3>
-            <p className="text-slate-500">Para uso casual y esporádico.</p>
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Gratis</h3>
+            <p className="text-slate-500 dark:text-slate-400">Para uso casual y esporádico.</p>
             <div className="mt-6 flex items-baseline gap-1">
-              <span className="text-4xl font-black text-slate-900">$0</span>
-              <span className="text-slate-400 font-medium">/mes</span>
+              <span className="text-4xl font-black text-slate-900 dark:text-white">$0</span>
+              <span className="text-slate-400 dark:text-slate-500 font-medium">/mes</span>
             </div>
           </div>
 
           <ul className="space-y-4 mb-6 md:mb-8 flex-1">
-            <li className="flex items-center gap-3 text-slate-600">
+            <li className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
               <span className="text-green-500 text-xl">✓</span>
               <span>
                 {freeConfig.access?.daily_limit ?? 5} mensajes diarios
               </span>
             </li>
-            <li className="flex items-center gap-3 text-slate-600">
+            <li className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
               <span className="text-green-500 text-xl">✓</span>
               <span>Tonos básicos</span>
             </li>
-            <li className="flex items-center gap-3 text-slate-400">
+            <li className="flex items-center gap-3 text-slate-400 dark:text-slate-500">
               <span
-                className={`${!freeConfig.monetization?.show_ads ? "text-green-500" : "text-slate-300"} text-xl`}
+                className={`${!freeConfig.monetization?.show_ads ? "text-green-500" : "text-slate-300 dark:text-slate-600"} text-xl`}
               >
                 {!freeConfig.monetization?.show_ads ? "✓" : "✕"}
               </span>
               <span>Sin anuncios</span>
             </li>
-            <li className="flex items-center gap-3 text-slate-400">
+            <li className="flex items-center gap-3 text-slate-400 dark:text-slate-500">
               <span
-                className={`${freeConfig.access?.exclusive_tones === "all" ? "text-green-500" : "text-slate-300"} text-xl`}
+                className={`${freeConfig.access?.exclusive_tones === "all" ? "text-green-500" : "text-slate-300 dark:text-slate-600"} text-xl`}
               >
                 {freeConfig.access?.exclusive_tones === "all" ? "✓" : "✕"}
               </span>
@@ -434,7 +434,7 @@ const PricingPage: React.FC = () => {
 
           <button
             disabled={true}
-            className="w-full py-4 rounded-2xl font-bold text-slate-400 bg-slate-100 cursor-default"
+            className="w-full py-4 rounded-2xl font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 cursor-default"
           >
             {planLevel === "freemium" || planLevel === "guest"
               ? "Tu plan actual"
@@ -443,7 +443,7 @@ const PricingPage: React.FC = () => {
         </div>
 
         {/* Premium Plan */}
-        <div className="bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 shadow-2xl shadow-blue-900/20 flex flex-col relative">
+        <div className="bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none flex flex-col relative">
           <div className="absolute top-0 inset-x-0 flex justify-center -mt-3 z-20">
             <span
               className={`bg-gradient-to-r ${isOfferActive ? "from-rose-600 to-orange-600" : "from-blue-600 to-purple-600"} text-white text-[10px] font-bold px-4 py-1 rounded-full shadow-lg uppercase tracking-widest border border-slate-800`}
