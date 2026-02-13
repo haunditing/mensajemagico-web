@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Link, useLocation } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { OCCASIONS } from "../constants";
@@ -48,6 +49,17 @@ const CountrySelector = () => {
   const { country: currentCountry, setCountry } = useLocalization();
   const [isOpen, setIsOpen] = useState(false);
   const selectorRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(() => 
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
+
+  // Detectar cambio de tamaño de ventana para renderizado condicional
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const countries: { code: CountryCode; label: string; flag: string }[] = [
     { code: "MX", label: "México", flag: "🇲🇽" },
@@ -65,10 +77,10 @@ const CountrySelector = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        selectorRef.current &&
-        !selectorRef.current.contains(event.target as Node)
-      ) {
+      const target = event.target as Node;
+      const isInsideMain = selectorRef.current && selectorRef.current.contains(target);
+      const isInsideMobile = mobileMenuRef.current && mobileMenuRef.current.contains(target);
+      if (!isInsideMain && !isInsideMobile) {
         setIsOpen(false);
       }
     };
@@ -106,32 +118,71 @@ const CountrySelector = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute bottom-full left-0 mb-2 w-full min-w-[200px] bg-white dark:bg-slate-800 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-700 overflow-hidden z-50 animate-fade-in-up origin-bottom">
-          <div className="p-1.5 max-h-[300px] overflow-y-auto custom-scrollbar">
-            {countries.map((c) => (
-              <button
-                key={c.code}
-                onClick={() => {
-                  setCountry(c.code);
-                  setIsOpen(false);
-                }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left mb-0.5 last:mb-0
-                  ${
-                    currentCountry === c.code
-                      ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                      : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
+        (() => {
+          const MenuContent = (
+            <div 
+              ref={isMobile ? mobileMenuRef : null}
+              className={`
+                bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 overflow-hidden z-50
+                ${isMobile 
+                  ? "fixed bottom-0 left-0 right-0 w-full rounded-t-[2.5rem] border-t shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)] max-h-[85vh] flex flex-col animate-slide-up-mobile pb-8" 
+                  : "absolute bottom-full left-0 mb-2 w-full min-w-[200px] rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border animate-fade-in-up origin-bottom"
+                }
+              `}
+            >
+              {isMobile && (
+                <style>{`
+                  @keyframes slide-up-mobile {
+                    0% { transform: translateY(100%); }
+                    100% { transform: translateY(0); }
                   }
-                `}
-              >
-                <span className="text-lg leading-none">{c.flag}</span>
-                <span className="flex-1">{c.label}</span>
-                {currentCountry === c.code && (
-                  <span className="text-blue-600">✓</span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
+                  .animate-slide-up-mobile {
+                    animation: slide-up-mobile 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                  }
+                `}</style>
+              )}
+              
+              {isMobile && <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto my-4 shrink-0" />}
+
+              <div className={`p-1.5 overflow-y-auto custom-scrollbar ${isMobile ? "px-6 pb-4 max-h-[60vh]" : "max-h-[300px]"}`}>
+                {isMobile && <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 px-2">Selecciona tu región</h3>}
+                {countries.map((c) => (
+                  <button
+                    key={c.code}
+                    onClick={() => {
+                      setCountry(c.code);
+                      setIsOpen(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left mb-0.5 last:mb-0
+                      ${
+                        currentCountry === c.code
+                          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
+                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
+                      }
+                    `}
+                  >
+                    <span className="text-lg leading-none">{c.flag}</span>
+                    <span className="flex-1">{c.label}</span>
+                    {currentCountry === c.code && (
+                      <span className="text-blue-600">✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          );
+
+          return isMobile ? createPortal(
+            <div className="relative z-[100]">
+              <div 
+                className="fixed inset-0 bg-black/60 backdrop-blur-[2px] animate-fade-in"
+                onClick={() => setIsOpen(false)}
+              />
+              {MenuContent}
+            </div>,
+            document.body
+          ) : MenuContent;
+        })()
       )}
     </div>
   );
