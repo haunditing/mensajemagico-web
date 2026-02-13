@@ -29,9 +29,15 @@ const ToastNotification: React.FC = () => {
     payment_error: "💳",
   };
 
+  // Determinar el rol ARIA adecuado según el tipo de mensaje
+  const role = type === 'error' || type === 'payment_error' ? 'alert' : 'status';
+  const ariaLive = type === 'error' || type === 'payment_error' ? 'assertive' : 'polite';
+
   return (
     <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] animate-fade-in-up">
       <div
+        role={role}
+        aria-live={ariaLive}
         className={`${styles[type] || styles.info} px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 font-bold text-sm border border-white/10 backdrop-blur-sm`}
       >
         <span className="text-lg">{icons[type] || icons.info}</span>

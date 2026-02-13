@@ -27,6 +27,17 @@ const ProfilePage: React.FC = () => {
   const [neutralMode, setNeutralMode] = useState(false);
   const [isSavingNeutral, setIsSavingNeutral] = useState(false);
   const [grammaticalGender, setGrammaticalGender] = useState("neutral");
+  
+  // Estado para cambio de contraseña
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [showPasswords, setShowPasswords] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
 
   useEffect(() => {
     if (user) {
@@ -136,6 +147,47 @@ const ProfilePage: React.FC = () => {
       showToast("Preferencia de género actualizada", "success");
     } catch (error: any) {
       showToast(error.message || "Error al actualizar", "error");
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword !== confirmPassword) {
+      showToast("Las nuevas contraseñas no coinciden", "error");
+      return;
+    }
+    if (newPassword.length < 6) {
+      showToast("La nueva contraseña debe tener al menos 6 caracteres", "error");
+      return;
+    }
+
+    setIsSavingPassword(true);
+    try {
+      await api.put("/api/auth/change-password", { currentPassword, newPassword });
+      showToast("Contraseña actualizada correctamente", "success");
+      setIsChangingPassword(false);
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      showToast(error.message || "Error al cambiar contraseña", "error");
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmationText !== "ELIMINAR") return;
+
+    setIsDeletingAccount(true);
+    try {
+      await api.delete("/api/auth/delete-account");
+      logout();
+      showToast("Tu cuenta ha sido eliminada permanentemente", "success");
+    } catch (error: any) {
+      showToast(error.message || "Error al eliminar cuenta", "error");
+      setIsDeletingAccount(false);
+      setIsDeleteModalOpen(false);
     }
   };
 
@@ -278,6 +330,72 @@ const ProfilePage: React.FC = () => {
           </p>
         </div>
 
+        {/* Sección de Cambio de Contraseña */}
+        <div className="border-t border-slate-100 py-6">
+          <div className="flex justify-between items-center mb-4">
+            <div>
+              <h3 className="text-lg font-bold text-slate-900">Contraseña</h3>
+              <p className="text-sm text-slate-500">Actualiza tu clave de acceso.</p>
+            </div>
+            {!isChangingPassword && (
+              <button
+                onClick={() => setIsChangingPassword(true)}
+                className="text-blue-600 text-sm font-bold hover:underline"
+              >
+                Cambiar
+              </button>
+            )}
+          </div>
+
+          {isChangingPassword && (
+            <form onSubmit={handleChangePassword} className="bg-slate-50 p-5 rounded-xl border border-slate-100 space-y-4 animate-fade-in">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Contraseña Actual</label>
+                <input
+                  type={showPasswords ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Nueva Contraseña</label>
+                  <input
+                    type={showPasswords ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+                    placeholder="Mínimo 6 caracteres"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-500 mb-1">Confirmar Nueva</label>
+                  <input
+                    type={showPasswords ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="w-full px-4 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none bg-white text-sm"
+                    required
+                  />
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between pt-2">
+                <button type="button" onClick={() => setShowPasswords(!showPasswords)} className="text-xs text-slate-500 hover:text-slate-700 font-medium flex items-center gap-1">
+                  {showPasswords ? "🙈 Ocultar" : "👁️ Mostrar"} caracteres
+                </button>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setIsChangingPassword(false)} className="px-4 py-2 text-slate-500 font-bold hover:text-slate-700 text-sm transition-colors">Cancelar</button>
+                  <button type="submit" disabled={isSavingPassword} className="bg-slate-900 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-800 transition-colors disabled:opacity-50">{isSavingPassword ? "Guardando..." : "Actualizar"}</button>
+                </div>
+              </div>
+            </form>
+          )}
+        </div>
+
         <div className="border-t border-slate-100 pt-6">
           <h3 className="text-lg font-bold text-slate-900 mb-4">
             Estado de la Suscripción
@@ -370,6 +488,29 @@ const ProfilePage: React.FC = () => {
             </div>
           )}
         </div>
+
+        {/* Sección de Zona de Peligro (Eliminar Cuenta) */}
+        <div className="border-t border-slate-100 py-6 mt-2">
+          <h3 className="text-lg font-bold text-red-600 mb-4">Zona de Peligro</h3>
+          <div className="bg-red-50 p-5 rounded-xl border border-red-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <p className="text-red-800 font-bold text-sm">Eliminar Cuenta</p>
+              <p className="text-red-600 text-xs mt-1">
+                Se borrarán todos tus datos, contactos y favoritos permanentemente.
+              </p>
+            </div>
+            <button
+              onClick={() => {
+                setIsDeleteModalOpen(true);
+                setDeleteConfirmationText("");
+              }}
+              disabled={isDeletingAccount}
+              className="bg-white border border-red-200 text-red-600 px-4 py-2 rounded-xl font-bold text-sm hover:bg-red-600 hover:text-white transition-colors disabled:opacity-50 whitespace-nowrap shadow-sm"
+            >
+              Eliminar Cuenta
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="text-center">
@@ -380,6 +521,46 @@ const ProfilePage: React.FC = () => {
           Cerrar Sesión
         </button>
       </div>
+
+      {/* Modal de Confirmación de Eliminación */}
+      {isDeleteModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => !isDeletingAccount && setIsDeleteModalOpen(false)}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">⚠️</span>
+              </div>
+              <h3 className="text-xl font-black text-slate-900 mb-2">¿Eliminar cuenta?</h3>
+              <p className="text-slate-500 mb-6 text-sm">
+                Esta acción es <strong>irreversible</strong>. Perderás todos tus mensajes guardados, contactos y configuración.
+              </p>
+              
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-slate-500 mb-2">
+                  Escribe <span className="text-slate-900 select-none">ELIMINAR</span> para confirmar:
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmationText}
+                  onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 focus:ring-2 focus:ring-red-500 outline-none text-center font-bold uppercase tracking-widest"
+                  placeholder="ELIMINAR"
+                  autoFocus
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <button onClick={() => setIsDeleteModalOpen(false)} disabled={isDeletingAccount} className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-600 hover:bg-slate-100 transition-colors disabled:opacity-50">
+                  Cancelar
+                </button>
+                <button onClick={handleDeleteAccount} disabled={isDeletingAccount || deleteConfirmationText !== "ELIMINAR"} className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  {isDeletingAccount ? "Eliminando..." : "Sí, eliminar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

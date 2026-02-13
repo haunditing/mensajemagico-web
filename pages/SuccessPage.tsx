@@ -15,12 +15,15 @@ const SuccessPage: React.FC = () => {
   const paymentId = searchParams.get("payment_id");
   const statusMP = searchParams.get("status") || searchParams.get("collection_status");
 
+  // Wompi (envía 'id' como parámetro de transacción)
+  const wompiId = searchParams.get("id");
+
   const [status, setStatus] = useState<"loading" | "success" | "error">(
     "loading",
   );
 
   useEffect(() => {
-    if (!sessionId && !paymentId) {
+    if (!sessionId && !paymentId && !wompiId) {
       navigate("/");
       return;
     }
