@@ -1,10 +1,20 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { api } from './api';
-import { syncUsage, setDailyLimit, resetDailyLimit } from '../services/usageControlService';
-import PlanManager from '@/services/PlanManager';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import { api } from "./api";
+import {
+  syncUsage,
+  setDailyLimit,
+  resetDailyLimit,
+} from "../services/usageControlService";
+import PlanManager from "@/services/PlanManager";
 
 // Definición de tipos alineada con el backend (plans.js)
-export type PlanLevel = 'guest' | 'freemium' | 'premium';
+export type PlanLevel = "guest" | "freemium" | "premium";
 
 export interface MonetizationConfig {
   show_ads: boolean;
@@ -50,12 +60,14 @@ interface AuthContextType {
 // Configuración por defecto para usuarios no autenticados (Guest)
 const GUEST_MONETIZATION: MonetizationConfig = {
   show_ads: true,
-  watermark: true
+  watermark: true,
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
   const [planConfig, setPlanConfig] = useState<PlanStrategy | null>(null);
   const [remainingCredits, setRemainingCredits] = useState<number>(0);
@@ -63,13 +75,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [availablePlans, setAvailablePlans] = useState<any>(null);
 
   // Derivados del estado
-  const planLevel = user?.planLevel || 'guest';
-  const isPremium = planLevel === 'premium';
+  const planLevel = user?.planLevel || "guest";
+  const isPremium = planLevel === "premium";
   const monetization = planConfig?.monetization || GUEST_MONETIZATION;
 
   const fetchUser = async () => {
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+
     if (!token) {
       setUser(null);
       setPlanConfig(availablePlans?.guest || null);
@@ -79,8 +91,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     try {
       // api.get ya incluye el token de localStorage automáticamente
-      const data = await api.get('/api/auth/me');
-      console.log("[Frontend] Plan recibido del backend:", data.plan);
+      const data = await api.get("/api/auth/me");
       setUser(data.user);
       setRemainingCredits(data.remainingCredits);
       setPlanConfig(data.plan);
@@ -91,7 +102,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     } catch (error) {
       console.error("Error fetching user session:", error);
       // Si el token expiró o es inválido (api lanza error en status != 2xx)
-        logout();
+      logout();
     } finally {
       setIsLoading(false);
     }
@@ -99,7 +110,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const fetchConfig = async () => {
     try {
-      const config = await api.get('/api/config/plans');
+      const config = await api.get("/api/config/plans");
       setAvailablePlans(config.subscription_plans);
       PlanManager.initialize(config);
     } catch (error) {
@@ -123,13 +134,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [user, availablePlans]);
 
   const login = (token: string) => {
-    localStorage.setItem('token', token);
+    localStorage.setItem("token", token);
     setIsLoading(true);
     fetchUser();
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    localStorage.removeItem("token");
     setUser(null);
     setPlanConfig(availablePlans?.guest || null);
     setRemainingCredits(0);
@@ -141,19 +152,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      planLevel,
-      isPremium,
-      remainingCredits,
-      monetization,
-      isLoading,
-      availablePlans,
-      updateCredits,
-      login,
-      logout,
-      refreshUser: fetchUser
-    }}>
+    <AuthContext.Provider
+      value={{
+        user,
+        planLevel,
+        isPremium,
+        remainingCredits,
+        monetization,
+        isLoading,
+        availablePlans,
+        updateCredits,
+        login,
+        logout,
+        refreshUser: fetchUser,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
@@ -162,7 +175,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };

@@ -285,8 +285,6 @@ const PricingPage: React.FC = () => {
 
         const data = response.data || response;
 
-        console.log("💰 Wompi Checkout Data:", data); // Verificación de precio
-
         // 2. Configurar Widget
         const checkout = new window.WidgetCheckout({
           currency: data.currency,
@@ -304,7 +302,6 @@ const PricingPage: React.FC = () => {
         // 3. Abrir Widget
         checkout.open((result: any) => {
           const transaction = result.transaction;
-          console.log("Transaction Result:", transaction);
         });
 
         setIsPaymentLoading(false);

@@ -33,8 +33,6 @@ const OccasionPage: React.FC = () => {
       const data = getLocalizedOccasion(rawOccasion, country);
       setLocalized(data);
       updateSeoTags({ ...rawOccasion, ...data }, selectedRel);
-      // Debug: Verificar en consola que el título cambió
-      console.log(`[SEO] Título actualizado a: "${document.title}"`);
     }
   }, [rawOccasion, selectedRel, country]);
 
@@ -75,7 +73,10 @@ const OccasionPage: React.FC = () => {
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 animate-fade-in-up">
       <nav className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-8 flex items-center gap-3">
-        <Link to="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
+        <Link
+          to="/"
+          className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+        >
           Inicio
         </Link>
         <span className="w-1 h-1 bg-slate-300 dark:bg-slate-600 rounded-full"></span>

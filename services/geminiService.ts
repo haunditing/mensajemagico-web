@@ -32,7 +32,7 @@ export const generateMessage = async (
 ): Promise<GenerationResponse> => {
   // 1. Generar Llave de Caché para optimización
   const cacheKey =
-    `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}-${styleInstructions || ''}-${creativityLevel || ''}-${avoidTopics || ''}`
+    `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}-${styleInstructions || ""}-${creativityLevel || ""}-${avoidTopics || ""}`
       .toLowerCase()
       .replace(/\s+/g, "-");
 
@@ -49,15 +49,6 @@ export const generateMessage = async (
      * IMPORTANTE: Enviamos solo los datos crudos.
      * El Backend usará su `PlanService` para decidir el modelo y las instrucciones.
      */
-    if (process.env.NODE_ENV === 'development') {
-      console.log("🚀 Sending to AI:", { 
-        intention: config.intention,
-        styleInstructions, 
-        creativityLevel, 
-        avoidTopics,
-        contextWords: config.contextWords
-      });
-    }
 
     const response = await api.post("/api/magic/generate", {
       userId,

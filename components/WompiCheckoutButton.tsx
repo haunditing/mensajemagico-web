@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { api } from '../context/api';
-import { useAuth } from '../context/AuthContext';
-import LoadingSpinner from './LoadingSpinner';
+import React, { useState } from "react";
+import { api } from "../context/api";
+import { useAuth } from "../context/AuthContext";
+import LoadingSpinner from "./LoadingSpinner";
 
 interface WompiCheckoutButtonProps {
   planId: string; // 'premium_monthly' | 'premium_yearly'
@@ -15,26 +15,26 @@ declare global {
   }
 }
 
-const WompiCheckoutButton: React.FC<WompiCheckoutButtonProps> = ({ 
-  planId, 
-  buttonText = "Pagar con Wompi", 
-  className = "" 
+const WompiCheckoutButton: React.FC<WompiCheckoutButtonProps> = ({
+  planId,
+  buttonText = "Pagar con Wompi",
+  className = "",
 }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
 
   const loadWompiScript = () => {
     return new Promise((resolve, reject) => {
-      if (document.getElementById('wompi-script')) {
+      if (document.getElementById("wompi-script")) {
         resolve(true);
         return;
       }
-      const script = document.createElement('script');
-      script.id = 'wompi-script';
-      script.src = 'https://checkout.wompi.co/widget.js';
+      const script = document.createElement("script");
+      script.id = "wompi-script";
+      script.src = "https://checkout.wompi.co/widget.js";
       script.async = true;
       script.onload = () => resolve(true);
-      script.onerror = () => reject(new Error('Error cargando Wompi'));
+      script.onerror = () => reject(new Error("Error cargando Wompi"));
       document.body.appendChild(script);
     });
   };
@@ -55,9 +55,9 @@ const WompiCheckoutButton: React.FC<WompiCheckoutButtonProps> = ({
         signature: string;
         publicKey: string;
         redirectUrl: string;
-      }>('/api/checkout', {
+      }>("/api/checkout", {
         userId: user._id,
-        planId
+        planId,
       });
 
       // 3. Configurar Widget
@@ -70,16 +70,14 @@ const WompiCheckoutButton: React.FC<WompiCheckoutButtonProps> = ({
         redirectUrl: data.redirectUrl,
         customerData: {
           email: user.email,
-          fullName: user.email.split('@')[0], // Fallback simple
-        }
+          fullName: user.email.split("@")[0], // Fallback simple
+        },
       });
 
       // 4. Abrir Widget
       checkout.open((result: any) => {
         const transaction = result.transaction;
-        console.log('Transaction Result:', transaction);
       });
-
     } catch (error) {
       console.error("Error en checkout Wompi:", error);
       alert("Error al iniciar el pago con Wompi");
@@ -89,12 +87,14 @@ const WompiCheckoutButton: React.FC<WompiCheckoutButtonProps> = ({
   };
 
   return (
-    <button 
-      onClick={handlePayment} 
+    <button
+      onClick={handlePayment}
       disabled={loading}
       className={`bg-[#10069f] text-white font-bold py-3 px-6 rounded-xl shadow-lg hover:bg-[#1a0e8a] transition-all flex items-center justify-center gap-2 ${className}`}
     >
-      {loading ? <LoadingSpinner size="sm" color="current" /> : (
+      {loading ? (
+        <LoadingSpinner size="sm" color="current" />
+      ) : (
         <>
           <span>🇨🇴</span> {buttonText}
         </>

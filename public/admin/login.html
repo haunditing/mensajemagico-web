@@ -136,8 +136,6 @@
         btn.disabled = true;
 
         try {
-          console.log("Iniciando petición de login...");
-
           const res = await fetch("/api/admin/login", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -153,14 +151,12 @@
           }
 
           const data = await res.json();
-          console.log("Respuesta recibida:", data);
 
           // EXTRAER TOKEN: Compatible con data.token O data.response.token
           const token = data.token || (data.response && data.response.token);
 
           if (token) {
             localStorage.setItem("admin_token", token);
-            console.log("Token guardado. Redirigiendo...");
             // Redirección simple a la misma carpeta
             window.location.href = "logs.html";
           } else {

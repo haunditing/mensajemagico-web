@@ -19,42 +19,45 @@ const HomePage: React.FC = () => {
     updateSeoTags();
 
     // --- SEO: Structured Data for SoftwareApplication ---
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
+    const script = document.createElement("script");
+    script.type = "application/ld+json";
     script.innerHTML = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
-      "name": CONFIG.SEO.BASE_TITLE,
-      "image": "https://mensajemagico.com/favicon.ico",
-      "operatingSystem": "WEB",
-      "applicationCategory": "CommunicationApplication",
-      "aggregateRating": {
+      name: CONFIG.SEO.BASE_TITLE,
+      image: "https://mensajemagico.com/favicon.ico",
+      operatingSystem: "WEB",
+      applicationCategory: "CommunicationApplication",
+      aggregateRating: {
         "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "ratingCount": "250" 
+        ratingValue: "4.8",
+        ratingCount: "250",
       },
-      "offers": {
+      offers: {
         "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      }
+        price: "0",
+        priceCurrency: "USD",
+      },
     });
     document.head.appendChild(script);
 
     // --- SEO: Structured Data for FAQPage ---
-    const faqScript = document.createElement('script');
-    faqScript.type = 'application/ld+json';
+    const faqScript = document.createElement("script");
+    faqScript.type = "application/ld+json";
     faqScript.innerHTML = JSON.stringify({
       "@context": "https://schema.org",
       "@type": "FAQPage",
-      "mainEntity": faqData.map(item => ({
+      mainEntity: faqData.map((item) => ({
         "@type": "Question",
-        "name": item.question,
-        "acceptedAnswer": {
+        name: item.question,
+        acceptedAnswer: {
           "@type": "Answer",
-          "text": typeof item.answer === 'string' ? item.answer : 'Visita nuestra página de precios para más detalles.'
-        }
-      }))
+          text:
+            typeof item.answer === "string"
+              ? item.answer
+              : "Visita nuestra página de precios para más detalles.",
+        },
+      })),
     });
     document.head.appendChild(faqScript);
 
@@ -73,10 +76,6 @@ const HomePage: React.FC = () => {
   const isHalloween = CONFIG.THEME.IS_HALLOWEEN;
   const isBlackFriday = CONFIG.THEME.IS_BLACK_FRIDAY;
 
-  console.log(
-    `[HomePage] Renderizado. San Valentín: ${isValentine}, Navidad: ${isChristmas}, Halloween: ${isHalloween}, Black Friday: ${isBlackFriday}`
-  );
-
   return (
     <main className="animate-fade-in-up">
       {/* Hero Section */}
@@ -88,10 +87,10 @@ const HomePage: React.FC = () => {
               isValentine
                 ? ["❤️", "💖", "💘", "💝", "🌹"]
                 : isHalloween
-                ? ["🎃", "👻", "🦇", "🕷️", "🍬"]
-                : isBlackFriday
-                ? ["🛍️", "🏷️", "💸", "🖤", "✨"]
-                : ["❄️", "❅", "🌨️", "☃️"]
+                  ? ["🎃", "👻", "🦇", "🕷️", "🍬"]
+                  : isBlackFriday
+                    ? ["🛍️", "🏷️", "💸", "🖤", "✨"]
+                    : ["❄️", "❅", "🌨️", "☃️"]
             }
             iterationCount={isValentine ? 2 : "infinite"}
           />
@@ -116,7 +115,8 @@ const HomePage: React.FC = () => {
             </>
           ) : (
             <>
-              Tu Asistente de Mensajes con IA, <br className="hidden md:block" />
+              Tu Asistente de Mensajes con IA,{" "}
+              <br className="hidden md:block" />
               <span className="text-gradient">sin complicaciones.</span>
             </>
           )}
@@ -177,14 +177,25 @@ const HomePage: React.FC = () => {
         {/* Botón Proactivo del Guardián */}
         <div className="mt-6">
           <button
-            onClick={() => user ? setIsContactModalOpen(true) : triggerUpsell("Regístrate para que el Guardián pueda recordar a tus contactos.")}
+            onClick={() =>
+              user
+                ? setIsContactModalOpen(true)
+                : triggerUpsell(
+                    "Regístrate para que el Guardián pueda recordar a tus contactos.",
+                  )
+            }
             className="inline-flex items-center gap-2 text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors group"
           >
-            <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 w-6 h-6 rounded-full flex items-center justify-center text-xs group-hover:scale-110 transition-transform">+</span>
+            <span className="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 w-6 h-6 rounded-full flex items-center justify-center text-xs group-hover:scale-110 transition-transform">
+              +
+            </span>
             ✨ Agregar a alguien especial para seguimiento del Guardián
           </button>
         </div>
-        <CreateContactModal isOpen={isContactModalOpen} onClose={() => setIsContactModalOpen(false)} />
+        <CreateContactModal
+          isOpen={isContactModalOpen}
+          onClose={() => setIsContactModalOpen(false)}
+        />
       </section>
 
       {/*<AdBanner position="top" />*/}
