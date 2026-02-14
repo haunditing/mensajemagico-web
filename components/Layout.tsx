@@ -309,6 +309,26 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }
   }, [location.pathname, navigationType]);
 
+  // Actualizar etiquetas Open Graph de URL y Canonical para compartir correctamente
+  useEffect(() => {
+    // Definir el dominio canónico de producción explícitamente para evitar duplicados
+    const PRODUCTION_ORIGIN = "https://mensajemagico.com";
+    
+    // Usar el origen actual solo si estamos en localhost (desarrollo), de lo contrario forzar producción
+    const baseOrigin = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
+      ? window.location.origin 
+      : PRODUCTION_ORIGIN;
+
+    // Construimos la URL limpia (sin query params) para canonical y OG
+    const cleanUrl = `${baseOrigin}${location.pathname}`;
+    
+    const canonicalLink = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
+    if (canonicalLink) canonicalLink.href = cleanUrl;
+
+    const ogUrlMeta = document.querySelector("meta[property='og:url']");
+    if (ogUrlMeta) ogUrlMeta.setAttribute("content", cleanUrl);
+  }, [location.pathname]);
+
   const selectionClass = isValentine
     ? "selection:bg-rose-200 selection:text-rose-900 dark:selection:bg-rose-500 dark:selection:text-white"
     : isChristmas

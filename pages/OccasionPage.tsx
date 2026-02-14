@@ -23,11 +23,18 @@ const OccasionPage: React.FC = () => {
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
 
+  // Resetear la relación seleccionada si el usuario cambia de ocasión (navegación)
+  useEffect(() => {
+    setSelectedRel(undefined);
+  }, [slug]);
+
   useEffect(() => {
     if (rawOccasion) {
       const data = getLocalizedOccasion(rawOccasion, country);
       setLocalized(data);
       updateSeoTags({ ...rawOccasion, ...data }, selectedRel);
+      // Debug: Verificar en consola que el título cambió
+      console.log(`[SEO] Título actualizado a: "${document.title}"`);
     }
   }, [rawOccasion, selectedRel, country]);
 
