@@ -96,7 +96,7 @@ const GuardianEditorModal: React.FC<GuardianEditorModalProps> = ({
           originalText: initialText,
           editedText: text
         });
-        showToast("¡El Guardián ha aprendido tu estilo! ✨", "success");
+        showToast("¡Captado! El Guardián ha aprendido un poco más de tu esencia. ✨", "success");
       }
       onSave(text);
     } catch (error) {
@@ -136,7 +136,7 @@ const GuardianEditorModal: React.FC<GuardianEditorModalProps> = ({
 
         {isRisky && (
           <div className="mt-3 text-[10px] text-orange-600 dark:text-orange-400 font-bold flex items-center gap-1 animate-pulse">
-            <span>⚠️</span> Cuidado, la relación está frágil. Quizás este tono sea muy directo.
+            <span>⚠️</span> Cuando el vínculo es frágil, la suavidad es fuerza. Este tono podría tensar más las cosas.
           </div>
         )}
 

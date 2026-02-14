@@ -113,7 +113,7 @@ const RemindersPage: React.FC = () => {
       const todayStr = `${year}-${month}-${day}`;
 
       if (date < todayStr) {
-        showToast("La fecha no puede estar en el pasado para recordatorios únicos.", "error");
+        showToast("La fecha debe ser futura para recordatorios únicos.", "error");
         return;
       }
     }
@@ -132,10 +132,10 @@ const RemindersPage: React.FC = () => {
 
       if (editingId) {
         await api.put(`/api/reminders/${editingId}`, payload);
-        showToast("Recordatorio actualizado", "success");
+        showToast("¡Hecho! Tu recordatorio está al día.", "success");
       } else {
         await api.post("/api/reminders", payload);
-        showToast("Recordatorio creado con éxito", "success");
+        showToast("¡Anotado! No dejaremos que se te pase esta fecha.", "success");
       }
       
       setShowForm(false);
@@ -165,7 +165,7 @@ const RemindersPage: React.FC = () => {
         isRecurring: true,
         notes: `Festivo automático (${holiday.country})`,
       });
-      showToast("Festivo agregado a tus recordatorios", "success");
+      showToast("¡Agregado! Celebraremos esa fecha contigo.", "success");
       fetchReminders();
     } catch (error: any) {
       showToast(error.message || "Error al agregar", "error");
@@ -178,7 +178,7 @@ const RemindersPage: React.FC = () => {
     if (!window.confirm("¿Eliminar este recordatorio?")) return;
     try {
       await api.delete(`/api/reminders/${id}`);
-      showToast("Eliminado correctamente", "success");
+      showToast("Recordatorio eliminado.", "success");
       setReminders((prev) => prev.filter((r) => r._id !== id));
     } catch (error) {
       showToast("Error al eliminar", "error");
@@ -224,7 +224,7 @@ const RemindersPage: React.FC = () => {
   const handleComplete = async (id: string) => {
     try {
       await api.post(`/api/reminders/${id}/complete`, {});
-      showToast("Recordatorio completado ✅", "success");
+      showToast("¡Misión cumplida! ✅", "success");
       fetchReminders();
     } catch (error: any) {
       showToast(error.message || "Error al completar", "error");

@@ -211,7 +211,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
     await executeShare(platform, content);
 
     if (platform === SharePlatform.COPY) {
-      showToast("Enlace copiado al portapapeles", "success");
+      showToast("¡Enlace copiado! Listo para compartir magia.", "success");
     }
 
     setTimeout(() => setActiveAction(null), 2000);

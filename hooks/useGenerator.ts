@@ -301,7 +301,7 @@ export const useGenerator = (
 
     if (word && !isContextLocked && (currentContextCount + wordCount <= MAX_CONTEXT) && !contextWords.includes(word)) {
       if (containsOffensiveWords(word)) {
-        setSafetyError("La palabra de contexto no es permitida.");
+        setSafetyError("Esa palabra podría nublar la intención de tu mensaje. Elijamos algo que sume.");
         return;
       }
       setContextWords([...contextWords, word]);
@@ -355,7 +355,7 @@ export const useGenerator = (
 
     if (pendingWord) {
       if (containsOffensiveWords(pendingWord)) {
-        setSafetyError("La palabra de contexto no es permitida.");
+        setSafetyError("Esa palabra podría nublar la intención de tu mensaje. Elijamos algo que sume.");
         setIsLoading(false);
         return;
       }
@@ -530,7 +530,7 @@ export const useGenerator = (
     setContacts((prev) => [newContact, ...prev]);
     setRelationshipId(newContact._id);
     setSelectedContactId(newContact._id);
-    showToast(`Ahora escribiéndole a ${newContact.name}`, "success");
+    showToast(`¡Conectado! Ahora escribiéndole a ${newContact.name}`, "success");
   };
 
   const handleClearHistory = () => {

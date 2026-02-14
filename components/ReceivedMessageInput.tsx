@@ -57,7 +57,7 @@ const ReceivedMessageInput: React.FC<ReceivedMessageInputProps> = ({
               if (cleanText.length > maxChars) {
                 // Si la diferencia es mayor a 1, asumimos que fue un pegado y avisamos para no molestar al escribir
                 if (cleanText.length - receivedText.length > 1) {
-                  showToast(`El texto se recortó a ${maxChars} caracteres.`, "info");
+                  showToast(`Para mantener la magia, hemos ajustado el texto a ${maxChars} caracteres.`, "info");
                 }
               }
               

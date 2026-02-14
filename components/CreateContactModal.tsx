@@ -103,10 +103,10 @@ const CreateContactModal: React.FC<CreateContactModalProps> = ({
       let contact;
       if (contactToEdit) {
         contact = await api.put(`/api/contacts/${contactToEdit._id}`, { name, relationship, grammaticalGender });
-        showToast("Contacto actualizado ✨", "success");
+        showToast("¡Actualizado! El Guardián tiene los nuevos detalles. ✨", "success");
       } else {
         contact = await api.post("/api/contacts", { name, relationship, grammaticalGender });
-        showToast("Contacto agregado al Guardián ✨", "success");
+        showToast("¡Bienvenido! El Guardián ya conoce a este contacto. ✨", "success");
       }
       
       if (onSuccess) onSuccess(contact);

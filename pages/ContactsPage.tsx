@@ -60,7 +60,7 @@ const ContactsPage: React.FC = () => {
 
     try {
       await api.delete(`/api/contacts/${id}`);
-      showToast("Contacto eliminado", "success");
+      showToast("Contacto eliminado. El Guardián ha olvidado esta conexión.", "success");
       fetchContacts();
       if (selectedContact?._id === id) setSelectedContact(null);
     } catch (error) {

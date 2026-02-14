@@ -82,7 +82,7 @@ const ProfilePage: React.FC = () => {
     try {
       await cancelSubscription(user._id);
       showToast(
-        "Suscripción cancelada correctamente. El acceso continuará hasta el final del periodo.",
+        "Entendido. Tu suscripción ha sido cancelada, pero seguiremos aquí hasta el final del periodo.",
         "success",
       );
       loadSubscription(); // Recargar estado
@@ -98,7 +98,7 @@ const ProfilePage: React.FC = () => {
     setReactivating(true);
     try {
       await reactivateSubscription(user._id);
-      showToast("Suscripción reactivada correctamente.", "success");
+      showToast("¡Qué alegría tenerte de vuelta! Tu suscripción está activa.", "success");
       loadSubscription(); // Recargar estado
     } catch (error: any) {
       showToast(error.message || "Error al reactivar", "error");
@@ -113,7 +113,7 @@ const ProfilePage: React.FC = () => {
       await api.put("/api/auth/profile", { location: locationInput });
       await refreshUser();
       setIsEditingLoc(false);
-      showToast("Ubicación actualizada correctamente", "success");
+      showToast("Tu ubicación se ha actualizado. Ahora estamos más cerca.", "success");
     } catch (error: any) {
       showToast(error.message || "Error al actualizar ubicación", "error");
     } finally {
@@ -164,7 +164,7 @@ const ProfilePage: React.FC = () => {
     setIsSavingPassword(true);
     try {
       await api.put("/api/auth/change-password", { currentPassword, newPassword });
-      showToast("Contraseña actualizada correctamente", "success");
+      showToast("Tu contraseña se ha actualizado. Tu cuenta está segura.", "success");
       setIsChangingPassword(false);
       setCurrentPassword("");
       setNewPassword("");
@@ -183,7 +183,7 @@ const ProfilePage: React.FC = () => {
     try {
       await api.delete("/api/auth/delete-account");
       logout();
-      showToast("Tu cuenta ha sido eliminada permanentemente", "success");
+      showToast("Tu cuenta ha sido eliminada. Esperamos volver a verte algún día.", "success");
     } catch (error: any) {
       showToast(error.message || "Error al eliminar cuenta", "error");
       setIsDeletingAccount(false);

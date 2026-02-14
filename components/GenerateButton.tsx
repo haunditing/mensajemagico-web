@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import LoadingSpinner from "./LoadingSpinner";
 
 interface GenerateButtonProps {
@@ -12,6 +12,21 @@ interface GenerateButtonProps {
   isGreeting: boolean;
 }
 
+const MAGIC_TEXTS = [
+  "Generar Mensaje Mágico",
+  "Crear Magia ✨",
+  "Inspirarme Ahora",
+  "Sorpréndeme",
+  "Redactar por mí",
+];
+
+const THOUGHT_TEXTS = [
+  "Obtener mi pensamiento",
+  "Reflexionar ahora",
+  "Inspirar mi día",
+  "Descubrir mensaje",
+];
+
 const GenerateButton: React.FC<GenerateButtonProps> = ({
   onClick,
   isLoading,
@@ -22,6 +37,11 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
   isPensamiento,
   isGreeting,
 }) => {
+  const buttonLabel = useMemo(() => {
+    const options = isPensamiento ? THOUGHT_TEXTS : MAGIC_TEXTS;
+    return options[Math.floor(Math.random() * options.length)];
+  }, [isPensamiento]);
+
   return (
     <button
       onClick={onClick}
@@ -38,7 +58,7 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
         </div>
       ) : (
         <span>
-          {safetyError ? "Contenido bloqueado" : isOccasionLocked ? "Ocasión Premium 🔒" : !!user && remainingCredits <= 0 ? "Sin créditos hoy" : isPensamiento ? "Obtener mi pensamiento" : "Generar Mensaje Mágico"}
+          {safetyError ? "Contenido bloqueado" : isOccasionLocked ? "Ocasión Premium 🔒" : !!user && remainingCredits <= 0 ? "Sin créditos hoy" : buttonLabel}
         </span>
       )}
     </button>

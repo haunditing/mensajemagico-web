@@ -2,35 +2,36 @@ import { Tone } from "../types";
 
 export const GUARDIAN_WARNINGS: Record<string, Record<string, string>> = {
   family: {
-    [Tone.SARCASTIC]: "El sarcasmo con la familia puede ser malinterpretado.",
+    [Tone.SARCASTIC]: "El sarcasmo en familia a veces hiere más de lo que divierte. ¿Seguro que es el momento?",
   },
   couple: {
     [Tone.FORMAL]:
-      "¿Todo bien? Un tono formal con tu pareja puede sonar distante.",
+      "La formalidad puede sentirse como frialdad en una pareja. ¿Hay algo que te incomoda decir?",
   },
   ex: {
     [Tone.ROMANTIC]:
-      "Cuidado. Un tono romántico con tu ex puede enviar señales confusas.",
+      "La nostalgia es tramposa. Un tono romántico ahora podría reabrir heridas o crear falsas esperanzas.",
     [Tone.FLIRTY]:
-      "Cuidado. Un tono coqueto con tu ex puede enviar señales confusas.",
+      "Coquetear con un ex suele ser un terreno resbaladizo. Asegúrate de que tu intención sea clara para ambos.",
     [Tone.LIGHT_DESPERATION]:
-      "Mostrar desesperación con tu ex no suele funcionar.",
+      "Desde la calma te escucharán mejor. La urgencia a veces aleja lo que queremos acercar.",
   },
   boss: {
-    [Tone.FUNNY]: "Asegúrate de que tu jefe tenga buen sentido del humor.",
+    [Tone.FUNNY]: "El humor en el trabajo es un arte delicado. Asegúrate de que el contexto sea el adecuado.",
   },
   mother: {
-    [Tone.SARCASTIC]: "El sarcasmo con tu mamá puede ser malinterpretado.",
+    [Tone.SARCASTIC]:
+      "Con mamá, la claridad suele ser mejor que la ironía. El sarcasmo podría lastimarla sin querer.",
   },
   father: {
-    [Tone.SARCASTIC]: "El sarcasmo con tu padre puede ser malinterpretado.",
+    [Tone.SARCASTIC]: "A veces los padres toman el sarcasmo como una falta de respeto. Valora si es el mejor canal hoy.",
   },
   ligue: {
-    [Tone.FORMAL]: "Demasiada formalidad puede alejar a tu crush.",
+    [Tone.FORMAL]: "Relájate un poco. La formalidad excesiva puede poner una barrera invisible con quien te gusta.",
   },
   friend: {
-    [Tone.ROMANTIC]: "Cuidado, esto podría confundir a tu amigo/a.",
-    [Tone.FLIRTY]: "Coquetear con amigos puede complicar la amistad.",
+    [Tone.ROMANTIC]: "La línea entre amistad y romance es delgada. Este tono podría cambiar la dinámica entre ustedes.",
+    [Tone.FLIRTY]: "Jugar con fuego entre amigos es divertido hasta que alguien se quema. ¿Es esa tu intención?",
   },
 };
 
@@ -40,18 +41,18 @@ export const GUARDIAN_FALLBACKS: Record<
 > = {
   boss: {
     tones: [Tone.FORMAL, Tone.DIRECT],
-    message: "El Guardián ajustó el tono a profesional para tu Jefe.",
+    message: "Para cuidar tu imagen profesional, el Guardián sugiere un tono más formal o directo.",
   },
   father: {
     tones: [Tone.SUBTLE, Tone.DIRECT],
-    message: "El Guardián ajustó el tono para ser más familiar.",
+    message: "Para mantener el respeto y la cercanía, el Guardián sugiere un tono sutil o directo.",
   },
   mother: {
     tones: [Tone.SUBTLE, Tone.DIRECT],
-    message: "El Guardián ajustó el tono para ser más familiar.",
+    message: "Para hablar desde el cariño y el respeto, el Guardián sugiere un tono sutil o directo.",
   },
   family: {
     tones: [Tone.SUBTLE, Tone.DIRECT],
-    message: "El Guardián ajustó el tono para ser más familiar.",
+    message: "Para evitar malentendidos en el chat familiar, el Guardián sugiere un tono sutil o directo.",
   },
 };

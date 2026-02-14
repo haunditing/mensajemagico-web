@@ -27,14 +27,14 @@ const SettingsPage: React.FC = () => {
       await refreshUser();
       
       if (newValue) {
-        showToast("Notificaciones activadas", "success");
+        showToast("¡Listo! Te avisaremos de los momentos importantes.", "success");
         // Si el usuario las activa y el navegador está en 'default', pedimos permiso
         if (browserPermission === "default") {
           const result = await Notification.requestPermission();
           setBrowserPermission(result);
         }
       } else {
-        showToast("Notificaciones desactivadas", "info");
+        showToast("Entendido. Silenciaremos los avisos por ahora.", "info");
       }
     } catch (error) {
       setNotificationsEnabled(!newValue); // Revertir en caso de error

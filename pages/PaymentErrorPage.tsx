@@ -10,8 +10,7 @@ const PaymentErrorPage: React.FC = () => {
           Algo salió mal
         </h1>
         <p className="text-slate-600 dark:text-slate-300 mb-8 text-lg leading-relaxed">
-          No pudimos procesar tu pago. Puede deberse a fondos insuficientes, un
-          bloqueo de seguridad de tu banco o un error temporal.
+          Hubo un pequeño tropiezo con el pago. A veces la tecnología falla o los bancos se protegen de más. No te preocupes, tu dinero está seguro. ¿Intentamos de nuevo?
         </p>
 
         <div className="space-y-4">

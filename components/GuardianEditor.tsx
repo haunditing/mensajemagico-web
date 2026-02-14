@@ -59,7 +59,7 @@ const GuardianEditor: React.FC<GuardianEditorProps> = ({ generatedText, contactI
       if (navigator.clipboard && navigator.clipboard.writeText) {
         try {
           await navigator.clipboard.writeText(text);
-          showToast("Texto copiado al portapapeles", "success");
+          showToast("¡Copiado! Tu mensaje está listo para brillar.", "success");
         } catch (err) {
           showToast("No se pudo copiar automáticamente", "error");
         }
@@ -77,7 +77,7 @@ const GuardianEditor: React.FC<GuardianEditorProps> = ({ generatedText, contactI
         editedText: text
       });
       setIsSaved(true);
-      showToast("¡El Guardián ha aprendido tu estilo! ✨", "success");
+      showToast("¡Captado! El Guardián ha aprendido un poco más de tu esencia. ✨", "success");
     } catch (error) {
       console.error(error);
       showToast("Error guardando aprendizaje", "error");
@@ -130,7 +130,7 @@ const GuardianEditor: React.FC<GuardianEditorProps> = ({ generatedText, contactI
 
       {isRisky && (
         <div className="mt-2 text-[10px] text-orange-600 dark:text-orange-400 font-bold flex items-center gap-1 animate-pulse">
-          <span>⚠️</span> Cuidado, la relación está frágil. Quizás este tono sea muy directo.
+          <span>⚠️</span> Cuando el vínculo es frágil, la suavidad es fuerza. Este tono podría tensar más las cosas.
         </div>
       )}
       

@@ -52,7 +52,7 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children 
     try {
       const newFav = await api.post<FavoriteItem>('/api/favorites', { content, occasion, tone });
       setFavorites(prev => [newFav, ...prev]);
-      showToast("Guardado en favoritos", "success");
+      showToast("¡Guardado! Este mensaje ya es parte de tu colección.", "success");
     } catch (error: any) {
       showToast(error.message || "Error al guardar", "error");
     }
@@ -62,7 +62,7 @@ export const FavoritesProvider: React.FC<{ children: ReactNode }> = ({ children 
     try {
       await api.delete(`/api/favorites/${id}`);
       setFavorites(prev => prev.filter(f => f._id !== id));
-      showToast("Eliminado de favoritos", "info");
+      showToast("Mensaje eliminado de tus favoritos.", "info");
     } catch (error: any) {
       showToast(error.message || "Error al eliminar", "error");
     }
