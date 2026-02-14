@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CountryCode } from '../types';
-import { getCurrentCountry as getInitialCountry, setUserCountry as saveCountry } from '../services/localizationService';
+import { getCurrentCountry, setUserCountry, subscribeToCountryChanges } from '../services/localizationService';
 
 interface LocalizationContextType {
   country: CountryCode;
@@ -11,11 +11,17 @@ interface LocalizationContextType {
 const LocalizationContext = createContext<LocalizationContextType | undefined>(undefined);
 
 export const LocalizationProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [country, setCountryState] = useState<CountryCode>(getInitialCountry());
+  const [country, setCountryState] = useState<CountryCode>(getCurrentCountry());
+
+  useEffect(() => {
+    const unsubscribe = subscribeToCountryChanges(() => {
+      setCountryState(getCurrentCountry());
+    });
+    return () => unsubscribe();
+  }, []);
 
   const setCountry = (newCountry: CountryCode) => {
-    saveCountry(newCountry); // Persiste en localStorage
-    setCountryState(newCountry);
+    setUserCountry(newCountry); // Persiste y dispara evento, el estado se actualiza vía suscripción
   };
 
   return (

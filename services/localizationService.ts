@@ -178,4 +178,18 @@ export const getLocalizedOccasion = (occasion: Occasion, countryOverride?: Count
 
 export const setUserCountry = (country: CountryCode) => {
   localStorage.setItem(COUNTRY_STORAGE_KEY, country);
+  // Disparar evento para que la UI se actualice en tiempo real (mismo tab)
+  window.dispatchEvent(new Event('countryChange'));
+};
+
+export const subscribeToCountryChanges = (callback: () => void) => {
+  window.addEventListener('countryChange', callback);
+  const storageHandler = (e: StorageEvent) => {
+    if (e.key === COUNTRY_STORAGE_KEY) callback();
+  };
+  window.addEventListener('storage', storageHandler);
+  return () => {
+    window.removeEventListener('countryChange', callback);
+    window.removeEventListener('storage', storageHandler);
+  };
 };
