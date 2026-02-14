@@ -31,10 +31,6 @@ const OccasionPage: React.FC = () => {
     }
   }, [rawOccasion, selectedRel, country]);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [slug]);
-
   if (!rawOccasion || !localized) {
     return (
       <div className="p-20 text-center animate-pulse">

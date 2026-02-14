@@ -17,7 +17,6 @@ import FaqSection, { faqData } from "../components/FaqSection";
 const HomePage: React.FC = () => {
   useEffect(() => {
     updateSeoTags();
-    window.scrollTo(0, 0);
 
     // --- SEO: Structured Data for SoftwareApplication ---
     const script = document.createElement('script');

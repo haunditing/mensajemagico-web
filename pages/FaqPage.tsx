@@ -4,7 +4,6 @@ import { faqData } from '../components/FaqSection'; // Import data for schema
 
 const FaqPage: React.FC = () => {
   useEffect(() => {
-    window.scrollTo(0, 0);
     document.title = "Preguntas Frecuentes - MensajeMágico";
 
     // --- SEO: Structured Data (JSON-LD) ---

@@ -20,7 +20,6 @@ const RelationPage: React.FC = () => {
       const data = getLocalizedOccasion(rawOccasion, country);
       setLocalized(data);
       updateSeoTags({ ...rawOccasion, ...data }, relationship);
-      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [rawOccasion, relationship, country]);
 

@@ -100,6 +100,7 @@ const Generator: React.FC<GeneratorProps> = ({
     handleToggleFavorite,
     handleMessageUpdate,
     handleContactCreated,
+    handleClearHistory,
   } = useGenerator(occasion, initialRelationship, onRelationshipChange);
 
   return (
@@ -382,6 +383,7 @@ const Generator: React.FC<GeneratorProps> = ({
         onToggleFavorite={handleToggleFavorite}
         isFavorite={isFavorite}
         onEditMessage={setEditingMessageId}
+        onClearHistory={handleClearHistory}
       />
 
       {editingMessageId && (

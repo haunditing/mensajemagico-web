@@ -18,6 +18,7 @@ interface GeneratedMessagesListProps {
   onToggleFavorite: (msg: ExtendedGeneratedMessage) => void;
   isFavorite: (content: string) => boolean;
   onEditMessage: (id: string) => void;
+  onClearHistory?: () => void;
 }
 
 const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
@@ -32,6 +33,7 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
   onToggleFavorite,
   isFavorite,
   onEditMessage,
+  onClearHistory,
 }) => {
   return (
     <div id="results-section" className="mt-6 space-y-6">
@@ -49,6 +51,7 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
             className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 md:p-8 animate-fade-in-up shadow-sm relative overflow-hidden ${
               isPensamiento ? "text-center border-blue-200 dark:border-blue-700" : ""
             }`}
+            style={{ contentVisibility: "auto", containIntrinsicSize: "300px" } as any}
           >
             <div className="mb-8 relative z-10 group">
               <p
@@ -146,6 +149,17 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
           </div>
         );
       })}
+
+      {messages.length > 0 && onClearHistory && (
+        <div className="flex justify-center mt-8 pt-4 border-t border-slate-100 dark:border-slate-800 animate-fade-in">
+          <button
+            onClick={onClearHistory}
+            className="text-sm font-bold text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 transition-colors flex items-center gap-2 px-4 py-2 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800"
+          >
+            <span>🗑️</span> Limpiar historial
+          </button>
+        </div>
+      )}
     </div>
   );
 };

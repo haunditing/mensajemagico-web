@@ -34,7 +34,7 @@ const ToastNotification: React.FC = () => {
   const ariaLive = type === 'error' || type === 'payment_error' ? 'assertive' : 'polite';
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] animate-fade-in-up">
+    <div className="fixed left-1/2 -translate-x-1/2 z-[60] animate-fade-in-up top-24 md:top-auto md:bottom-6">
       <div
         role={role}
         aria-live={ariaLive}

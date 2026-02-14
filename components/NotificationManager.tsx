@@ -117,8 +117,8 @@ const NotificationManager: React.FC = () => {
     <>
       {/* Banner de Permisos */}
       {user && permission === "default" && isVisible && notificationsEnabled && (
-        <div className="fixed bottom-4 right-4 z-50 animate-fade-in-up">
-          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-xl border border-blue-100 dark:border-blue-900 flex items-center gap-4 max-w-sm relative">
+        <div className="fixed z-[60] animate-fade-in-up left-4 right-4 top-24 md:top-auto md:left-auto md:bottom-4 md:right-4">
+          <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl shadow-xl border border-blue-100 dark:border-blue-900 flex items-center gap-4 max-w-sm relative mx-auto md:mx-0">
             <button 
               onClick={() => setIsVisible(false)}
               className="absolute -top-2 -right-2 w-6 h-6 bg-slate-200 dark:bg-slate-700 rounded-full text-slate-500 dark:text-slate-400 text-xs flex items-center justify-center hover:bg-slate-300 dark:hover:bg-slate-600"
@@ -140,7 +140,7 @@ const NotificationManager: React.FC = () => {
 
       {/* Indicador de Próxima Alarma */}
       {nextAlert && notificationsEnabled && (
-        <div className="fixed bottom-4 left-4 z-40 animate-fade-in bg-slate-900/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg flex items-center gap-2 border border-white/10 pointer-events-none">
+        <div className="fixed z-[60] animate-fade-in bg-slate-900/80 backdrop-blur-sm text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg flex items-center gap-2 border border-white/10 pointer-events-none left-4 top-20 md:top-auto md:bottom-4 md:left-4">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>

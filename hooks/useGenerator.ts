@@ -35,7 +35,7 @@ import { useToast } from "../context/ToastContext";
 import { useFeature } from "./useFeature";
 import { GiftSuggestion } from "../components/GiftRecommendations";
 import { buildGuardianPrompt } from "../services/guardianPromptUtils";
-import { GUARDIAN_WARNINGS, GUARDIAN_FALLBACKS } from "../guardianRules";
+import { GUARDIAN_WARNINGS, GUARDIAN_FALLBACKS } from "../services/guardianRules";
 
 export interface ExtendedGeneratedMessage extends GeneratedMessage {
   gifts?: GiftSuggestion[];
@@ -533,6 +533,12 @@ export const useGenerator = (
     showToast(`Ahora escribiéndole a ${newContact.name}`, "success");
   };
 
+  const handleClearHistory = () => {
+    if (window.confirm("¿Estás seguro de que quieres borrar todo el historial de mensajes generados?")) {
+      setMessages([]);
+    }
+  };
+
   return {
     relationshipId, setRelationshipId,
     contacts, setContacts,
@@ -577,6 +583,7 @@ export const useGenerator = (
     handleShareAction,
     handleToggleFavorite,
     handleMessageUpdate,
-    handleContactCreated
+    handleContactCreated,
+    handleClearHistory
   };
 };

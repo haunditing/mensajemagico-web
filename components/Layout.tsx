@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigationType } from "react-router-dom";
 import confetti from "canvas-confetti";
 import { OCCASIONS } from "../constants";
 import { getLocalizedOccasion } from "../services/localizationService";
@@ -190,6 +190,7 @@ const CountrySelector = () => {
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
+  const navigationType = useNavigationType();
   const { country: currentCountry } = useLocalization();
   const siteName = CONFIG.SEO.BASE_TITLE;
   const isValentine = CONFIG.THEME.IS_VALENTINE;
@@ -322,6 +323,15 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     return () => observer.disconnect();
   }, []);
+
+  // Scroll al inicio al cambiar de ruta (Solución para links del footer)
+  useEffect(() => {
+    // Solo hacemos scroll al inicio si es una navegación nueva (PUSH/REPLACE)
+    // Si es POP (botón atrás), dejamos que el navegador restaure la posición
+    if (navigationType !== "POP") {
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname, navigationType]);
 
   const selectionClass = isValentine
     ? "selection:bg-rose-200 selection:text-rose-900 dark:selection:bg-rose-500 dark:selection:text-white"
