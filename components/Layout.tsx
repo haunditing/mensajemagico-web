@@ -13,52 +13,22 @@ import OccasionIcon from "./OccasionIcon";
 import UserMenu from "./UserMenu";
 import NotificationManager from "./NotificationManager";
 import OfferBanner from "./OfferBanner";
-
-const MagicWandIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 24 24"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    <path
-      d="M16.5 2L15.5 4.5L13 5.5L15.5 6.5L16.5 9L17.5 6.5L20 5.5L17.5 4.5L16.5 2Z"
-      fill="currentColor"
-    />
-    <path
-      d="M6 3L5.25 4.75L3.5 5.5L5.25 6.25L6 8L6.75 6.25L8.5 5.5L6.75 4.75L6 3Z"
-      fill="currentColor"
-      fillOpacity="0.8"
-    />
-    <path
-      d="M19.5 14L18.75 15.75L17 16.5L18.75 17.25L19.5 19L20.25 17.25L22 16.5L20.25 15.75L19.5 14Z"
-      fill="currentColor"
-      fillOpacity="0.9"
-    />
-    <path
-      d="M4 21L14.5 10.5M14.5 10.5L16.5 8.5C17.0523 7.94772 17.0523 7.05228 16.5 6.5C15.9477 5.94772 15.0523 5.94772 14.5 6.5L12.5 8.5M14.5 10.5L12.5 8.5"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
+import Logo from "./Logo";
 
 const CountrySelector = () => {
   const { country: currentCountry, setCountry } = useLocalization();
   const [isOpen, setIsOpen] = useState(false);
   const selectorRef = useRef<HTMLDivElement>(null);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(() => 
-    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 768 : false,
   );
 
   // Detectar cambio de tamaño de ventana para renderizado condicional
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const countries: { code: CountryCode; label: string; flag: string }[] = [
@@ -78,8 +48,10 @@ const CountrySelector = () => {
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
-      const isInsideMain = selectorRef.current && selectorRef.current.contains(target);
-      const isInsideMobile = mobileMenuRef.current && mobileMenuRef.current.contains(target);
+      const isInsideMain =
+        selectorRef.current && selectorRef.current.contains(target);
+      const isInsideMobile =
+        mobileMenuRef.current && mobileMenuRef.current.contains(target);
       if (!isInsideMain && !isInsideMobile) {
         setIsOpen(false);
       }
@@ -117,16 +89,17 @@ const CountrySelector = () => {
         </svg>
       </button>
 
-      {isOpen && (
+      {isOpen &&
         (() => {
           const MenuContent = (
-            <div 
+            <div
               ref={isMobile ? mobileMenuRef : null}
               className={`
                 bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 overflow-hidden z-50
-                ${isMobile 
-                  ? "fixed bottom-0 left-0 right-0 w-full rounded-t-[2.5rem] border-t shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)] max-h-[85vh] flex flex-col animate-slide-up-mobile pb-8" 
-                  : "absolute bottom-full left-0 mb-2 w-full min-w-[200px] rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border animate-fade-in-up origin-bottom"
+                ${
+                  isMobile
+                    ? "fixed bottom-0 left-0 right-0 w-full rounded-t-[2.5rem] border-t shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)] max-h-[85vh] flex flex-col animate-slide-up-mobile pb-8"
+                    : "absolute bottom-full left-0 mb-2 w-full min-w-[200px] rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border animate-fade-in-up origin-bottom"
                 }
               `}
             >
@@ -141,11 +114,19 @@ const CountrySelector = () => {
                   }
                 `}</style>
               )}
-              
-              {isMobile && <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto my-4 shrink-0" />}
 
-              <div className={`p-1.5 overflow-y-auto custom-scrollbar ${isMobile ? "px-6 pb-4 max-h-[60vh]" : "max-h-[300px]"}`}>
-                {isMobile && <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 px-2">Selecciona tu región</h3>}
+              {isMobile && (
+                <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto my-4 shrink-0" />
+              )}
+
+              <div
+                className={`p-1.5 overflow-y-auto custom-scrollbar ${isMobile ? "px-6 pb-4 max-h-[60vh]" : "max-h-[300px]"}`}
+              >
+                {isMobile && (
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 px-2">
+                    Selecciona tu región
+                  </h3>
+                )}
                 {countries.map((c) => (
                   <button
                     key={c.code}
@@ -172,18 +153,19 @@ const CountrySelector = () => {
             </div>
           );
 
-          return isMobile ? createPortal(
-            <div className="relative z-[100]">
-              <div 
-                className="fixed inset-0 bg-black/60 backdrop-blur-[2px] animate-fade-in"
-                onClick={() => setIsOpen(false)}
-              />
-              {MenuContent}
-            </div>,
-            document.body
-          ) : MenuContent;
-        })()
-      )}
+          return isMobile
+            ? createPortal(
+                <div className="relative z-[100]">
+                  <div
+                    className="fixed inset-0 bg-black/60 backdrop-blur-[2px] animate-fade-in"
+                    onClick={() => setIsOpen(false)}
+                  />
+                  {MenuContent}
+                </div>,
+                document.body,
+              )
+            : MenuContent;
+        })()}
     </div>
   );
 };
@@ -259,27 +241,18 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Cambiar favicon dinámicamente según la festividad
   useEffect(() => {
     const updateFavicon = () => {
-      const color = isValentine
-        ? "#e11d48" // rose-600
-        : isChristmas
-          ? "#16a34a" // green-600
-          : "#2563eb"; // blue-600
-
-      const svg = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M16.5 2L15.5 4.5L13 5.5L15.5 6.5L16.5 9L17.5 6.5L20 5.5L17.5 4.5L16.5 2Z" fill="${color}"/><path d="M6 3L5.25 4.75L3.5 5.5L5.25 6.25L6 8L6.75 6.25L8.5 5.5L6.75 4.75L6 3Z" fill="${color}" fill-opacity="0.8"/><path d="M19.5 14L18.75 15.75L17 16.5L18.75 17.25L19.5 19L20.25 17.25L22 16.5L20.25 15.75L19.5 14Z" fill="${color}" fill-opacity="0.9"/><path d="M4 21L14.5 10.5M14.5 10.5L16.5 8.5C17.0523 7.94772 17.0523 7.05228 16.5 6.5C15.9477 5.94772 15.0523 5.94772 14.5 6.5L12.5 8.5M14.5 10.5L12.5 8.5" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-
+      // Si quieres mantener la lógica de colores, lo ideal es usar el favicon-32x32.png
+      // Pero para máxima compatibilidad con lo que subiste, forzamos el refresco:
       const link = document.querySelector(
         "link[rel~='icon']",
       ) as HTMLLinkElement;
       if (link) {
-        link.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
-      } else {
-        const newLink = document.createElement("link");
-        newLink.rel = "icon";
-        newLink.href = `data:image/svg+xml,${encodeURIComponent(svg)}`;
-        document.head.appendChild(newLink);
+        // Añadimos un query param para evitar cache si cambias el archivo en el futuro
+        link.href = isValentine
+          ? "/favicon-32x32.png?v=valentine"
+          : "/favicon-32x32.png";
       }
     };
-
     updateFavicon();
   }, [isValentine, isChristmas]);
 
@@ -305,7 +278,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       const isDark = document.documentElement.classList.contains("dark");
       // slate-900 (#0f172a) para oscuro, white (#ffffff) para claro
       const color = isDark ? "#0f172a" : "#ffffff";
-      
+
       let meta = document.querySelector("meta[name='theme-color']");
       if (!meta) {
         meta = document.createElement("meta");
@@ -319,7 +292,10 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
     // Observar cambios en la clase 'dark' del elemento html para reaccionar a cambios de tema
     const observer = new MutationObserver(updateThemeColor);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
 
     return () => observer.disconnect();
   }, []);
@@ -340,7 +316,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       : "selection:bg-blue-100 selection:text-blue-900 dark:selection:bg-indigo-500 dark:selection:text-white";
 
   return (
-    <div className={`min-h-screen flex flex-col ${selectionClass} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300`}>
+    <div
+      className={`min-h-screen flex flex-col ${selectionClass} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300`}
+    >
       <NotificationManager />
       <OfferBanner />
       {/* Header Principal */}
@@ -365,7 +343,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 }
               `}
               >
-                <MagicWandIcon className="w-6 h-6 md:w-7 md:h-7 transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                <Logo className="w-6 h-6 md:w-7 md:h-7 transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-lg md:text-xl tracking-tight text-slate-900 dark:text-white leading-none">
@@ -462,7 +440,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 className="inline-flex items-center gap-2.5 mb-6 group"
               >
                 <div className="w-8 h-8 bg-slate-900 dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-blue-600 transition-colors text-white">
-                  <MagicWandIcon className="w-5 h-5 transition-all duration-300 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+                  <Logo className="w-5 h-5 transition-all duration-300 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
                 </div>
                 <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">
                   {siteName}

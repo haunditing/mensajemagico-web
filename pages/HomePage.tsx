@@ -25,6 +25,7 @@ const HomePage: React.FC = () => {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       "name": CONFIG.SEO.BASE_TITLE,
+      "image": "https://www.mensajemagico.com/favicon.ico",
       "operatingSystem": "WEB",
       "applicationCategory": "CommunicationApplication",
       "aggregateRating": {
