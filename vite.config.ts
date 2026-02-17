@@ -48,19 +48,44 @@ export default defineConfig({
             src: "/android-chrome-192x192.png",
             sizes: "192x192",
             type: "image/png",
-            purpose: "any maskable",
+            purpose: "any",
+          },
+          {
+            src: "/android-chrome-192x192.png",
+            sizes: "192x192",
+            type: "image/png",
+            purpose: "maskable",
           },
           {
             src: "/android-chrome-512x512.png",
             sizes: "512x512",
             type: "image/png",
-            purpose: "any maskable",
+            purpose: "any",
+          },
+          {
+            src: "/android-chrome-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "maskable",
+          },
+        ],
+        screenshots: [
+          {
+            src: "/screenshot-mobile.png",
+            sizes: "1080x1920",
+            type: "image/png",
+          },
+          {
+            src: "/screenshot-desktop.png",
+            sizes: "1920x1080",
+            type: "image/png",
+            form_factor: "wide",
           },
         ],
       },
       workbox: {
         // Cachear todos los assets generados por Vite
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
         // Fallback para SPA: redirigir a index.html si la ruta no está en caché (offline)
         navigateFallback: "/index.html",
       },
