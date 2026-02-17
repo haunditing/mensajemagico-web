@@ -1,5 +1,5 @@
 import { MessageConfig } from "../types";
-import { api } from "../context/api"; // Tu wrapper de fetch o axios
+import { api, BASE_URL } from "../context/api"; // Tu wrapper de fetch o axios
 
 export const AI_ERROR_FALLBACK =
   "Lo siento, la inspiración está tomando un café. Por favor, intenta de nuevo.";
@@ -131,7 +131,7 @@ export const generateMessageStream = async (
 
   try {
     const token = localStorage.getItem("token");
-    const response = await fetch("/api/magic/generate-stream", {
+    const response = await fetch(`${BASE_URL}/api/magic/generate-stream`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

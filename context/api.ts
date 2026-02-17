@@ -11,7 +11,7 @@ const getHeaders = (): HeadersInit => {
 
 // En local usamos el proxy de Vite (ruta relativa) para evitar problemas de CORS.
 // En producción apuntamos directamente al backend en Railway.
-const BASE_URL = window.location.hostname === 'localhost' 
+export const BASE_URL = window.location.hostname === 'localhost' 
   ? '' 
   : 'https://web-production-e736.up.railway.app';
 
