@@ -22,3 +22,15 @@ root.render(
     </AuthProvider>
   </React.StrictMode>
 );
+
+// Eliminar Splash Screen con transición suave
+const loader = document.getElementById("app-loader");
+if (loader) {
+  loader.style.transition = "opacity 0.5s ease-out";
+  setTimeout(() => {
+    loader.style.opacity = "0";
+    setTimeout(() => {
+      loader.remove();
+    }, 500);
+  }, 150); // Pequeño retraso para asegurar que React ha montado
+}
