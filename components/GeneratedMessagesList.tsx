@@ -51,7 +51,6 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
             className={`bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl p-6 md:p-8 animate-fade-in-up shadow-sm relative overflow-hidden ${
               isPensamiento ? "text-center border-blue-200 dark:border-blue-700" : ""
             }`}
-            style={{ contentVisibility: "auto", containIntrinsicSize: "300px" } as any}
           >
             <div className="mb-8 relative z-10 group">
               <p

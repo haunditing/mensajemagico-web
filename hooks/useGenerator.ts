@@ -299,6 +299,17 @@ export const useGenerator = (
       ...prev,
     ]);
 
+    // Scroll imperativo UNA SOLA VEZ al iniciar (Mejor UX en móviles)
+    if (window.innerWidth < 768) {
+      setTimeout(() => {
+        const element = document.getElementById("results-section");
+        if (element) {
+          const y = element.getBoundingClientRect().top + window.scrollY - 100;
+          window.scrollTo({ top: y, behavior: "smooth" });
+        }
+      }, 100);
+    }
+
     let rawStream = "";
 
     try {
