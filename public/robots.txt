@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
+Allow: /manifest.json
+Allow: /manifest.webmanifest
+Allow: /sw.js
+Allow: /assets/
 Disallow: /api/
 Disallow: /success
 
