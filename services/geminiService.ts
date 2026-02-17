@@ -131,7 +131,12 @@ export const generateMessageStream = async (
 
   try {
     const token = localStorage.getItem("token");
-    const response = await fetch(`${BASE_URL}/api/magic/generate-stream`, {
+    const url = `${BASE_URL}/api/magic/generate-stream`;
+    
+    // [DEBUG] Verificar URL en producción
+    console.log("Stream Request URL:", url);
+
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

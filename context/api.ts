@@ -11,9 +11,9 @@ const getHeaders = (): HeadersInit => {
 
 // En local usamos el proxy de Vite (ruta relativa) para evitar problemas de CORS.
 // En producción apuntamos directamente al backend en Railway.
-export const BASE_URL = window.location.hostname === 'localhost' 
-  ? '' 
-  : 'https://web-production-e736.up.railway.app';
+export const BASE_URL = import.meta.env.PROD 
+  ? 'https://web-production-e736.up.railway.app' 
+  : '';
 
 async function handleResponse<T>(response: Response): Promise<T> {
   const contentType = response.headers.get("content-type");
