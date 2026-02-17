@@ -251,6 +251,11 @@ export const useGenerator = (
   const handleGenerate = async () => {
     if (safetyError || isLoading || isOccasionLocked) return;
 
+    if (isResponder && !receivedText.trim()) {
+      showToast("Por favor, escribe el mensaje que recibiste para continuar.", "error");
+      return;
+    }
+
     let delay = 0;
     if (!user) {
       const check = canGenerate();

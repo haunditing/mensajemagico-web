@@ -103,6 +103,24 @@ const Generator: React.FC<GeneratorProps> = ({
     handleClearHistory,
   } = useGenerator(occasion, initialRelationship, onRelationshipChange);
 
+  // Botón flotante para seguir la escritura si el usuario hace scroll hacia arriba
+  const [showScrollButton, setShowScrollButton] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!isLoading) {
+      setShowScrollButton(false);
+      return;
+    }
+
+    const handleScroll = () => {
+      const distanceToBottom = document.documentElement.scrollHeight - (window.innerHeight + window.scrollY);
+      setShowScrollButton(distanceToBottom > 150); // Mostrar si está a más de 150px del final
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isLoading]);
+
   return (
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>
       <div
@@ -341,6 +359,8 @@ const Generator: React.FC<GeneratorProps> = ({
           isOccasionLocked={isOccasionLocked}
           isPensamiento={isPensamiento}
           isGreeting={isGreeting}
+          disabled={isResponder && !receivedText.trim()}
+          disabledLabel={isResponder ? "Escribe el mensaje" : undefined}
         />
       </div>
 
@@ -385,6 +405,16 @@ const Generator: React.FC<GeneratorProps> = ({
         onEditMessage={setEditingMessageId}
         onClearHistory={handleClearHistory}
       />
+
+      {showScrollButton && (
+        <button
+          onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" })}
+          className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900/90 dark:bg-slate-700/90 backdrop-blur text-white px-5 py-2.5 rounded-full shadow-xl z-50 animate-fade-in-up text-xs font-bold flex items-center gap-2 border border-slate-700/50"
+        >
+          <span>⬇️</span>
+          <span>Ver escribiendo...</span>
+        </button>
+      )}
 
       {editingMessageId && (
         <GuardianEditorModal

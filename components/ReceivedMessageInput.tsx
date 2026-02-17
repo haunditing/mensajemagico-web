@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, forwardRef } from "react";
 import { useToast } from "../context/ToastContext";
 
 const EXAMPLES = [
@@ -20,13 +20,13 @@ interface ReceivedMessageInputProps {
   disabled?: boolean;
 }
 
-const ReceivedMessageInput: React.FC<ReceivedMessageInputProps> = ({
+const ReceivedMessageInput = forwardRef<HTMLTextAreaElement, ReceivedMessageInputProps>(({
   receivedText,
   setReceivedText,
   maxChars,
   safetyError,
   disabled = false,
-}) => {
+}, ref) => {
   const { showToast } = useToast();
   const [placeholder, setPlaceholder] = useState(() => EXAMPLES[Math.floor(Math.random() * EXAMPLES.length)]);
 
@@ -49,6 +49,7 @@ const ReceivedMessageInput: React.FC<ReceivedMessageInputProps> = ({
         <div className="relative">
           <textarea
             id="received-text"
+            ref={ref}
             value={receivedText}
             onChange={(e) => {
               // Limpieza: eliminar caracteres invisibles (zero-width spaces) que a veces vienen al pegar
@@ -91,6 +92,8 @@ const ReceivedMessageInput: React.FC<ReceivedMessageInputProps> = ({
       </div>
     </div>
   );
-};
+});
+
+ReceivedMessageInput.displayName = "ReceivedMessageInput";
 
 export default ReceivedMessageInput;

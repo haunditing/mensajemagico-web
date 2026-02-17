@@ -10,6 +10,8 @@ interface GenerateButtonProps {
   isOccasionLocked: boolean;
   isPensamiento: boolean;
   isGreeting: boolean;
+  disabled?: boolean;
+  disabledLabel?: string;
 }
 
 const MAGIC_TEXTS = [
@@ -36,18 +38,26 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
   isOccasionLocked,
   isPensamiento,
   isGreeting,
+  disabled = false,
+  disabledLabel,
 }) => {
   const buttonLabel = useMemo(() => {
     const options = isPensamiento ? THOUGHT_TEXTS : MAGIC_TEXTS;
     return options[Math.floor(Math.random() * options.length)];
   }, [isPensamiento]);
 
+  // Bloqueo "duro": El botón no hace nada (loading, sin créditos, etc.)
+  const isDomDisabled = isLoading || !!safetyError || (!!user && remainingCredits <= 0) || isOccasionLocked;
+  
+  // Bloqueo "visual": Incluye el estado 'disabled' (falta texto) para mostrarlo gris.
+  const isVisuallyDisabled = isDomDisabled || disabled;
+
   return (
     <button
       onClick={onClick}
-      disabled={isLoading || !!safetyError || (!!user && remainingCredits <= 0) || isOccasionLocked}
+      disabled={isVisuallyDisabled}
       className={`w-full h-14 md:h-16 rounded-xl font-bold text-lg flex items-center justify-center gap-3 transition-all
-        ${isLoading || safetyError || (!!user && remainingCredits <= 0) || isOccasionLocked ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700" : "bg-blue-600 dark:bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500 shadow-lg shadow-blue-600/20 dark:shadow-blue-900/30 active:scale-[0.98]"}`}
+        ${isVisuallyDisabled ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed border border-slate-200 dark:border-slate-700" : "bg-blue-600 dark:bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500 shadow-lg shadow-blue-600/20 dark:shadow-blue-900/30 active:scale-[0.98]"}`}
     >
       {isLoading ? (
         <div className="flex items-center gap-2">
@@ -58,7 +68,15 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
         </div>
       ) : (
         <span>
-          {safetyError ? "Contenido bloqueado" : isOccasionLocked ? "Ocasión Premium 🔒" : !!user && remainingCredits <= 0 ? "Sin créditos hoy" : buttonLabel}
+          {safetyError
+            ? "Contenido bloqueado"
+            : isOccasionLocked
+              ? "Ocasión Premium 🔒"
+              : !!user && remainingCredits <= 0
+                ? "Sin créditos hoy"
+                : disabled && disabledLabel
+                  ? disabledLabel
+                  : buttonLabel}
         </span>
       )}
     </button>
