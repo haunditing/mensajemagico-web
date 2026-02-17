@@ -1,4 +1,4 @@
-import PlanManager from "@/services/PlanManager";
+import PlanManager from "../services/PlanManager";
 import { useAuth } from "../context/AuthContext";
 
 /**

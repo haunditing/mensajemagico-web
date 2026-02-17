@@ -14,7 +14,8 @@ import UserMenu from "./UserMenu";
 import NotificationManager from "./NotificationManager";
 import OfferBanner from "./OfferBanner";
 import Logo from "./Logo";
-import { isOccasionActive } from "@/services/holidayService";
+import { isOccasionActive } from "../services/holidayService";
+import InstallPWA from "./InstallPWA";
 
 const CountrySelector = () => {
   const { country: currentCountry, setCountry } = useLocalization();
@@ -242,17 +243,39 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Cambiar favicon dinámicamente según la festividad
   useEffect(() => {
     const updateFavicon = () => {
-      // Si quieres mantener la lógica de colores, lo ideal es usar el favicon-32x32.png
-      // Pero para máxima compatibilidad con lo que subiste, forzamos el refresco:
-      const link = document.querySelector(
-        "link[rel~='icon']",
-      ) as HTMLLinkElement;
-      if (link) {
-        // Añadimos un query param para evitar cache si cambias el archivo en el futuro
-        link.href = isValentine
-          ? "/favicon-32x32.png?v=valentine"
-          : "/favicon-32x32.png";
+      const iconPath = isValentine
+        ? "/favicon-32x32.png?v=valentine"
+        : "/favicon-32x32.png";
+      
+      // Icono para iOS: Debe ser PNG, cuadrado, sin transparencia y min 180x180px
+      const appleIconPath = isValentine
+        ? "/apple-touch-icon-valentine.png"
+        : isChristmas
+          ? "/apple-touch-icon-christmas.png"
+          : "/apple-touch-icon.png";
+
+      // 1. Favicon (Pestaña del navegador)
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+
+      if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
       }
+      link.href = iconPath;
+
+      // 2. Apple Touch Icon (iOS y accesos directos móviles)
+      let appleLink = document.querySelector(
+        "link[rel='apple-touch-icon']",
+      ) as HTMLLinkElement;
+
+      if (!appleLink) {
+        appleLink = document.createElement("link");
+        appleLink.rel = "apple-touch-icon";
+        document.head.appendChild(appleLink);
+      }
+      // Se recomienda tener un archivo 'apple-touch-icon.png' (180x180) en /public
+      appleLink.href = appleIconPath;
     };
     updateFavicon();
   }, [isValentine, isChristmas]);
@@ -346,6 +369,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     >
       <NotificationManager />
       <OfferBanner />
+      <InstallPWA />
       {/* Header Principal */}
       <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 sticky top-0 z-50 shadow-sm transition-all duration-300">
         <div className="max-w-screen-2xl mx-auto">

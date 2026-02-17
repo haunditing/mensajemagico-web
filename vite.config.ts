@@ -1,33 +1,63 @@
-import path from "path";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { VitePWA } from "vite-plugin-pwa";
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, ".", "");
-  return {
-    server: {
-      port: 5173,
-      host: "0.0.0.0",
-      proxy: {
-        "/api": {
-          target: env.VITE_API_URL || "http://localhost:3000",
-          changeOrigin: true,
-          secure: false,
-        },
+// https://vitejs.dev/config/
+export default defineConfig({
+  server: {
+    proxy: {
+      "/api": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
       },
     },
-    plugins: [react()],
-    define: {
-      "process.env.API_KEY": JSON.stringify(env.GEMINI_API_KEY),
-      "process.env.GEMINI_API_KEY": JSON.stringify(env.GEMINI_API_KEY),
-      "process.env.ENABLE_UPGRADES": JSON.stringify(
-        env.ENABLE_UPGRADES || "true",
-      ),
-    },
-    resolve: {
-      alias: {
-        "@": path.resolve(__dirname, "."),
+  },
+  plugins: [
+    react(),
+    VitePWA({
+      registerType: "autoUpdate", // Actualiza el SW automáticamente cuando hay nueva versión
+      includeAssets: [
+        "favicon.ico",
+        "apple-touch-icon.png",
+        "apple-touch-icon-valentine.png",
+        "apple-touch-icon-christmas.png",
+        "favicon-16x16.png",
+        "favicon-32x32.png",
+      ],
+      manifest: {
+        name: "MensajeMágico",
+        short_name: "MensajeMágico",
+        description: "Genera mensajes y cartas personalizadas con IA.",
+        start_url: "/",
+        display: "standalone",
+        background_color: "#ffffff",
+        theme_color: "#0f172a",
+        orientation: "portrait",
+        icons: [
+          {
+            src: "/favicon-16x16.png",
+            sizes: "16x16",
+            type: "image/png",
+          },
+          {
+            src: "/favicon-32x32.png",
+            sizes: "32x32",
+            type: "image/png",
+          },
+          {
+            src: "/android-chrome-512x512.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any maskable",
+          },
+        ],
       },
-    },
-  };
+      workbox: {
+        // Cachear todos los assets generados por Vite
+        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        // Fallback para SPA: redirigir a index.html si la ruta no está en caché (offline)
+        navigateFallback: "/index.html",
+      },
+    }),
+  ],
 });

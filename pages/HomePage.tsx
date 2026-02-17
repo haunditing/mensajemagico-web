@@ -14,7 +14,7 @@ import { useAuth } from "../context/AuthContext";
 import { useUpsell } from "../context/UpsellContext";
 import FaqSection, { faqData } from "../components/FaqSection";
 import { useLocalization } from "../context/LocalizationContext";
-import { isOccasionActive } from "@/services/holidayService.ts";
+import { isOccasionActive } from "../services/holidayService.ts";
 
 const HomePage: React.FC = () => {
   useEffect(() => {

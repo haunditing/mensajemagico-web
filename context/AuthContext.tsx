@@ -11,7 +11,7 @@ import {
   setDailyLimit,
   resetDailyLimit,
 } from "../services/usageControlService";
-import PlanManager from "@/services/PlanManager";
+import PlanManager from "../services/PlanManager";
 
 // Definición de tipos alineada con el backend (plans.js)
 export type PlanLevel = "guest" | "freemium" | "premium";
