@@ -132,18 +132,59 @@
     gtag("config", "G-8BVTBB52L6");
   </script>
   <body class="bg-slate-50">
-      <!-- Splash Screen de Carga (Visible antes de que React inicie) -->
-      <div id="app-loader" style="position: fixed; inset: 0; z-index: 9999; background-color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-        <img src="/apple-touch-icon.png" alt="MensajeMágico" style="width: 80px; height: 80px; border-radius: 18px; margin-bottom: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-        <div style="width: 30px; height: 30px; border: 3px solid #e2e8f0; border-top-color: #4f46e5; border-radius: 50%; animation: spin 1s linear infinite; will-change: transform;"></div>
-      </div>
-      <style>
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @media (prefers-color-scheme: dark) {
-          #app-loader { background-color: #0f172a !important; }
-          #app-loader div { border-color: #334155; border-top-color: #818cf8; }
+    <!-- Splash Screen de Carga (Visible antes de que React inicie) -->
+    <div
+      id="app-loader"
+      style="
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+      "
+    >
+      <img
+        src="/apple-touch-icon.png"
+        alt="MensajeMágico"
+        style="
+          width: 80px;
+          height: 80px;
+          border-radius: 18px;
+          margin-bottom: 20px;
+          box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        "
+      />
+      <div
+        style="
+          width: 30px;
+          height: 30px;
+          border: 3px solid #e2e8f0;
+          border-top-color: #4f46e5;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          will-change: transform;
+        "
+      ></div>
+    </div>
+    <style>
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
         }
-      </style>
+      }
+      @media (prefers-color-scheme: dark) {
+        #app-loader {
+          background-color: #0f172a !important;
+        }
+        #app-loader div {
+          border-color: #334155;
+          border-top-color: #818cf8;
+        }
+      }
+    </style>
     <div id="root"></div>
     <script id="json-ld-data" type="application/ld+json">
       {
