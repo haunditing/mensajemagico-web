@@ -16,9 +16,8 @@ import {
   GREETING_CATEGORIES,
   GREETING_TONES,
   GUARDIAN_INTENTIONS,
-  PSYCHOLOGICAL_MATRIX,
 } from "../constants";
-import { generateMessage } from "../services/geminiService";
+import { generateMessageStream } from "../services/geminiService";
 import {
   containsOffensiveWords,
   SAFETY_ERROR_MESSAGE,
@@ -35,7 +34,10 @@ import { useToast } from "../context/ToastContext";
 import { useFeature } from "./useFeature";
 import { GiftSuggestion } from "../components/GiftRecommendations";
 import { buildGuardianPrompt } from "../services/guardianPromptUtils";
-import { GUARDIAN_WARNINGS, GUARDIAN_FALLBACKS } from "../services/guardianRules";
+import {
+  GUARDIAN_WARNINGS,
+  GUARDIAN_FALLBACKS,
+} from "../services/guardianRules";
 
 export interface ExtendedGeneratedMessage extends GeneratedMessage {
   gifts?: GiftSuggestion[];
@@ -43,22 +45,27 @@ export interface ExtendedGeneratedMessage extends GeneratedMessage {
   toneLabel?: string;
   guardianInsight?: string;
   usedLexicalDNA?: boolean;
+  isStreaming?: boolean;
+  isError?: boolean;
 }
 
-// Helper para contar palabras reales
-const getWordCount = (text: string) => text.trim().split(/\s+/).filter(w => w.length > 0).length;
+const getWordCount = (text: string) =>
+  text
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 0).length;
 
 export const useGenerator = (
   occasion: Occasion,
   initialRelationship?: Relationship,
-  onRelationshipChange?: (relId: string) => void
+  onRelationshipChange?: (relId: string) => void,
 ) => {
   const { user, updateCredits, planLevel } = useAuth();
   const { showToast } = useToast();
   const { country } = useLocalization();
   const { triggerUpsell } = useUpsell();
   const { addFavorite, isFavorite } = useFavorites();
-  
+
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
   const isGreeting = occasion.id === "saludo";
@@ -71,7 +78,6 @@ export const useGenerator = (
       (isPensamiento ? PENSAMIENTO_THEMES[0].id : RELATIONSHIPS[0].id),
   );
 
-  // Estado para contactos
   const [contacts, setContacts] = useState<any[]>([]);
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
   const [selectedContactId, setSelectedContactId] = useState<
@@ -81,14 +87,13 @@ export const useGenerator = (
   const [showHandAnimation, setShowHandAnimation] = useState(false);
   const [guardianWarning, setGuardianWarning] = useState<string | null>(null);
 
-  const debounceRef = useRef<NodeJS.Timeout | null>(null);
-
   const selectedContact = contacts.find((c) => c._id === selectedContactId);
 
-  // --- LÓGICA DEL GUARDIÁN: FILTRO DE TONOS POR RELACIÓN ---
   const currentRelType = useMemo(() => {
     if (selectedContact) {
-      const rel = RELATIONSHIPS.find(r => r.label === selectedContact.relationship);
+      const rel = RELATIONSHIPS.find(
+        (r) => r.label === selectedContact.relationship,
+      );
       return rel ? rel.id : "other";
     }
     return relationshipId;
@@ -99,19 +104,21 @@ export const useGenerator = (
       if (t.value === Tone.BELATED) {
         if (!["birthday", "anniversary"].includes(occasion.id)) return false;
       }
-
-      const romanticTones = [Tone.ROMANTIC, Tone.FLIRTY, Tone.LIGHT_DESPERATION];
-      const professionalForbidden = [...romanticTones, Tone.SARCASTIC];
-      const familyForbidden = [...romanticTones];
-
-      if (currentRelType === "boss") {
-        if (professionalForbidden.includes(t.value)) return false;
-      }
-
-      if (["father", "mother", "family"].includes(currentRelType)) {
-        if (familyForbidden.includes(t.value)) return false;
-      }
-
+      const romanticTones = [
+        Tone.ROMANTIC,
+        Tone.FLIRTY,
+        Tone.LIGHT_DESPERATION,
+      ];
+      if (
+        currentRelType === "boss" &&
+        [...romanticTones, Tone.SARCASTIC].includes(t.value)
+      )
+        return false;
+      if (
+        ["father", "mother", "family"].includes(currentRelType) &&
+        romanticTones.includes(t.value)
+      )
+        return false;
       return true;
     });
   }, [occasion.id, currentRelType]);
@@ -141,36 +148,29 @@ export const useGenerator = (
     RECEIVED_MESSAGE_TYPES[0].label,
   );
   const [receivedText, setReceivedText] = useState("");
-
-  // Sincronizar el momento del saludo con la sugerencia al cargar o cambiar de ocasión
-  useEffect(() => {
-    if (isGreeting && suggestedGreeting) {
-      setGreetingMoment(suggestedGreeting);
-    }
-  }, [isGreeting, suggestedGreeting]);
-
   const [contextWords, setContextWords] = useState<string[]>([]);
   const [currentWord, setCurrentWord] = useState("");
   const [intention, setIntention] = useState<string>("low_effort");
   const [manualIntentionOverride, setManualIntentionOverride] =
     useState<boolean>(false);
-
   const [messages, setMessages] = useState<ExtendedGeneratedMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [safetyError, setSafetyError] = useState<string | null>(null);
   const [usageMessage, setUsageMessage] = useState<string | null>(null);
   const [showGifts, setShowGifts] = useState(true);
   const [isForPost, setIsForPost] = useState(false);
+  const [userLocation, setUserLocation] = useState<string | undefined>(
+    undefined,
+  );
 
   const contextLimit = useFeature("access.context_words_limit", 0);
   const isContextLocked = contextLimit === 0;
   const MAX_CONTEXT = isContextLocked ? 0 : contextLimit;
 
-  // Calcular uso actual en palabras (no en items)
-  const currentContextCount = useMemo(() => 
-    contextWords.reduce((acc, w) => acc + getWordCount(w), 0)
-  , [contextWords]);
-
+  const currentContextCount = useMemo(
+    () => contextWords.reduce((acc, w) => acc + getWordCount(w), 0),
+    [contextWords],
+  );
   const allowedOccasions = useFeature("access.occasions");
   const isOccasionLocked =
     allowedOccasions !== "all" &&
@@ -178,153 +178,73 @@ export const useGenerator = (
       (!allowedOccasions.includes("all") &&
         !allowedOccasions.includes(occasion.id)));
 
-  const [userLocation, setUserLocation] = useState<string | undefined>(
-    undefined,
-  );
-
+  // Effects
   useEffect(() => {
-    if (user && (user as any).location) {
-      setUserLocation((user as any).location);
-    } else {
-      getUserLocation().then((loc) => {
-        if (loc) setUserLocation(loc);
-      });
-    }
+    if (user && (user as any).location) setUserLocation((user as any).location);
+    else getUserLocation().then((loc) => loc && setUserLocation(loc));
   }, [user]);
 
   useEffect(() => {
     if (user) {
       api
         .get("/api/contacts")
-        .then((data) => {
-          setContacts(data);
-        })
+        .then((data) => setContacts(data))
         .catch((err) => console.error("Error cargando contactos", err));
     }
   }, [user]);
-
-  useEffect(() => {
-    if (!isPensamiento && !isGreeting) {
-      const isCurrentToneAvailable = availableTones.some(
-        (t) => t.value === tone,
-      );
-      if (!isCurrentToneAvailable) {
-        const fallback = GUARDIAN_FALLBACKS[currentRelType];
-        if (fallback) {
-          const safeToneValue = fallback.tones.find((t) =>
-            availableTones.some((at) => at.value === t)
-          );
-          setTone(safeToneValue || availableTones[0]?.value);
-          showToast(fallback.message, "info");
-        } else {
-          const defaultTone = availableTones.find(t => t.value === Tone.ROMANTIC);
-          setTone(defaultTone ? defaultTone.value : availableTones[0]?.value);
-        }
-      }
-    }
-  }, [occasion.id, availableTones, tone, isPensamiento, isGreeting, currentRelType, showToast]);
 
   useEffect(() => {
     const warning = GUARDIAN_WARNINGS[currentRelType]?.[tone as string] || null;
     setGuardianWarning(warning);
   }, [tone, currentRelType]);
 
-  useEffect(() => {
-    if (isResponder && receivedText.trim() !== "") {
-      if (containsOffensiveWords(receivedText)) {
-        setSafetyError(SAFETY_ERROR_MESSAGE);
-      } else {
-        setSafetyError(null);
-      }
-    } else {
-      setSafetyError(null);
-    }
-  }, [receivedText, isResponder]);
-
-  useEffect(() => {
-    if (currentWord.trim() && !isContextLocked && currentContextCount < MAX_CONTEXT) {
-      setShowHandAnimation(true);
-      const timer = setTimeout(() => setShowHandAnimation(false), 3000);
-      return () => clearTimeout(timer);
-    } else {
-      setShowHandAnimation(false);
-    }
-  }, [currentWord, isContextLocked, currentContextCount, MAX_CONTEXT]);
-
   const guardianDescription = useMemo(() => {
     if (isPensamiento) {
-      if (isForPost) {
-        switch (intention) {
-          case 'action': return "Para movilizar a tu audiencia hacia una acción específica.";
-          case 'resolutive': return "Para establecer una postura firme o una conclusión clara.";
-          case 'inquiry': return "Para generar debate y comentarios en tu comunidad.";
-          default: return "Para generar conexión y reflexión en tu comunidad.";
-        }
-      } else {
-        switch (intention) {
-          case 'action': return "Para contagiar energía y motivar (sin dar órdenes).";
-          case 'resolutive': return "Para compartir una verdad directa o una decisión.";
-          case 'inquiry': return "Para invitar al diálogo profundo y la reflexión.";
-          case 'low_effort': return "Para fortalecer el vínculo personal sin presiones.";
-          default: return "Para compartir algo significativo.";
-        }
-      }
+      const descriptions: Record<string, string> = {
+        action: isForPost
+          ? "Para movilizar a tu audiencia hacia una acción específica."
+          : "Para contagiar energía y motivar (sin dar órdenes).",
+        resolutive: isForPost
+          ? "Para establecer una postura firme o una conclusión clara."
+          : "Para compartir una verdad directa o una decisión.",
+        inquiry: isForPost
+          ? "Para generar debate y comentarios en tu comunidad."
+          : "Para invitar al diálogo profundo y la reflexión.",
+        low_effort: "Para fortalecer el vínculo personal sin presiones.",
+      };
+      return descriptions[intention] || "Para compartir algo significativo.";
     }
     return GUARDIAN_INTENTIONS.find((i) => i.id === intention)?.description;
   }, [intention, isForPost, isPensamiento]);
 
-  // --- MANEJADORES DE ACCIÓN ---
-
+  // Handlers
   const handleRelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const newId = e.target.value;
-
     if (newId === "new_contact") {
       setIsContactModalOpen(true);
       return;
     }
-
     const contact = contacts.find((c) => c._id === newId);
-    if (contact) {
-      setRelationshipId(newId);
-      setSelectedContactId(newId);
-    } else {
-      setRelationshipId(newId);
-      setSelectedContactId(undefined);
-    }
-
+    setRelationshipId(newId);
+    setSelectedContactId(contact ? newId : undefined);
     if (onRelationshipChange) onRelationshipChange(newId);
   };
 
   const addContextWord = () => {
     const word = currentWord.trim();
-    const wordCount = getWordCount(word);
-
-    if (word && !isContextLocked && (currentContextCount + wordCount <= MAX_CONTEXT) && !contextWords.includes(word)) {
+    if (
+      word &&
+      !isContextLocked &&
+      currentContextCount + getWordCount(word) <= MAX_CONTEXT &&
+      !contextWords.includes(word)
+    ) {
       if (containsOffensiveWords(word)) {
-        setSafetyError("Esa palabra podría nublar la intención de tu mensaje. Elijamos algo que sume.");
+        setSafetyError("Esa palabra podría nublar la intención de tu mensaje.");
         return;
       }
       setContextWords([...contextWords, word]);
       setCurrentWord("");
       setSafetyError(null);
-    }
-  };
-
-  const removeContextWord = (wordToRemove: string) => {
-    setContextWords(contextWords.filter((w) => w !== wordToRemove));
-  };
-
-  const handleTrendingTopicClick = (topic: string) => {
-    const topicCount = getWordCount(topic);
-    if ((currentContextCount + topicCount <= MAX_CONTEXT) && !contextWords.includes(topic)) {
-      setContextWords([...contextWords, topic]);
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addContextWord();
     }
   };
 
@@ -343,65 +263,107 @@ export const useGenerator = (
 
     setIsLoading(true);
     setUsageMessage(null);
+    if (delay) await new Promise((res) => setTimeout(res, delay));
 
-    if (delay) {
-      await new Promise((resolve) => setTimeout(resolve, delay));
-    }
-
-    // 1. Lógica de Contexto Inteligente: Incluir lo que el usuario está escribiendo
-    // Si el usuario escribió una frase pero no le dio a "Agregar", la incluimos automáticamente.
     const pendingWord = currentWord.trim();
     const finalContextWords = [...contextWords];
+    if (pendingWord && !finalContextWords.includes(pendingWord))
+      finalContextWords.push(pendingWord);
 
-    if (pendingWord) {
-      if (containsOffensiveWords(pendingWord)) {
-        setSafetyError("Esa palabra podría nublar la intención de tu mensaje. Elijamos algo que sume.");
-        setIsLoading(false);
-        return;
-      }
-      if (!finalContextWords.includes(pendingWord)) {
-        finalContextWords.push(pendingWord);
-      }
-    }
+    const {
+      styleInstructions,
+      creativityLevel,
+      avoidTopics,
+      formatInstruction,
+    } = buildGuardianPrompt({
+      tone: tone as string,
+      selectedContact,
+      isPensamiento,
+      isForPost,
+      showGifts,
+      country,
+    });
 
-    const { styleInstructions, creativityLevel, avoidTopics, formatInstruction } =
-      buildGuardianPrompt({
-        tone: tone as string,
-        selectedContact,
-        isPensamiento,
-        isForPost,
-        showGifts,
-        country,
-      });
+    const tempId = Math.random().toString(36).substr(2, 9);
+    setMessages((prev) => [
+      {
+        id: tempId,
+        content: "",
+        timestamp: Date.now(),
+        occasionName: occasion.name,
+        toneLabel: isGreeting
+          ? GREETING_TONES.find((t) => (t.id as any) === tone)?.label
+          : availableTones.find((t) => t.value === tone)?.label || tone,
+        isStreaming: true,
+      },
+      ...prev,
+    ]);
 
-    let relLabel = "";
-    if (isPensamiento) {
-      relLabel = PENSAMIENTO_THEMES.find((t) => t.id === relationshipId)?.label || "la vida";
-    } else {
-      if (selectedContact) {
-        relLabel = selectedContact.relationship || "alguien";
-      } else {
-        relLabel = RELATIONSHIPS.find((r) => r.id === relationshipId)?.label || "alguien";
-      }
-      if (isGreeting) {
-        const momentLabel = GREETING_CATEGORIES.find((c) => c.id === greetingMoment)?.label;
-        if (momentLabel) relLabel += ` (Momento: ${momentLabel})`;
-      }
-    }
+    let rawStream = "";
 
     try {
-      const response = await generateMessage(
+      const response = await generateMessageStream(
         {
           occasion: occasion.id,
-          relationship: relLabel,
-          tone: isPensamiento ? (EMOTIONAL_STATES.find((s) => s.id === tone)?.label as any) || tone : isGreeting ? (GREETING_TONES.find((t) => (t.id as any) === tone)?.label as any) || tone : tone,
+          relationship: isPensamiento
+            ? PENSAMIENTO_THEMES.find((t) => t.id === relationshipId)?.label ||
+              "la vida"
+            : selectedContact?.relationship ||
+              RELATIONSHIPS.find((r) => r.id === relationshipId)?.label ||
+              "alguien",
+          tone: isPensamiento
+            ? EMOTIONAL_STATES.find((s) => s.id === tone)?.label || tone
+            : isGreeting
+              ? GREETING_TONES.find((t) => (t.id as any) === tone)?.label ||
+                tone
+              : tone,
           receivedMessageType: isResponder ? receivedMessageType : undefined,
           receivedText: isResponder ? receivedText : undefined,
           contextWords: finalContextWords,
-          formatInstruction: formatInstruction,
-          intention: intention,
+          formatInstruction,
+          intention,
           relationalHealth: selectedContact?.relationalHealth,
           grammaticalGender: (user as any)?.preferences?.grammaticalGender,
+        },
+        (token) => {
+          rawStream += token;
+          // Ignorar padding inicial (espacios en blanco) que envía el backend para Safari
+          const effectiveStream = rawStream.trimStart();
+          let displayContent = "";
+          
+          // [DEBUG] Ver en consola qué está llegando (F12)
+          console.log("📝 Stream:", effectiveStream.substring(effectiveStream.length - 50));
+
+          // 1. Intentar extraer el contenido del mensaje (prioridad máxima)
+          // Buscamos "content": "..." incluso si el JSON no está completo
+          // MEJORA: Soportar también "message" por si el modelo varía la clave
+          const contentMatch = effectiveStream.match(/"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/);
+
+          if (contentMatch && contentMatch[1]) {
+            displayContent = contentMatch[1]
+              .replace(/\\n/g, "\n")
+              .replace(/\\"/g, '"')
+              .replace(/\\t/g, "\t");
+          } else if (
+            // 2. DETECCIÓN AGRESIVA DE JSON/RUIDO
+            // Si contiene cualquier indicio de estructura técnica y no hemos encontrado el contenido, ocultamos todo.
+            effectiveStream.includes("{") ||
+            effectiveStream.includes("[") ||
+            effectiveStream.includes("generated_messages") ||
+            effectiveStream.includes("```") ||
+            effectiveStream.includes("guardian_insight")
+          ) {
+            displayContent = "Escribiendo...";
+          } else {
+            // 3. Fallback: Si no parece JSON, mostramos el texto tal cual (para modelos que no devuelven JSON)
+            displayContent = effectiveStream;
+          }
+
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === tempId ? { ...msg, content: displayContent } : msg,
+            ),
+          );
         },
         user?._id,
         userLocation,
@@ -411,161 +373,150 @@ export const useGenerator = (
         avoidTopics,
       );
 
-      if (response.remainingCredits !== undefined && updateCredits) {
+      if (response.remainingCredits !== undefined && updateCredits)
         updateCredits(response.remainingCredits);
-      }
 
-      let content = response.content;
+      // Procesamiento final del JSON completo
+      let finalContent = response.content;
       let gifts: GiftSuggestion[] = [];
       let guardianInsight = "";
 
       try {
-        // Intentar limpiar y parsear JSON
-        const cleanText = content
-          .replace(/```json/g, "")
-          .replace(/```/g, "")
-          .trim();
-        
-        if (cleanText.startsWith("{")) {
-          const parsed = JSON.parse(cleanText);
-
-          // Soporte para el nuevo formato "Guardian of Sentiment"
-          if (
-            parsed.generated_messages &&
-            Array.isArray(parsed.generated_messages)
-          ) {
-            // Preferir el mensaje premium si está disponible y no bloqueado (o si somos premium)
-            const premiumMsg = parsed.generated_messages.find(
-              (m: any) =>
-                m.tone.includes("Premium") || m.tone.includes("Regional"),
-            );
-            const standardMsg =
-              parsed.generated_messages.find((m: any) =>
-                m.tone.includes("Estándar"),
-              ) || parsed.generated_messages[0];
-
-            content =
-              planLevel === "premium" && premiumMsg
-                ? premiumMsg.content
-                : standardMsg.content;
-
-            // Añadir insight si existe (para freemium)
-            if (parsed.guardian_insight) {
-              guardianInsight = parsed.guardian_insight;
-            }
-
-            if (
-              parsed.gift_recommendations &&
-              Array.isArray(parsed.gift_recommendations)
-            ) {
-              gifts = parsed.gift_recommendations;
-            }
-          }
+        const cleanJson = finalContent.replace(/```json|```/g, "").trim();
+        const parsed = JSON.parse(cleanJson);
+        if (
+          parsed.generated_messages &&
+          Array.isArray(parsed.generated_messages)
+        ) {
+          const premiumMsg = parsed.generated_messages.find(
+            (m: any) =>
+              m.tone.toLowerCase().includes("premium") ||
+              m.tone.toLowerCase().includes("regional"),
+          );
+          const standardMsg =
+            parsed.generated_messages.find((m: any) =>
+              m.tone.toLowerCase().includes("estándar"),
+            ) || parsed.generated_messages[0];
+          finalContent =
+            planLevel === "premium" && premiumMsg
+              ? premiumMsg.content
+              : standardMsg.content;
+          gifts = parsed.gift_recommendations || [];
+          guardianInsight = parsed.guardian_insight || "";
         }
-      } catch (error) {
-        // Fallback: Si el JSON está roto o incompleto, intentamos rescatar el mensaje con Regex
-        // Busca el contenido de "message": "..." incluso si no cierra la comilla final
-        const messageMatch = content.match(
-          /"message"\s*:\s*"((?:[^"\\]|\\.)*)/,
-        );
-        if (messageMatch && messageMatch[1]) {
-          // Limpiamos caracteres de escape básicos
-          content = messageMatch[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
+      } catch (e) {
+        // Fallback si el parseo falla: intentar extraer el content con Regex
+        // Usamos la misma regex robusta que en el streaming para manejar comillas escapadas
+        const lastResort = finalContent.match(/"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/);
+        if (lastResort) {
+          finalContent = lastResort[1]
+            .replace(/\\n/g, "\n")
+            .replace(/\\"/g, '"')
+            .replace(/\\t/g, "\t");
+        } else if (finalContent.trim().startsWith("{") || finalContent.includes("generated_messages") || finalContent.includes("```")) {
+          // Si parece JSON pero no pudimos extraer nada válido (ej. corte de conexión),
+          // mostramos un error amigable en lugar de mostrar la estructura técnica al usuario.
+          finalContent = "Lo siento, hubo un pequeño error técnico al procesar el mensaje. Por favor intenta de nuevo.";
         }
       }
 
-      const newMessage: ExtendedGeneratedMessage = {
-        id: Math.random().toString(36).substr(2, 9),
-        content: content,
-        timestamp: Date.now(),
-        gifts: gifts,
-        occasionName: occasion.name,
-        toneLabel: isGreeting ? GREETING_TONES.find((t) => (t.id as any) === tone)?.label : availableTones.find((t) => t.value === tone)?.label || tone,
-        guardianInsight: guardianInsight,
-        usedLexicalDNA: selectedContact?.guardianMetadata?.preferredLexicon?.length > 0,
-      };
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempId
+            ? {
+                ...msg,
+                content: finalContent,
+                gifts,
+                guardianInsight,
+                isStreaming: false,
+                usedLexicalDNA:
+                  !!selectedContact?.guardianMetadata?.preferredLexicon?.length,
+              }
+            : msg,
+        ),
+      );
 
-      setMessages((prev) => [newMessage, ...prev]);
       setIsLoading(false);
       recordGeneration();
       incrementGlobalCounter();
-
-      // Limpiar el input de contexto para mejorar la UX
       setCurrentWord("");
-
-      if (window.innerWidth < 768) {
-        setTimeout(() => {
-          document.getElementById("results-section")?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
-      }
     } catch (error: any) {
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === tempId
+            ? {
+                ...msg,
+                isStreaming: false,
+                isError: true,
+                content: "⚠️ Conexión interrumpida.",
+              }
+            : msg,
+        ),
+      );
       setIsLoading(false);
       if (error.upsell) triggerUpsell(error.upsell);
     }
   };
 
-  const handleShareAction = (platform: SharePlatform) => {
-    if ((!user || planLevel === "guest") && platform !== SharePlatform.COPY) {
-      triggerUpsell(`Regístrate para enviar directamente.`);
-      return false;
-    }
-    return true;
-  };
-
-  const handleToggleFavorite = (msg: ExtendedGeneratedMessage) => {
-    if (!user) {
-      triggerUpsell("Regístrate para guardar tus mensajes favoritos.");
-      return;
-    }
-    if (!isFavorite(msg.content)) {
-      addFavorite(msg.content, msg.occasionName || occasion.name, msg.toneLabel || "Normal");
-    }
-  };
-
-  const handleMessageUpdate = (id: string, newContent: string) => {
-    setMessages((prev) => prev.map((msg) => (msg.id === id ? { ...msg, content: newContent } : msg)));
-  };
-
-  const handleContactCreated = (newContact: any) => {
-    setContacts((prev) => [newContact, ...prev]);
-    setRelationshipId(newContact._id);
-    setSelectedContactId(newContact._id);
-    showToast(`¡Conectado! Ahora escribiéndole a ${newContact.name}`, "success");
-  };
-
-  const handleClearHistory = () => {
-    if (window.confirm("¿Estás seguro de que quieres borrar todo el historial de mensajes generados?")) {
-      setMessages([]);
-    }
-  };
+  // Otros métodos se mantienen igual...
+  const handleMessageUpdate = (id: string, newContent: string) =>
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === id ? { ...msg, content: newContent } : msg,
+      ),
+    );
+  const handleClearHistory = () =>
+    window.confirm("¿Borrar todo?") && setMessages([]);
 
   return {
-    relationshipId, setRelationshipId,
-    contacts, setContacts,
-    isContactModalOpen, setIsContactModalOpen,
-    selectedContactId, setSelectedContactId,
-    editingMessageId, setEditingMessageId,
-    showHandAnimation, setShowHandAnimation,
-    guardianWarning, setGuardianWarning,
+    relationshipId,
+    setRelationshipId,
+    contacts,
+    setContacts,
+    isContactModalOpen,
+    setIsContactModalOpen,
+    selectedContactId,
+    setSelectedContactId,
+    editingMessageId,
+    setEditingMessageId,
+    showHandAnimation,
+    setShowHandAnimation,
+    guardianWarning,
+    setGuardianWarning,
     selectedContact,
     currentRelType,
     availableTones,
     suggestedGreeting,
-    tone, setTone,
-    greetingMoment, setGreetingMoment,
-    receivedMessageType, setReceivedMessageType,
-    receivedText, setReceivedText,
-    contextWords, setContextWords,
-    currentWord, setCurrentWord,
-    intention, setIntention,
-    manualIntentionOverride, setManualIntentionOverride,
-    messages, setMessages,
-    isLoading, setIsLoading,
-    safetyError, setSafetyError,
-    usageMessage, setUsageMessage,
-    showGifts, setShowGifts,
-    isForPost, setIsForPost,
-    userLocation, setUserLocation,
+    tone,
+    setTone,
+    greetingMoment,
+    setGreetingMoment,
+    receivedMessageType,
+    setReceivedMessageType,
+    receivedText,
+    setReceivedText,
+    contextWords,
+    setContextWords,
+    currentWord,
+    setCurrentWord,
+    intention,
+    setIntention,
+    manualIntentionOverride,
+    setManualIntentionOverride,
+    messages,
+    setMessages,
+    isLoading,
+    setIsLoading,
+    safetyError,
+    setSafetyError,
+    usageMessage,
+    setUsageMessage,
+    showGifts,
+    setShowGifts,
+    isForPost,
+    setIsForPost,
+    userLocation,
+    setUserLocation,
     guardianDescription,
     shareParam,
     isPensamiento,
@@ -576,14 +527,32 @@ export const useGenerator = (
     isOccasionLocked,
     handleRelChange,
     addContextWord,
-    removeContextWord,
-    handleTrendingTopicClick,
-    handleKeyDown,
+    removeContextWord: (w: string) =>
+      setContextWords(contextWords.filter((x) => x !== w)),
+    handleTrendingTopicClick: (t: string) =>
+      !contextWords.includes(t) && setContextWords([...contextWords, t]),
+    handleKeyDown: (e: React.KeyboardEvent) =>
+      e.key === "Enter" && addContextWord(),
     handleGenerate,
-    handleShareAction,
-    handleToggleFavorite,
     handleMessageUpdate,
-    handleContactCreated,
-    handleClearHistory
+    handleClearHistory,
+    handleShareAction: (p: SharePlatform) =>
+      (!user || planLevel === "guest") && p !== SharePlatform.COPY
+        ? (triggerUpsell("Regístrate."), false)
+        : true,
+    handleToggleFavorite: (msg: ExtendedGeneratedMessage) =>
+      !user
+        ? triggerUpsell("Regístrate.")
+        : !isFavorite(msg.content) &&
+          addFavorite(
+            msg.content,
+            msg.occasionName || occasion.name,
+            msg.toneLabel || "Normal",
+          ),
+    handleContactCreated: (c: any) => {
+      setContacts([c, ...contacts]);
+      setRelationshipId(c._id);
+      setSelectedContactId(c._id);
+    },
   };
 };

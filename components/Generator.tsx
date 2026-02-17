@@ -103,6 +103,13 @@ const Generator: React.FC<GeneratorProps> = ({
     handleClearHistory,
   } = useGenerator(occasion, initialRelationship, onRelationshipChange);
 
+  // Auto-scroll para móviles durante el streaming
+  React.useEffect(() => {
+    if (isLoading && messages.length > 0 && messages[0].isStreaming && window.innerWidth < 768) {
+      window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" });
+    }
+  }, [messages, isLoading]);
+
   return (
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>
       <div
@@ -373,7 +380,7 @@ const Generator: React.FC<GeneratorProps> = ({
 
       <GeneratedMessagesList
         messages={messages}
-        isLoading={isLoading}
+        isLoading={isLoading && messages.length === 0}
         showGifts={showGifts}
         country={country}
         isPensamiento={isPensamiento}
