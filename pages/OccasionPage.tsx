@@ -164,6 +164,7 @@ const OccasionPage: React.FC = () => {
 
       <div className="mt-12">
         <Generator
+          key={rawOccasion.id}
           occasion={{ ...rawOccasion, name: localized.name }}
           onRelationshipChange={handleRelationshipChange}
           initialRelationship={fixedRel}

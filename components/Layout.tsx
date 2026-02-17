@@ -14,6 +14,7 @@ import UserMenu from "./UserMenu";
 import NotificationManager from "./NotificationManager";
 import OfferBanner from "./OfferBanner";
 import Logo from "./Logo";
+import { isOccasionActive } from "@/services/holidayService";
 
 const CountrySelector = () => {
   const { country: currentCountry, setCountry } = useLocalization();
@@ -313,16 +314,20 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   useEffect(() => {
     // Definir el dominio canónico de producción explícitamente para evitar duplicados
     const PRODUCTION_ORIGIN = "https://mensajemagico.com";
-    
+
     // Usar el origen actual solo si estamos en localhost (desarrollo), de lo contrario forzar producción
-    const baseOrigin = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1" 
-      ? window.location.origin 
-      : PRODUCTION_ORIGIN;
+    const baseOrigin =
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1"
+        ? window.location.origin
+        : PRODUCTION_ORIGIN;
 
     // Construimos la URL limpia (sin query params) para canonical y OG
     const cleanUrl = `${baseOrigin}${location.pathname}`;
-    
-    const canonicalLink = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
+
+    const canonicalLink = document.querySelector(
+      "link[rel='canonical']",
+    ) as HTMLLinkElement;
     if (canonicalLink) canonicalLink.href = cleanUrl;
 
     const ogUrlMeta = document.querySelector("meta[property='og:url']");
@@ -379,31 +384,33 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             <div className="flex items-center gap-4">
               <nav className="hidden lg:flex items-center gap-1.5">
-                {OCCASIONS.slice(0, 6).map((o) => {
-                  const localized = getLocalizedOccasion(o, currentCountry);
-                  const isActive = location.pathname.startsWith(
-                    `/mensajes/${o.slug}`,
-                  );
-                  return (
-                    <Link
-                      key={o.id}
-                      to={`/mensajes/${o.slug}`}
-                      className={`px-2 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 group
+                {OCCASIONS.filter((o) => isOccasionActive(o.id, currentCountry))
+                  .slice(0, 6)
+                  .map((o) => {
+                    const localized = getLocalizedOccasion(o, currentCountry);
+                    const isActive = location.pathname.startsWith(
+                      `/mensajes/${o.slug}`,
+                    );
+                    return (
+                      <Link
+                        key={o.id}
+                        to={`/mensajes/${o.slug}`}
+                        className={`px-2 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 group
                         ${
                           isActive
                             ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
                             : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
                         }`}
-                    >
-                      <OccasionIcon
-                        slug={o.slug}
-                        className="w-4 h-4"
-                        isActive={isActive}
-                      />
-                      {localized.name}
-                    </Link>
-                  );
-                })}
+                      >
+                        <OccasionIcon
+                          slug={o.slug}
+                          className="w-4 h-4"
+                          isActive={isActive}
+                        />
+                        {localized.name}
+                      </Link>
+                    );
+                  })}
               </nav>
               <UserMenu />
             </div>
@@ -412,7 +419,9 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           {/* Navegación Móvil Horizontal */}
           <div className="lg:hidden border-t border-slate-50 dark:border-slate-800 nav-mask">
             <nav className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-4 snap-x items-center justify-start">
-              {OCCASIONS.map((o) => {
+              {OCCASIONS.filter((o) =>
+                isOccasionActive(o.id, currentCountry),
+              ).map((o) => {
                 const localized = getLocalizedOccasion(o, currentCountry);
                 const isActive = location.pathname.startsWith(
                   `/mensajes/${o.slug}`,

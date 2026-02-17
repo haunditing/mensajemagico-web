@@ -13,6 +13,8 @@ import CreateContactModal from "../components/CreateContactModal";
 import { useAuth } from "../context/AuthContext";
 import { useUpsell } from "../context/UpsellContext";
 import FaqSection, { faqData } from "../components/FaqSection";
+import { useLocalization } from "../context/LocalizationContext";
+import { isOccasionActive } from "@/services/holidayService.ts";
 
 const HomePage: React.FC = () => {
   useEffect(() => {
@@ -69,6 +71,7 @@ const HomePage: React.FC = () => {
   }, []);
   const { user } = useAuth();
   const { triggerUpsell } = useUpsell();
+  const { country } = useLocalization();
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
@@ -210,60 +213,62 @@ const HomePage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {OCCASIONS.map((occasion) => {
-            const isVisto = occasion.slug === "no-me-dejes-en-visto";
-            const isResponder = occasion.slug === "responder-un-mensaje";
-            const isGreeting = occasion.slug === "un-saludo";
+          {OCCASIONS.filter((o) => isOccasionActive(o.id, country)).map(
+            (occasion) => {
+              const isVisto = occasion.slug === "no-me-dejes-en-visto";
+              const isResponder = occasion.slug === "responder-un-mensaje";
+              const isGreeting = occasion.slug === "un-saludo";
 
-            return (
-              <Link
-                key={occasion.id}
-                to={`/mensajes/${occasion.slug}`}
-                className={`group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col hover:shadow-xl transition-all duration-300 
+              return (
+                <Link
+                  key={occasion.id}
+                  to={`/mensajes/${occasion.slug}`}
+                  className={`group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col hover:shadow-xl transition-all duration-300 
                   ${isVisto ? "hover:border-green-400 dark:hover:border-green-500 hover:shadow-green-500/5" : ""}
                   ${isResponder ? "hover:border-blue-500 dark:hover:border-blue-500 border-blue-50 dark:border-blue-900/30" : "hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-blue-500/5"}
                 `}
-              >
-                <div
-                  className={`mb-6 grayscale group-hover:grayscale-0 transition-all duration-300`}
                 >
-                  <OccasionIcon
-                    slug={occasion.slug}
-                    icon={occasion.icon}
-                    isLarge
-                  />
-                </div>
-                <h3
-                  className={`text-xl font-bold text-slate-900 dark:text-white mb-2 transition-colors 
+                  <div
+                    className={`mb-6 grayscale group-hover:grayscale-0 transition-all duration-300`}
+                  >
+                    <OccasionIcon
+                      slug={occasion.slug}
+                      icon={occasion.icon}
+                      isLarge
+                    />
+                  </div>
+                  <h3
+                    className={`text-xl font-bold text-slate-900 dark:text-white mb-2 transition-colors 
                   ${isVisto ? "group-hover:text-green-600 dark:group-hover:text-green-400" : ""}
                   ${isResponder ? "group-hover:text-blue-600 dark:group-hover:text-blue-400" : "group-hover:text-blue-600 dark:group-hover:text-blue-400"}
                 `}
-                >
-                  {occasion.name}
-                  {isResponder && (
-                    <span className="ml-2 text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                      Nuevo
-                    </span>
-                  )}
-                  {isGreeting && (
-                    <span className="ml-2 text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                      Nuevo
-                    </span>
-                  )}
-                </h3>
-                <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-6 flex-grow">
-                  {occasion.description}
-                </p>
-                <div
-                  className={`flex items-center gap-2 font-bold text-xs uppercase tracking-widest 
+                  >
+                    {occasion.name}
+                    {isResponder && (
+                      <span className="ml-2 text-[10px] bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                        Nuevo
+                      </span>
+                    )}
+                    {isGreeting && (
+                      <span className="ml-2 text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full uppercase tracking-tighter">
+                        Nuevo
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-slate-500 dark:text-slate-400 text-sm font-medium leading-relaxed mb-6 flex-grow">
+                    {occasion.description}
+                  </p>
+                  <div
+                    className={`flex items-center gap-2 font-bold text-xs uppercase tracking-widest 
                   ${isVisto ? "text-green-600 dark:text-green-400" : "text-blue-600 dark:text-blue-400"}
                 `}
-                >
-                  Crear ahora <span>→</span>
-                </div>
-              </Link>
-            );
-          })}
+                  >
+                    Crear ahora <span>→</span>
+                  </div>
+                </Link>
+              );
+            },
+          )}
         </div>
       </section>
 
