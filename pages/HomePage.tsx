@@ -1,20 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { Link } from "react-router-dom";
 import { OCCASIONS } from "../constants";
 import { CONFIG } from "../config";
 import { updateSeoTags } from "../services/seoService.ts";
 import AdBanner from "../components/AdBanner";
 import OccasionIcon from "../components/OccasionIcon";
-import FallingParticles from "../components/FallingParticles";
-import ValentineCountdown from "../components/ValentineCountdown";
-import ChristmasCountdown from "../components/ChristmasCountdown";
-import ValentineBanner from "../components/ValentineBanner";
-import CreateContactModal from "../components/CreateContactModal";
 import { useAuth } from "../context/AuthContext";
 import { useUpsell } from "../context/UpsellContext";
-import FaqSection, { faqData } from "../components/FaqSection";
+import { faqData } from "../components/FaqSection";
 import { useLocalization } from "../context/LocalizationContext";
 import { isOccasionActive } from "../services/holidayService.ts";
+import LoadingSpinner from "../components/LoadingSpinner";
+
+const FallingParticles = React.lazy(() => import("../components/FallingParticles"));
+const ValentineCountdown = React.lazy(() => import("../components/ValentineCountdown"));
+const ChristmasCountdown = React.lazy(() => import("../components/ChristmasCountdown"));
+const ValentineBanner = React.lazy(() => import("../components/ValentineBanner"));
+const CreateContactModal = React.lazy(() => import("../components/CreateContactModal"));
+const FaqSection = React.lazy(() => import("../components/FaqSection"));
 
 const HomePage: React.FC = () => {
   useEffect(() => {
@@ -84,22 +87,24 @@ const HomePage: React.FC = () => {
       {/* Hero Section */}
       <section className="text-center mb-16 md:mb-24 relative">
         {(isValentine || isChristmas || isHalloween || isBlackFriday) && (
-          <FallingParticles
-            count={20}
-            emojis={
-              isValentine
-                ? ["❤️", "💖", "💘", "💝", "🌹"]
-                : isHalloween
-                  ? ["🎃", "👻", "🦇", "🕷️", "🍬"]
-                  : isBlackFriday
-                    ? ["🛍️", "🏷️", "💸", "🖤", "✨"]
-                    : ["❄️", "❅", "🌨️", "☃️"]
-            }
-            iterationCount={isValentine ? 2 : "infinite"}
-          />
+          <Suspense fallback={null}>
+            <FallingParticles
+              count={20}
+              emojis={
+                isValentine
+                  ? ["❤️", "💖", "💘", "💝", "🌹"]
+                  : isHalloween
+                    ? ["🎃", "👻", "🦇", "🕷️", "🍬"]
+                    : isBlackFriday
+                      ? ["🛍️", "🏷️", "💸", "🖤", "✨"]
+                      : ["❄️", "❅", "🌨️", "☃️"]
+              }
+              iterationCount={isValentine ? 2 : "infinite"}
+            />
+          </Suspense>
         )}
 
-        {isValentine && <ValentineBanner />}
+        {isValentine && <Suspense fallback={<div className="h-24" />}><ValentineBanner /></Suspense>}
 
         <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight leading-[1.1]">
           {isValentine ? (
@@ -125,8 +130,8 @@ const HomePage: React.FC = () => {
           )}
         </h1>
 
-        {isValentine && <ValentineCountdown />}
-        {isChristmas && <ChristmasCountdown />}
+        {isValentine && <Suspense fallback={<div className="h-20" />}><ValentineCountdown /></Suspense>}
+        {isChristmas && <Suspense fallback={<div className="h-20" />}><ChristmasCountdown /></Suspense>}
 
         <p className="text-lg md:text-xl text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-10 leading-relaxed font-medium">
           {isValentine
@@ -167,7 +172,7 @@ const HomePage: React.FC = () => {
           </Link>
           <Link
             to="/mensajes/no-me-dejes-en-visto"
-            className="h-14 px-8 rounded-xl bg-green-600 text-white font-bold flex items-center justify-center shadow-lg shadow-green-600/20 hover:bg-green-700 transition-all active:scale-95 gap-3"
+            className="h-14 px-8 rounded-xl bg-green-700 text-white font-bold flex items-center justify-center shadow-lg shadow-green-700/20 hover:bg-green-800 transition-all active:scale-95 gap-3"
           >
             <OccasionIcon
               slug="no-me-dejes-en-visto"
@@ -195,10 +200,14 @@ const HomePage: React.FC = () => {
             ✨ Agregar a alguien especial para seguimiento del Guardián
           </button>
         </div>
-        <CreateContactModal
-          isOpen={isContactModalOpen}
-          onClose={() => setIsContactModalOpen(false)}
-        />
+        {isContactModalOpen && (
+          <Suspense fallback={null}>
+            <CreateContactModal
+              isOpen={isContactModalOpen}
+              onClose={() => setIsContactModalOpen(false)}
+            />
+          </Suspense>
+        )}
       </section>
 
       {/*<AdBanner position="top" />*/}
@@ -299,7 +308,9 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      <FaqSection />
+      <Suspense fallback={<div className="py-20 flex justify-center"><LoadingSpinner /></div>}>
+        <FaqSection />
+      </Suspense>
 
       {/*<div className="mt-16">
         <AdBanner position="bottom" />

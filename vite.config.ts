@@ -12,10 +12,20 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["react", "react-dom", "react-router-dom"],
+        },
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
       registerType: "autoUpdate", // Actualiza el SW automáticamente cuando hay nueva versión
+      injectRegister: "inline", // Inyecta el script de registro inline para evitar bloqueo de renderizado
       includeAssets: [
         "favicon.ico",
         "apple-touch-icon.png",
@@ -88,7 +98,33 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
         // Fallback para SPA: redirigir a index.html si la ruta no está en caché (offline)
         navigateFallback: "/index.html",
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.includes("/api/config/plans"),
+            handler: "StaleWhileRevalidate",
+            options: {
+              cacheName: "api-config-cache",
+              expiration: {
+                maxEntries: 1,
+                maxAgeSeconds: 60 * 60 * 24, // 1 día
+              },
+            },
+          },
+        ],
       },
     }),
+    {
+      name: "defer-css",
+      apply: "build",
+      transformIndexHtml: {
+        order: "post",
+        handler(html) {
+          return html.replace(
+            /<link rel="stylesheet"([^>]*?)>/g,
+            '<link rel="stylesheet"$1 media="print" onload="this.media=\'all\'">'
+          );
+        },
+      },
+    },
   ],
 });

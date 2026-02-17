@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigationType } from "react-router-dom";
-import confetti from "canvas-confetti";
 import { OCCASIONS } from "../constants";
 import { getLocalizedOccasion } from "../services/localizationService";
 import { CountryCode } from "../types";
@@ -13,7 +12,6 @@ import OccasionIcon from "./OccasionIcon";
 import UserMenu from "./UserMenu";
 import NotificationManager from "./NotificationManager";
 import OfferBanner from "./OfferBanner";
-import Logo from "./Logo";
 import { isOccasionActive } from "../services/holidayService";
 import InstallPWA from "./InstallPWA";
 
@@ -213,7 +211,8 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     }, 500);
   };
 
-  const triggerEasterEgg = () => {
+  const triggerEasterEgg = async () => {
+    const confetti = (await import("canvas-confetti")).default;
     const duration = 2 * 1000;
     const end = Date.now() + duration;
 
@@ -392,7 +391,14 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 }
               `}
               >
-                <Logo className="w-6 h-6 md:w-7 md:h-7 transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
+                <img
+                  src="/favicon-32x32.png"
+                  alt="MensajeMágico Logo"
+                  width="32"
+                  height="32"
+                  fetchPriority="high"
+                  className="w-6 h-6 md:w-7 md:h-7 object-contain transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
+                />
               </div>
               <div className="flex flex-col">
                 <span className="font-extrabold text-lg md:text-xl tracking-tight text-slate-900 dark:text-white leading-none">
@@ -493,7 +499,13 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 className="inline-flex items-center gap-2.5 mb-6 group"
               >
                 <div className="w-8 h-8 bg-slate-900 dark:bg-slate-800 rounded-lg flex items-center justify-center shadow-sm group-hover:bg-blue-600 transition-colors text-white">
-                  <Logo className="w-5 h-5 transition-all duration-300 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]" />
+                  <img
+                    src="/favicon-32x32.png"
+                    alt="MensajeMágico Logo"
+                    width="32"
+                    height="32"
+                    className="w-5 h-5 object-contain transition-all duration-300 group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.8)]"
+                  />
                 </div>
                 <span className="font-bold text-xl tracking-tight text-slate-900 dark:text-white">
                   {siteName}
@@ -505,7 +517,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               </p>
 
               <div className="inline-flex flex-col gap-3">
-                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-400 dark:text-slate-500">
+                <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-slate-500 dark:text-slate-400">
                   Selecciona tu Región
                 </span>
                 <CountrySelector />
@@ -514,7 +526,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
             <div className="grid grid-cols-2 md:col-span-7 gap-8">
               <div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-8">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-8">
                   Categorías
                 </h3>
                 <ul className="space-y-4 text-sm font-semibold">
@@ -535,7 +547,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 </ul>
               </div>
               <div>
-                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-8">
+                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-8">
                   Institucional
                 </h3>
                 <ul className="space-y-4 text-sm font-semibold">
@@ -577,7 +589,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           </div>
 
           <div className="mt-16 pt-8 border-t border-slate-50 dark:border-slate-800 flex flex-col md:flex-row justify-between items-center gap-6">
-            <p className="text-xs text-slate-400 dark:text-slate-500 font-bold tracking-tight">
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-bold tracking-tight">
               &copy; {new Date().getFullYear()} {siteName}. Diseñado con ❤️ para
               el mundo.
             </p>

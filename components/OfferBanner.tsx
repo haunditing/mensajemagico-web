@@ -73,11 +73,11 @@ const OfferBanner: React.FC = () => {
   if (!isOfferActive) return null;
 
   return (
-    <div className="bg-gradient-to-r from-rose-600 to-orange-600 dark:from-rose-900 dark:to-orange-900 text-white py-2.5 px-4 text-center relative z-40 shadow-md dark:shadow-none animate-slide-down">
+    <div className="bg-gradient-to-r from-rose-600 to-orange-600 dark:from-rose-900 dark:to-orange-900 text-white py-2.5 px-4 text-center relative z-40 shadow-md dark:shadow-none animate-slide-down overflow-hidden">
       <style>{`
         @keyframes slide-down {
-          0% { transform: translateY(-100%); opacity: 0; }
-          100% { transform: translateY(0); opacity: 1; }
+          0% { transform: translateY(-100%); opacity: 0; max-height: 0; }
+          100% { transform: translateY(0); opacity: 1; max-height: 60px; }
         }
         .animate-slide-down {
           animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;

@@ -7,7 +7,7 @@ import { ENABLE_UPGRADES } from "../config";
 import { useTheme } from "../context/ThemeContext";
 
 const UserMenu: React.FC = () => {
-  const { user, planLevel, logout, isPremium } = useAuth();
+  const { user, planLevel, logout, isPremium, isLoading } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -75,6 +75,15 @@ const UserMenu: React.FC = () => {
         ? "Modo Oscuro"
         : "Sistema";
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 p-1 pr-2 sm:pr-3 rounded-full border border-transparent">
+        <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse" />
+        <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded animate-pulse hidden sm:block" />
+      </div>
+    );
+  }
+
   if (!user) {
     return (
       <div className="flex items-center gap-2 sm:gap-3">
@@ -82,13 +91,13 @@ const UserMenu: React.FC = () => {
           to="/login"
           className="text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors px-2 py-2"
         >
-          Entrar
+          Iniciar Sesión
         </Link>
         <Link
           to="/signup"
           className="bg-slate-900 dark:bg-slate-700 text-white px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold hover:bg-slate-800 dark:hover:bg-slate-600 transition-all shadow-lg shadow-slate-900/20 dark:shadow-none active:scale-95"
         >
-          Empezar
+          Registrarse
         </Link>
       </div>
     );
