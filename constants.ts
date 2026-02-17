@@ -234,6 +234,7 @@ export const OCCASIONS: Occasion[] = [
       SharePlatform.EMAIL,
       SharePlatform.COPY,
     ],
+    fixedRelation: "mother",
   },
   {
     id: "fathers_day",
@@ -252,6 +253,7 @@ export const OCCASIONS: Occasion[] = [
       SharePlatform.EMAIL,
       SharePlatform.COPY,
     ],
+    fixedRelation: "father",
   },
   {
     id: "christmas",

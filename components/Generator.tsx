@@ -189,7 +189,7 @@ const Generator: React.FC<GeneratorProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Destinatario Select (Oculto para Pensamiento) */}
-            {!isPensamiento && (
+            {!isPensamiento && !occasion.fixedRelation && (
               <RelationshipSelector
                 relationshipId={relationshipId}
                 onRelationshipChange={handleRelChange}

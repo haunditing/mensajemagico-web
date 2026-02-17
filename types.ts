@@ -51,6 +51,7 @@ export interface Occasion {
   metaTitle: string;
   metaDesc: string;
   allowedPlatforms?: SharePlatform[];
+  fixedRelation?: string;
 }
 
 export interface LocalizedContent {

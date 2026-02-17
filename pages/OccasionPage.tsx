@@ -23,10 +23,19 @@ const OccasionPage: React.FC = () => {
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
 
+  const fixedRel = rawOccasion?.fixedRelation
+    ? RELATIONSHIPS.find((r) => r.id === rawOccasion.fixedRelation)
+    : undefined;
+
   // Resetear la relación seleccionada si el usuario cambia de ocasión (navegación)
   useEffect(() => {
-    setSelectedRel(undefined);
-  }, [slug]);
+    if (rawOccasion?.fixedRelation) {
+      const rel = RELATIONSHIPS.find((r) => r.id === rawOccasion.fixedRelation);
+      setSelectedRel(rel);
+    } else {
+      setSelectedRel(undefined);
+    }
+  }, [slug, rawOccasion]);
 
   useEffect(() => {
     if (rawOccasion) {
@@ -157,6 +166,7 @@ const OccasionPage: React.FC = () => {
         <Generator
           occasion={{ ...rawOccasion, name: localized.name }}
           onRelationshipChange={handleRelationshipChange}
+          initialRelationship={fixedRel}
         />
       </div>
 
