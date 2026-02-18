@@ -68,7 +68,13 @@ const OfferBanner: React.FC = () => {
   }, [rawOfferDate, rawOfferDuration]);
 
   // 1. Si está cargando o el usuario ya es Premium, no mostrar nada
-  if (isLoading || planLevel === "premium" || isDismissed || location.pathname === "/pricing") return null;
+  if (
+    isLoading ||
+    planLevel === "premium" ||
+    isDismissed ||
+    location.pathname === "/pricing"
+  )
+    return null;
 
   if (!isOfferActive) return null;
 
@@ -77,7 +83,7 @@ const OfferBanner: React.FC = () => {
       <style>{`
         @keyframes slide-down {
           0% { transform: translateY(-100%); opacity: 0; max-height: 0; }
-          100% { transform: translateY(0); opacity: 1; max-height: 60px; }
+          100% { transform: translateY(0); opacity: 1; max-height: 500px; }
         }
         .animate-slide-down {
           animation: slide-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -88,10 +94,11 @@ const OfferBanner: React.FC = () => {
           🔥 Oferta
         </span>
         <p className="font-medium">
-          Desbloquea Premium con precio especial {displayDate ? `hasta el ${displayDate}` : 'por tiempo limitado'}.
+          Desbloquea Premium con precio especial{" "}
+          {displayDate ? `hasta el ${displayDate}` : "por tiempo limitado"}.
         </p>
-        <Link 
-          to="/pricing" 
+        <Link
+          to="/pricing"
           className="bg-white dark:bg-slate-900 text-rose-600 dark:text-rose-400 px-3 py-1 rounded-full text-xs font-bold hover:bg-rose-50 dark:hover:bg-slate-800 transition-colors shadow-sm flex items-center gap-1"
         >
           Ver oferta <span>→</span>
