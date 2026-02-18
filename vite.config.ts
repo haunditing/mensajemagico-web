@@ -35,6 +35,8 @@ export default defineConfig({
         "apple-touch-icon-christmas.png",
         "favicon-16x16.png",
         "favicon-32x32.png",
+        "android-chrome-192x192.png",
+        "android-chrome-512x512.png",
       ],
       manifest: {
         name: "MensajeMágico",
@@ -42,7 +44,7 @@ export default defineConfig({
         description: "Genera mensajes y cartas personalizadas con IA.",
         start_url: "/",
         display: "standalone",
-        background_color: "#ffffff",
+        background_color: "#0f172a",
         theme_color: "#0f172a",
         orientation: "portrait",
         icons: [
