@@ -1,5 +1,6 @@
 export enum Tone {
   ROMANTIC = "romántico",
+  SINCERE = "sincero",
   SHORT = "corto",
   FORMAL = "formal",
   FUNNY = "divertido",
@@ -82,6 +83,8 @@ export interface MessageConfig {
   intention?: string;
   relationalHealth?: number;
   grammaticalGender?: string;
+  greetingMoment?: string;
+  apologyReason?: string;
 }
 
 export interface GeneratedMessage {

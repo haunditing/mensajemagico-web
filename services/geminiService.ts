@@ -66,6 +66,8 @@ export const generateMessage = async (
       intention: config.intention, // Enviamos la intención calculada
       relationalHealth: config.relationalHealth,
       grammaticalGender: config.grammaticalGender,
+      greetingMoment: config.greetingMoment,
+      apologyReason: config.apologyReason,
     });
 
     // Validamos que el backend responda con el campo esperado
@@ -158,6 +160,8 @@ export const generateMessageStream = async (
         intention: config.intention,
         relationalHealth: config.relationalHealth,
         grammaticalGender: config.grammaticalGender,
+        greetingMoment: config.greetingMoment,
+        apologyReason: config.apologyReason,
       }),
     });
 

@@ -50,6 +50,9 @@ export const RECEIVED_MESSAGE_TYPES = [
 
 // --- NUEVAS CONSTANTES PARA "UN SALUDO" ---
 export const GREETING_CATEGORIES = [
+  { id: "madrugada", label: "Madrugada (Insomnio)" },
+  { id: "lunes", label: "Lunes (Motivación)" },
+  { id: "fin_de_semana", label: "Fin de Semana (Relax)" },
   { id: "amanecer", label: "Amanecer (Buenos días)" },
   { id: "tarde", label: "Tarde (Buenas tardes)" },
   { id: "ocaso", label: "Ocaso (Buenas noches)" },
@@ -68,6 +71,15 @@ export const GREETING_TONES = [
   { id: "fresco", label: "Fresco" },
   { id: "sobrio", label: "Sobrio" },
   { id: "alegre", label: "Alegre" },
+];
+
+export const APOLOGY_REASONS = [
+  { id: "olvido", label: "Olvidé una fecha importante" },
+  { id: "tarde", label: "Llegué tarde / No fui" },
+  { id: "palabras", label: "Dije algo hiriente" },
+  { id: "mentira", label: "No fui sincero/a" },
+  { id: "distancia", label: "He estado distante" },
+  { id: "error", label: "Cometí un error" },
 ];
 // ------------------------------------------
 
@@ -277,6 +289,7 @@ export const OCCASIONS: Occasion[] = [
 
 export const TONES = [
   { value: Tone.ROMANTIC, label: "Romántico" },
+  { value: Tone.SINCERE, label: "Sincero" },
   { value: Tone.FUNNY, label: "Divertido" },
   { value: Tone.FLIRTY, label: "Coqueto" },
   { value: Tone.DIRECT, label: "Directo" },
@@ -298,6 +311,7 @@ export const GUARDIAN_INTENTIONS = [
 
 export const PSYCHOLOGICAL_MATRIX: Record<string, string> = {
   [Tone.ROMANTIC]: "low_effort",
+  [Tone.SINCERE]: "low_effort",
   [Tone.FUNNY]: "inquiry",
   [Tone.FLIRTY]: "inquiry",
   [Tone.DIRECT]: "action",

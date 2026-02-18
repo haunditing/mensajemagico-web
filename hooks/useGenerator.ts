@@ -69,6 +69,7 @@ export const useGenerator = (
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
   const isGreeting = occasion.id === "saludo";
+  const isPerdoname = occasion.id === "perdoname";
 
   const [searchParams] = useSearchParams();
   const shareParam = searchParams.get("share");
@@ -125,7 +126,15 @@ export const useGenerator = (
 
   const suggestedGreeting = isGreeting
     ? (() => {
-        const h = new Date().getHours();
+        const now = new Date();
+        const h = now.getHours();
+        const day = now.getDay(); // 0 = Domingo, 6 = Sábado
+
+        if (h >= 0 && h < 5) return "madrugada";
+        // Si es Lunes, sugerimos motivación
+        if (day === 1) return "lunes";
+        // Si es Sábado o Domingo (y no es madrugada), sugerimos modo relax
+        if (day === 0 || day === 6) return "fin_de_semana";
         if (h >= 5 && h < 12) return "amanecer";
         if (h >= 12 && h < 18) return "tarde";
         return "ocaso";
@@ -144,6 +153,7 @@ export const useGenerator = (
       ? suggestedGreeting
       : GREETING_CATEGORIES[0].id,
   );
+  const [apologyReason, setApologyReason] = useState("");
   const [receivedMessageType, setReceivedMessageType] = useState<string>(
     RECEIVED_MESSAGE_TYPES[0].label,
   );
@@ -340,6 +350,8 @@ export const useGenerator = (
           intention,
           relationalHealth: selectedContact?.relationalHealth,
           grammaticalGender: (user as any)?.preferences?.grammaticalGender,
+          greetingMoment: isGreeting ? greetingMoment : undefined,
+          apologyReason: isPerdoname ? apologyReason : undefined,
         },
         (token) => {
           rawStream += token;
@@ -538,6 +550,9 @@ export const useGenerator = (
     isPensamiento,
     isResponder,
     isGreeting,
+    isPerdoname,
+    apologyReason,
+    setApologyReason,
     isContextLocked,
     MAX_CONTEXT,
     isOccasionLocked,

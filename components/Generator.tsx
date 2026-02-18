@@ -1,5 +1,6 @@
 import React from "react";
 import { Occasion, Relationship } from "../types";
+import { APOLOGY_REASONS } from "../constants";
 import { useLocalization } from "../context/LocalizationContext";
 import { useAuth } from "../context/AuthContext";
 import { useUpsell } from "../context/UpsellContext";
@@ -222,6 +223,26 @@ const Generator: React.FC<GeneratorProps> = ({
                 setGreetingMoment={setGreetingMoment}
                 suggestedGreeting={suggestedGreeting}
               />
+            )}
+
+            {isPerdoname && (
+              <div className="animate-fade-in-up">
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                  ¿Por qué pides perdón?
+                </label>
+                <select
+                  value={apologyReason}
+                  onChange={(e) => setApologyReason(e.target.value)}
+                  className="w-full p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                >
+                  <option value="">Selecciona un motivo...</option>
+                  {APOLOGY_REASONS.map((reason) => (
+                    <option key={reason.id} value={reason.label}>
+                      {reason.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
             )}
 
             <ToneSelector

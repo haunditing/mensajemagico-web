@@ -18,6 +18,7 @@ export const GUARDIAN_WARNINGS: Record<string, Record<string, string>> = {
   },
   boss: {
     [Tone.FUNNY]: "El humor en el trabajo es un arte delicado. Asegúrate de que el contexto sea el adecuado.",
+    [Tone.SINCERE]: "La sinceridad total con un jefe es valiosa pero arriesgada. Asegúrate de mantener el profesionalismo.",
   },
   mother: {
     [Tone.SARCASTIC]:

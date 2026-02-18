@@ -46,7 +46,7 @@ export const buildGuardianPrompt = ({
   const openingTriggers = [
     "Opción A: Empezar con una pregunta para generar curiosidad.",
     "Opción B: Empezar con una exclamación o una afirmación emotiva.",
-    "Opción C: Empezar con un 'Me acordé de...' o evocando un recuerdo compartido.",
+    "Opción C: Empezar con una observación sobre el presente inmediato (el ahora).",
   ];
   const selectedTrigger =
     openingTriggers[Math.floor(Math.random() * openingTriggers.length)];
@@ -58,19 +58,24 @@ export const buildGuardianPrompt = ({
     selectedContact.history.length > 0;
 
   if (hasRealHistory) {
-    // Tomamos los últimos 3 mensajes
-    const lastMessages = selectedContact.history
+    // FEW-SHOT PROMPTING: Extraer ejemplos reales del usuario
+    // Priorizamos mensajes que fueron editados por el usuario (wasEdited: true) porque reflejan su voz real
+    const userExamples = selectedContact.history
+      .filter((h: any) => h.wasEdited || h.content) // Preferir editados, sino cualquiera
       .slice(-3)
       .map((h: any) => h.content || "");
+    
+    const examplesText = userExamples.map((msg: string) => `- "${msg}"`).join("\n");
+    const fewShotInstruction = userExamples.length > 0 ? `\nEJEMPLOS DE MI ESTILO REAL (IMITA ESTA ESTRUCTURA Y LONGITUD):\n${examplesText}\n` : "";
 
     // Estrategia 1: Lista de Exclusión (Extraer palabras clave usadas)
     // Filtramos palabras de más de 4 letras para evitar conectores
     const allWords =
-      lastMessages
+      userExamples
         .join(" ")
         .toLowerCase()
         .match(/[a-záéíóúñü]{5,}/g) || [];
-    const uniqueKeywords = Array.from(new Set(allWords))
+    const uniqueKeywords = Array.from(new Set<string>(allWords))
       .slice(0, 15)
       .join(", ");
     avoidTopics = uniqueKeywords;
@@ -86,10 +91,11 @@ export const buildGuardianPrompt = ({
       
       Misión: > Genera un nuevo mensaje en tono ${tone} pero PROHIBIDO usar las palabras del historial reciente. Busca un nuevo ángulo: quizás una emoción específica o un detalle del entorno sin usar clichés.
       
-      Instrucción de Apertura: ${selectedTrigger}]`;
+      Instrucción de Apertura: ${selectedTrigger}${fewShotInstruction}]`;
   } else {
     // Instrucción por defecto para nuevos contactos o sin historial
-    styleInstructions += `[ESTILO: Sé espontáneo. Evita saludos robóticos. ${selectedTrigger}]`;
+    styleInstructions += `[ESTILO: Sé espontáneo pero HONESTO. Evita saludos robóticos. ${selectedTrigger}
+    IMPORTANTE: No tienes historial con esta persona. PROHIBIDO inventar recuerdos, decir "ayer", "la otra vez" o "me acordé". Habla solo del presente.]`;
   }
 
   // --- NUEVA LÓGICA PARA PENSAMIENTO (DEEP TALK / CONTENT) ---
@@ -103,7 +109,7 @@ export const buildGuardianPrompt = ({
     styleInstructions += `
       ESTRUCTURA OBLIGATORIA:
       1. Hook (Gancho): Empieza con una verdad incómoda o una observación aguda.
-      2. Story (Relato): Humaniza la idea sin usar clichés geográficos.
+      2. Observación (Análisis): Analiza el concepto de forma abstracta o filosófica. NO inventes historias personales ni anécdotas que no ocurrieron.
       3. Lesson (Cierre): Termina con una pregunta que invite a pensar o una conclusión potente.`;
 
     // 3. Niveles de Consciencia (según el tono/estado emocional)
