@@ -38,6 +38,10 @@ export default defineConfig({
         "favicon-32x32.png",
         "android-chrome-192x192.png",
         "android-chrome-512x512.png",
+        "android-chrome-192x192-maskable.png",
+        "android-chrome-512x512-maskable.png",
+        "screenshot-mobile.png",
+        "screenshot-desktop.png",
       ],
       manifest: {
         name: "MensajeMágico",
@@ -66,7 +70,7 @@ export default defineConfig({
             purpose: "any",
           },
           {
-            src: "/android-chrome-192x192.png",
+            src: "/android-chrome-192x192-maskable.png",
             sizes: "192x192",
             type: "image/png",
             purpose: "maskable",
@@ -78,7 +82,7 @@ export default defineConfig({
             purpose: "any",
           },
           {
-            src: "/android-chrome-512x512.png",
+            src: "/android-chrome-512x512-maskable.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
