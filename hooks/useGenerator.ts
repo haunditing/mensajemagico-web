@@ -203,6 +203,27 @@ export const useGenerator = (
     }
   }, [user]);
 
+  // Auto-seleccionar contacto exclusivo si existe (evita que el select se rompa visualmente)
+  useEffect(() => {
+    if (contacts.length > 0) {
+      const exclusiveIds = ["couple", "mother", "father"];
+      if (exclusiveIds.includes(relationshipId)) {
+        const existingContact = contacts.find((c) => {
+          const cRel = String(c.relationship).toLowerCase().trim();
+          if (relationshipId === "couple") return cRel === "pareja" || cRel === "couple";
+          if (relationshipId === "mother") return cRel === "madre" || cRel === "mother";
+          if (relationshipId === "father") return cRel === "padre" || cRel === "father";
+          return false;
+        });
+
+        if (existingContact && existingContact._id !== relationshipId) {
+          setRelationshipId(existingContact._id);
+          setSelectedContactId(existingContact._id);
+        }
+      }
+    }
+  }, [contacts, relationshipId]);
+
   useEffect(() => {
     const warning = GUARDIAN_WARNINGS[currentRelType]?.[tone as string] || null;
     setGuardianWarning(warning);

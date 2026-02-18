@@ -38,6 +38,7 @@ const Generator: React.FC<GeneratorProps> = ({
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
   const isGreeting = occasion.id === "saludo";
+  const isPerdoname = occasion.id === "perdoname";
   const MAX_CHARS = 400;
 
   const {
@@ -88,6 +89,8 @@ const Generator: React.FC<GeneratorProps> = ({
     userLocation,
     guardianDescription,
     shareParam,
+    apologyReason,
+    setApologyReason,
     isContextLocked,
     MAX_CONTEXT,
     isOccasionLocked,
@@ -121,6 +124,16 @@ const Generator: React.FC<GeneratorProps> = ({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [isLoading]);
+
+  // Estado para controlar qué contacto se está editando
+  const [contactToEdit, setContactToEdit] = React.useState<any>(null);
+
+  const handleEditContact = () => {
+    if (selectedContact) {
+      setContactToEdit(selectedContact);
+      setIsContactModalOpen(true);
+    }
+  };
 
   return (
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>
@@ -209,12 +222,30 @@ const Generator: React.FC<GeneratorProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Destinatario Select (Oculto para Pensamiento) */}
             {!isPensamiento && !occasion.fixedRelation && (
-              <RelationshipSelector
-                relationshipId={relationshipId}
-                onRelationshipChange={handleRelChange}
-                contacts={contacts}
-                selectedContact={selectedContact}
-              />
+              <div className="relative group">
+                <RelationshipSelector
+                  relationshipId={relationshipId}
+                  onRelationshipChange={handleRelChange}
+                  contacts={contacts}
+                  selectedContact={selectedContact}
+                />
+                {selectedContact && (
+                  <button
+                    onClick={handleEditContact}
+                    className="absolute top-0 right-0 mt-8 mr-10 p-1.5 text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                    title="Editar nombre del contacto"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                )}
+              </div>
             )}
 
             {isGreeting && (
@@ -454,7 +485,16 @@ const Generator: React.FC<GeneratorProps> = ({
       <CreateContactModal
         isOpen={isContactModalOpen}
         onClose={() => setIsContactModalOpen(false)}
-        onSuccess={handleContactCreated}
+        onSuccess={(updatedContact) => {
+          if (contactToEdit) {
+            // Actualizar lista si es edición
+            setContacts(contacts.map(c => c._id === updatedContact._id ? updatedContact : c));
+            setContactToEdit(null);
+          } else {
+            handleContactCreated(updatedContact);
+          }
+        }}
+        contactToEdit={contactToEdit}
       />
     </div>
   );

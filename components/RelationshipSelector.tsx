@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { RELATIONSHIPS } from "../constants";
 import RelationalHealthIndicator from "./RelationalHealthIndicator";
 
@@ -15,6 +15,28 @@ const RelationshipSelector: React.FC<RelationshipSelectorProps> = ({
   contacts,
   selectedContact,
 }) => {
+  const availableRelationships = useMemo(() => {
+    if (!Array.isArray(contacts)) return RELATIONSHIPS;
+
+    // 1. Identificar qué roles exclusivos ya están ocupados por un contacto
+    const occupiedRoles = new Set<string>();
+    
+    contacts.forEach((c) => {
+      const rel = String(c.relationship || "").toLowerCase().trim();
+      if (rel === "pareja" || rel === "couple") occupiedRoles.add("couple");
+      if (rel === "madre" || rel === "mother") occupiedRoles.add("mother");
+      if (rel === "padre" || rel === "father") occupiedRoles.add("father");
+    });
+
+    // 2. Filtrar la lista de relaciones generales
+    return RELATIONSHIPS.filter((rel) => {
+      // Si el rol está ocupado, lo ocultamos SOLO si no es la selección actual.
+      // Esto evita que el select salte a "+ Nuevo Contacto" mientras el useEffect hace el cambio automático de ID.
+      if (occupiedRoles.has(rel.id) && relationshipId !== rel.id) return false;
+      return true;
+    });
+  }, [contacts, relationshipId]);
+
   return (
     <div className="relative">
       <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
@@ -45,15 +67,19 @@ const RelationshipSelector: React.FC<RelationshipSelectorProps> = ({
         </option>
         {contacts.length > 0 && (
           <optgroup label="Mis Contactos">
-            {contacts.map((c) => (
-              <option key={c._id} value={c._id}>
-                {c.name} ({c.relationship}) {c.relationalHealth >= 8 ? "❤️" : ""}
-              </option>
-            ))}
+            {contacts.map((c) => {
+              const rel = String(c.relationship || "").toLowerCase().trim();
+              const isExclusive = ["pareja", "couple", "madre", "mother", "padre", "father"].includes(rel);
+              return (
+                <option key={c._id} value={c._id}>
+                  {c.name} ({c.relationship}) {isExclusive ? "🔒" : ""} {c.relationalHealth >= 8 ? "❤️" : ""}
+                </option>
+              );
+            })}
           </optgroup>
         )}
         <optgroup label="Relaciones Generales">
-          {RELATIONSHIPS.map((rel) => (
+          {availableRelationships.map((rel) => (
             <option key={rel.id} value={rel.id}>
               {rel.label}
             </option>
