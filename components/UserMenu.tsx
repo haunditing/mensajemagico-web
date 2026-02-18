@@ -49,6 +49,12 @@ const UserMenu: React.FC = () => {
   }, [isOpen]);
 
   const handleLogout = () => {
+    // Limpiar mensajes generados del almacenamiento de sesión al cerrar sesión
+    Object.keys(sessionStorage).forEach((key) => {
+      if (key.startsWith("gen_msgs_")) {
+        sessionStorage.removeItem(key);
+      }
+    });
     logout();
     setIsOpen(false);
     navigate("/");

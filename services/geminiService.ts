@@ -120,13 +120,14 @@ export const generateMessageStream = async (
 
   if (generationCache[cacheKey] && generationCache[cacheKey].length > 0) {
     const cachedResults = generationCache[cacheKey];
-    const content = cachedResults[Math.floor(Math.random() * cachedResults.length)];
-    
+    const content =
+      cachedResults[Math.floor(Math.random() * cachedResults.length)];
+
     // Simular streaming para caché (Efecto visual)
     const chunkSize = 4;
     for (let i = 0; i < content.length; i += chunkSize) {
       onToken(content.slice(i, i + chunkSize));
-      await new Promise(resolve => setTimeout(resolve, 15)); // 15ms de delay entre chunks
+      await new Promise((resolve) => setTimeout(resolve, 15)); // 15ms de delay entre chunks
     }
     return { content };
   }
@@ -134,7 +135,7 @@ export const generateMessageStream = async (
   try {
     const token = localStorage.getItem("token");
     const url = `${BASE_URL}/api/magic/generate-stream`;
-    
+
     // [DEBUG] Verificar URL en producción
     console.log("Stream Request URL:", url);
 
@@ -180,7 +181,8 @@ export const generateMessageStream = async (
 
       // Mensaje amigable para el usuario en caso de saturación
       if (response.status === 429) {
-        error.message = "La IA está recibiendo muchas solicitudes. Por favor, intenta de nuevo en unos segundos.";
+        error.message =
+          "La IA está recibiendo muchas solicitudes. Por favor, intenta de nuevo en unos segundos.";
       }
 
       throw error;
@@ -196,9 +198,6 @@ export const generateMessageStream = async (
       const { done, value } = await reader.read();
       if (done) break;
       const chunk = decoder.decode(value, { stream: true });
-      
-      // [DEBUG] Confirmar que llegan datos por partes
-      console.log(`🌊 Chunk recibido (${chunk.length} chars)`);
 
       onToken(chunk);
       fullText += chunk;

@@ -19,6 +19,7 @@ interface GeneratedMessagesListProps {
   isFavorite: (content: string) => boolean;
   onEditMessage: (id: string) => void;
   onClearHistory?: () => void;
+  onMarkAsUsed?: (msg: ExtendedGeneratedMessage) => void;
 }
 
 const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
@@ -34,6 +35,7 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
   isFavorite,
   onEditMessage,
   onClearHistory,
+  onMarkAsUsed,
 }) => {
   return (
     <div id="results-section" className="mt-6 space-y-6">
@@ -66,12 +68,20 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
                 )}
               </p>
 
-              {msg.usedLexicalDNA && (
-                <div className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-800 animate-fade-in select-none">
-                  <span className="text-xs">✨</span>
-                  <span>Este mensaje incluye tu toque personal</span>
-                </div>
-              )}
+              <div className="flex flex-wrap gap-2 mt-3">
+                {msg.usedLexicalDNA && (
+                  <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-800 animate-fade-in select-none">
+                    <span className="text-xs">✨</span>
+                    <span>Este mensaje incluye tu toque personal</span>
+                  </div>
+                )}
+                {msg.isUsed && (
+                  <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2.5 py-1 rounded-full border border-green-100 dark:border-green-800 animate-fade-in select-none">
+                    <span className="text-xs">✓</span>
+                    <span>Usado</span>
+                  </div>
+                )}
+              </div>
 
               {!isError && (
                 <button
@@ -101,7 +111,10 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
                 <ShareBar
                   content={msg.content}
                   platforms={occasion.allowedPlatforms}
-                  onAction={onShareAction}
+                  onAction={(platform) => {
+                    if (onMarkAsUsed) onMarkAsUsed(msg);
+                    return onShareAction(platform);
+                  }}
                   disabled={isError || isLoading}
                   className="animate-fade-in-up flex-1"
                   highlightedPlatform={shareParam}

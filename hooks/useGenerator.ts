@@ -47,6 +47,8 @@ export interface ExtendedGeneratedMessage extends GeneratedMessage {
   usedLexicalDNA?: boolean;
   isStreaming?: boolean;
   isError?: boolean;
+  isUsed?: boolean;
+  originalContent?: string;
 }
 
 const getWordCount = (text: string) =>
@@ -163,7 +165,23 @@ export const useGenerator = (
   const [intention, setIntention] = useState<string>("low_effort");
   const [manualIntentionOverride, setManualIntentionOverride] =
     useState<boolean>(false);
-  const [messages, setMessages] = useState<ExtendedGeneratedMessage[]>([]);
+
+  // Persistencia de sesión: Recuperar mensajes previos al navegar
+  const storageKey = `gen_msgs_${occasion.id}`;
+  const [messages, setMessages] = useState<ExtendedGeneratedMessage[]>(() => {
+    try {
+      const saved = sessionStorage.getItem(storageKey);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Asegurar que no queden mensajes en estado de "escribiendo" si se recarga
+        return parsed.map((m: any) => ({ ...m, isStreaming: false }));
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [safetyError, setSafetyError] = useState<string | null>(null);
   const [usageMessage, setUsageMessage] = useState<string | null>(null);
@@ -188,6 +206,11 @@ export const useGenerator = (
       (!allowedOccasions.includes("all") &&
         !allowedOccasions.includes(occasion.id)));
 
+  // Persistencia de sesión: Guardar cambios automáticamente
+  useEffect(() => {
+    sessionStorage.setItem(storageKey, JSON.stringify(messages));
+  }, [messages, storageKey]);
+
   // Effects
   useEffect(() => {
     if (user && (user as any).location) setUserLocation((user as any).location);
@@ -210,9 +233,12 @@ export const useGenerator = (
       if (exclusiveIds.includes(relationshipId)) {
         const existingContact = contacts.find((c) => {
           const cRel = String(c.relationship).toLowerCase().trim();
-          if (relationshipId === "couple") return cRel === "pareja" || cRel === "couple";
-          if (relationshipId === "mother") return cRel === "madre" || cRel === "mother";
-          if (relationshipId === "father") return cRel === "padre" || cRel === "father";
+          if (relationshipId === "couple")
+            return cRel === "pareja" || cRel === "couple";
+          if (relationshipId === "mother")
+            return cRel === "madre" || cRel === "mother";
+          if (relationshipId === "father")
+            return cRel === "padre" || cRel === "father";
           return false;
         });
 
@@ -283,7 +309,10 @@ export const useGenerator = (
     if (safetyError || isLoading || isOccasionLocked) return;
 
     if (isResponder && !receivedText.trim()) {
-      showToast("Por favor, escribe el mensaje que recibiste para continuar.", "error");
+      showToast(
+        "Por favor, escribe el mensaje que recibiste para continuar.",
+        "error",
+      );
       return;
     }
 
@@ -379,14 +408,13 @@ export const useGenerator = (
           // Ignorar padding inicial (espacios en blanco) que envía el backend para Safari
           const effectiveStream = rawStream.trimStart();
           let displayContent = "";
-          
-          // [DEBUG] Ver en consola qué está llegando (F12)
-          console.log("📝 Stream:", effectiveStream.substring(effectiveStream.length - 50));
 
           // 1. Intentar extraer el contenido del mensaje (prioridad máxima)
           // Buscamos "content": "..." incluso si el JSON no está completo
           // MEJORA: Soportar también "message" por si el modelo varía la clave
-          const contentMatch = effectiveStream.match(/"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/);
+          const contentMatch = effectiveStream.match(
+            /"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/,
+          );
 
           if (contentMatch && contentMatch[1]) {
             displayContent = contentMatch[1]
@@ -456,16 +484,23 @@ export const useGenerator = (
       } catch (e) {
         // Fallback si el parseo falla: intentar extraer el content con Regex
         // Usamos la misma regex robusta que en el streaming para manejar comillas escapadas
-        const lastResort = finalContent.match(/"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/);
+        const lastResort = finalContent.match(
+          /"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/,
+        );
         if (lastResort) {
           finalContent = lastResort[1]
             .replace(/\\n/g, "\n")
             .replace(/\\"/g, '"')
             .replace(/\\t/g, "\t");
-        } else if (finalContent.trim().startsWith("{") || finalContent.includes("generated_messages") || finalContent.includes("```")) {
+        } else if (
+          finalContent.trim().startsWith("{") ||
+          finalContent.includes("generated_messages") ||
+          finalContent.includes("```")
+        ) {
           // Si parece JSON pero no pudimos extraer nada válido (ej. corte de conexión),
           // mostramos un error amigable en lugar de mostrar la estructura técnica al usuario.
-          finalContent = "Lo siento, hubo un pequeño error técnico al procesar el mensaje. Por favor intenta de nuevo.";
+          finalContent =
+            "Lo siento, hubo un pequeño error técnico al procesar el mensaje. Por favor intenta de nuevo.";
         }
       }
 
@@ -475,6 +510,7 @@ export const useGenerator = (
             ? {
                 ...msg,
                 content: finalContent,
+                originalContent: finalContent,
                 gifts,
                 guardianInsight,
                 isStreaming: false,
@@ -516,6 +552,28 @@ export const useGenerator = (
     );
   const handleClearHistory = () =>
     window.confirm("¿Borrar todo?") && setMessages([]);
+
+  const handleMarkAsUsed = async (msg: ExtendedGeneratedMessage) => {
+    if (!user || !selectedContactId) return;
+
+    // Actualización optimista en la UI
+    setMessages((prev) =>
+      prev.map((m) => (m.id === msg.id ? { ...m, isUsed: true } : m)),
+    );
+
+    try {
+      await api.post("/api/magic/mark-used", {
+        userId: (user as any)._id,
+        contactId: selectedContactId,
+        content: msg.content,
+        originalContent: msg.originalContent,
+        occasion: occasion.id,
+        tone: tone,
+      });
+    } catch (e) {
+      console.error("Error marking as used", e);
+    }
+  };
 
   return {
     relationshipId,
@@ -606,5 +664,6 @@ export const useGenerator = (
       setRelationshipId(c._id);
       setSelectedContactId(c._id);
     },
+    handleMarkAsUsed,
   };
 };

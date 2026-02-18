@@ -58,15 +58,28 @@ export const buildGuardianPrompt = ({
     selectedContact.history.length > 0;
 
   if (hasRealHistory) {
-    // FEW-SHOT PROMPTING: Extraer ejemplos reales del usuario
-    // Priorizamos mensajes que fueron editados por el usuario (wasEdited: true) porque reflejan su voz real
-    const userExamples = selectedContact.history
-      .filter((h: any) => h.wasEdited || h.content) // Preferir editados, sino cualquiera
+    // FEW-SHOT PROMPTING: Priorizar mensajes marcados como USADOS (isUsed)
+    const successfulMessages = selectedContact.history
+      .filter((h: any) => h.isUsed)
       .slice(-3)
       .map((h: any) => h.content || "");
     
+    // Si no hay suficientes usados, rellenamos con editados o recientes
+    const otherMessages = selectedContact.history
+      .filter((h: any) => !h.isUsed && (h.wasEdited || h.content))
+      .slice(-(3 - successfulMessages.length))
+      .map((h: any) => h.content || "");
+
+    const userExamples = [...successfulMessages, ...otherMessages];
+    
     const examplesText = userExamples.map((msg: string) => `- "${msg}"`).join("\n");
-    const fewShotInstruction = userExamples.length > 0 ? `\nEJEMPLOS DE MI ESTILO REAL (IMITA ESTA ESTRUCTURA Y LONGITUD):\n${examplesText}\n` : "";
+    
+    // Instrucción específica si hay ejemplos de éxito
+    const successInstruction = successfulMessages.length > 0 
+      ? "A continuación se presentan ejemplos de mensajes que el usuario SÍ aprobó y usó. Analiza su estructura y tono, y úsalos como base única para el nuevo mensaje."
+      : "EJEMPLOS DE MI ESTILO REAL (IMITA ESTA ESTRUCTURA Y LONGITUD):";
+
+    const fewShotInstruction = userExamples.length > 0 ? `\n${successInstruction}\n${examplesText}\n` : "";
 
     // Estrategia 1: Lista de Exclusión (Extraer palabras clave usadas)
     // Filtramos palabras de más de 4 letras para evitar conectores
@@ -79,6 +92,11 @@ export const buildGuardianPrompt = ({
       .slice(0, 15)
       .join(", ");
     avoidTopics = uniqueKeywords;
+
+    // Ajuste de creatividad si tenemos ejemplos sólidos de éxito
+    if (successfulMessages.length >= 2) {
+      creativityLevel = "imitation";
+    }
 
     // Estrategia 2: Nuevo Formato de Prompt de Contraste
     styleInstructions += `[Contexto para el Guardián:

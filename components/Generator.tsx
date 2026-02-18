@@ -105,6 +105,7 @@ const Generator: React.FC<GeneratorProps> = ({
     handleMessageUpdate,
     handleContactCreated,
     handleClearHistory,
+    handleMarkAsUsed,
   } = useGenerator(occasion, initialRelationship, onRelationshipChange);
 
   // Botón flotante para seguir la escritura si el usuario hace scroll hacia arriba
@@ -117,7 +118,9 @@ const Generator: React.FC<GeneratorProps> = ({
     }
 
     const handleScroll = () => {
-      const distanceToBottom = document.documentElement.scrollHeight - (window.innerHeight + window.scrollY);
+      const distanceToBottom =
+        document.documentElement.scrollHeight -
+        (window.innerHeight + window.scrollY);
       setShowScrollButton(distanceToBottom > 150); // Mostrar si está a más de 150px del final
     };
 
@@ -241,7 +244,12 @@ const Generator: React.FC<GeneratorProps> = ({
                       viewBox="0 0 24 24"
                       stroke="currentColor"
                     >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
                     </svg>
                   </button>
                 )}
@@ -456,11 +464,17 @@ const Generator: React.FC<GeneratorProps> = ({
         isFavorite={isFavorite}
         onEditMessage={setEditingMessageId}
         onClearHistory={handleClearHistory}
+        onMarkAsUsed={handleMarkAsUsed}
       />
 
       {showScrollButton && (
         <button
-          onClick={() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: "smooth" })}
+          onClick={() =>
+            window.scrollTo({
+              top: document.documentElement.scrollHeight,
+              behavior: "smooth",
+            })
+          }
           className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-slate-900/90 dark:bg-slate-700/90 backdrop-blur text-white px-5 py-2.5 rounded-full shadow-xl z-50 animate-fade-in-up text-xs font-bold flex items-center gap-2 border border-slate-700/50"
         >
           <span>⬇️</span>
@@ -488,7 +502,11 @@ const Generator: React.FC<GeneratorProps> = ({
         onSuccess={(updatedContact) => {
           if (contactToEdit) {
             // Actualizar lista si es edición
-            setContacts(contacts.map(c => c._id === updatedContact._id ? updatedContact : c));
+            setContacts(
+              contacts.map((c) =>
+                c._id === updatedContact._id ? updatedContact : c,
+              ),
+            );
             setContactToEdit(null);
           } else {
             handleContactCreated(updatedContact);
