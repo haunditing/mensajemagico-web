@@ -215,7 +215,7 @@ const ProfilePage: React.FC = () => {
       <h1 className="text-3xl font-black text-slate-900 dark:text-white mb-8">Mi Perfil</h1>
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm mb-8">
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex flex-col md:flex-row items-center gap-4 mb-8 text-center md:text-left">
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg shadow-blue-500/30">
             {user.email[0].toUpperCase()}
           </div>
@@ -247,27 +247,29 @@ const ProfilePage: React.FC = () => {
           </div>
 
           {isEditingLoc ? (
-            <div className="flex gap-2 items-start">
-              <div className="flex-1">
+            <div className="flex flex-col md:flex-row gap-2 items-stretch md:items-start">
+              <div className="flex-1 w-full md:w-auto">
                 <CitySelector
                   value={locationInput}
                   onChange={setLocationInput}
                   placeholder="Ej: Cartagena, Medellín..."
                 />
               </div>
-              <button
-                onClick={handleSaveLocation}
-                disabled={isSavingLoc}
-                className="bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50"
-              >
-                {isSavingLoc ? "..." : "Guardar"}
-              </button>
-              <button
-                onClick={() => setIsEditingLoc(false)}
-                className="text-slate-500 dark:text-slate-400 px-3 font-bold hover:text-slate-700 dark:hover:text-slate-200"
-              >
-                ✕
-              </button>
+              <div className="flex gap-2 w-full md:w-auto">
+                <button
+                  onClick={handleSaveLocation}
+                  disabled={isSavingLoc}
+                  className="flex-1 md:flex-none bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-xl font-bold hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50"
+                >
+                  {isSavingLoc ? "..." : "Guardar"}
+                </button>
+                <button
+                  onClick={() => setIsEditingLoc(false)}
+                  className="flex-1 md:flex-none text-slate-500 dark:text-slate-400 px-3 font-bold hover:text-slate-700 dark:hover:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-xl md:border-0"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           ) : (
             <p className="text-slate-600 dark:text-slate-300">
@@ -311,7 +313,7 @@ const ProfilePage: React.FC = () => {
 
         {/* Sección de Género Gramatical */}
         <div className="border-t border-slate-100 dark:border-slate-800 py-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 md:gap-0">
             <div>
               <h3 className="text-lg font-bold text-slate-900 dark:text-white">Género Gramatical</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400">¿Cómo quieres que la IA se dirija a ti?</p>
@@ -319,7 +321,7 @@ const ProfilePage: React.FC = () => {
             <select
               value={grammaticalGender}
               onChange={handleGenderChange}
-              className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
+              className="w-full md:w-auto bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-3 py-2 text-sm font-bold text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none"
             >
               <option value="male">Masculino (cansado)</option>
               <option value="female">Femenino (cansada)</option>
@@ -385,13 +387,13 @@ const ProfilePage: React.FC = () => {
                 </div>
               </div>
               
-              <div className="flex items-center justify-between pt-2">
-                <button type="button" onClick={() => setShowPasswords(!showPasswords)} className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium flex items-center gap-1">
+              <div className="flex flex-col md:flex-row items-center justify-between pt-2 gap-4 md:gap-0">
+                <button type="button" onClick={() => setShowPasswords(!showPasswords)} className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 font-medium flex items-center gap-1 w-full md:w-auto justify-center md:justify-start">
                   {showPasswords ? "🙈 Ocultar" : "👁️ Mostrar"} caracteres
                 </button>
-                <div className="flex gap-3">
-                  <button type="button" onClick={() => setIsChangingPassword(false)} className="px-4 py-2 text-slate-500 dark:text-slate-400 font-bold hover:text-slate-700 dark:hover:text-slate-200 text-sm transition-colors">Cancelar</button>
-                  <button type="submit" disabled={isSavingPassword} className="bg-slate-900 dark:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors disabled:opacity-50">{isSavingPassword ? "Guardando..." : "Actualizar"}</button>
+                <div className="flex gap-3 w-full md:w-auto">
+                  <button type="button" onClick={() => setIsChangingPassword(false)} className="flex-1 md:flex-none px-4 py-2 text-slate-500 dark:text-slate-400 font-bold hover:text-slate-700 dark:hover:text-slate-200 text-sm transition-colors">Cancelar</button>
+                  <button type="submit" disabled={isSavingPassword} className="flex-1 md:flex-none bg-slate-900 dark:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors disabled:opacity-50">{isSavingPassword ? "Guardando..." : "Actualizar"}</button>
                 </div>
               </div>
             </form>
@@ -436,19 +438,31 @@ const ProfilePage: React.FC = () => {
               {subscription.cancelAtPeriodEnd ? (
                 <div className="bg-amber-50 dark:bg-amber-900/20 p-4 rounded-lg border border-amber-100 dark:border-amber-900/30">
                   <p className="text-amber-800 dark:text-amber-200 text-sm mb-3">
-                    ⚠️ Tu suscripción se cancelará automáticamente el{" "}
-                    <strong>
-                      {new Date(subscription.renewalDate).toLocaleDateString()}
-                    </strong>
-                    . Tienes acceso Premium hasta entonces.
+                    {subscription.provider === "wompi" ? (
+                      <>
+                        ⚠️ Tu plan no se renueva automáticamente. Tienes acceso Premium hasta el{" "}
+                        <strong>{new Date(subscription.renewalDate).toLocaleDateString()}</strong>.
+                      </>
+                    ) : (
+                      <>
+                        ⚠️ Tu suscripción se cancelará automáticamente el{" "}
+                        <strong>{new Date(subscription.renewalDate).toLocaleDateString()}</strong>. Tienes acceso Premium hasta entonces.
+                      </>
+                    )}
                   </p>
-                  <button
-                    onClick={handleReactivate}
-                    disabled={reactivating}
-                    className="text-amber-700 dark:text-amber-400 text-sm font-bold hover:text-amber-900 dark:hover:text-amber-300 hover:underline disabled:opacity-50 transition-colors"
-                  >
-                    {reactivating ? "Procesando..." : "Reactivar suscripción"}
-                  </button>
+                  {subscription.provider === "wompi" ? (
+                    <Link
+                      to="/pricing"
+                      state={{ interval: subscription.interval }}
+                      className="text-amber-700 dark:text-amber-400 text-sm font-bold hover:text-amber-900 dark:hover:text-amber-300 hover:underline transition-colors"
+                    >
+                      Renovar ahora
+                    </Link>
+                  ) : (
+                    <button onClick={handleReactivate} disabled={reactivating} className="text-amber-700 dark:text-amber-400 text-sm font-bold hover:text-amber-900 dark:hover:text-amber-300 hover:underline disabled:opacity-50 transition-colors">
+                      {reactivating ? "Procesando..." : "Reactivar suscripción"}
+                    </button>
+                  )}
                 </div>
               ) : (
                 <>

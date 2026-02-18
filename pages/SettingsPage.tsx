@@ -66,8 +66,8 @@ const SettingsPage: React.FC = () => {
 
         <div className="p-6 space-y-8">
           {/* Control Principal */}
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex-1">
               <h3 className="font-bold text-slate-800 dark:text-slate-200">Recordatorios en el navegador</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mt-1">
                 Recibe avisos visuales cuando llegue una fecha importante (cumpleaños, festivos).
@@ -76,7 +76,7 @@ const SettingsPage: React.FC = () => {
             <button
               onClick={toggleNotifications}
               disabled={loading}
-              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              className={`relative inline-flex h-7 w-12 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900 shrink-0 ${
                 notificationsEnabled ? "bg-blue-600 dark:bg-blue-500" : "bg-slate-200 dark:bg-slate-700"
               }`}
             >
@@ -90,7 +90,7 @@ const SettingsPage: React.FC = () => {
 
           {/* Estado del Navegador */}
           <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
-            <div className="flex items-center gap-3 mb-2">
+            <div className="flex flex-wrap items-center gap-3 mb-2">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Estado del Navegador</span>
               {browserPermission === "granted" && <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full font-bold">Permitido ✅</span>}
               {browserPermission === "denied" && <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">Bloqueado 🚫</span>}

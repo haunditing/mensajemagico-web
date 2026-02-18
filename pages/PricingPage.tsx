@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { handleUpgrade } from "../services/paymentService"; // Stripe habilitado
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { ENABLE_UPGRADES, CONFIG } from "../config";
 import { useLocalization } from "../context/LocalizationContext";
@@ -20,9 +20,11 @@ const PricingPage: React.FC = () => {
   const { country } = useLocalization();
   const { showToast } = useToast();
   const navigate = useNavigate();
-  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(
-    "monthly",
-  );
+  const location = useLocation();
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(() => {
+    const state = location.state as { interval?: string } | null;
+    return state?.interval === "yearly" ? "yearly" : "monthly";
+  });
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
@@ -389,58 +391,8 @@ const PricingPage: React.FC = () => {
       </div>
 
       <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-        {/* Free Plan */}
-        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
-          <div className="mb-8">
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Gratis</h3>
-            <p className="text-slate-500 dark:text-slate-400">Para uso casual y esporádico.</p>
-            <div className="mt-6 flex items-baseline gap-1">
-              <span className="text-4xl font-black text-slate-900 dark:text-white">$0</span>
-              <span className="text-slate-400 dark:text-slate-500 font-medium">/mes</span>
-            </div>
-          </div>
-
-          <ul className="space-y-4 mb-6 md:mb-8 flex-1">
-            <li className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
-              <span className="text-green-500 text-xl">✓</span>
-              <span>
-                {freeConfig.access?.daily_limit ?? 5} mensajes diarios
-              </span>
-            </li>
-            <li className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
-              <span className="text-green-500 text-xl">✓</span>
-              <span>Tonos básicos</span>
-            </li>
-            <li className="flex items-center gap-3 text-slate-400 dark:text-slate-500">
-              <span
-                className={`${!freeConfig.monetization?.show_ads ? "text-green-500" : "text-slate-300 dark:text-slate-600"} text-xl`}
-              >
-                {!freeConfig.monetization?.show_ads ? "✓" : "✕"}
-              </span>
-              <span>Sin anuncios</span>
-            </li>
-            <li className="flex items-center gap-3 text-slate-400 dark:text-slate-500">
-              <span
-                className={`${freeConfig.access?.exclusive_tones === "all" ? "text-green-500" : "text-slate-300 dark:text-slate-600"} text-xl`}
-              >
-                {freeConfig.access?.exclusive_tones === "all" ? "✓" : "✕"}
-              </span>
-              <span>Tonos exclusivos</span>
-            </li>
-          </ul>
-
-          <button
-            disabled={true}
-            className="w-full py-4 rounded-2xl font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 cursor-default"
-          >
-            {planLevel === "freemium" || planLevel === "guest"
-              ? "Tu plan actual"
-              : "Incluido"}
-          </button>
-        </div>
-
         {/* Premium Plan */}
-        <div className="bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none flex flex-col relative">
+        <div className="order-1 md:order-2 bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none flex flex-col relative">
           <div className="absolute top-0 inset-x-0 flex justify-center -mt-3 z-20">
             <span
               className={`bg-gradient-to-r ${isOfferActive ? "from-rose-600 to-orange-600" : "from-blue-600 to-purple-600"} text-white text-[10px] font-bold px-4 py-1 rounded-full shadow-lg uppercase tracking-widest border border-slate-800`}
@@ -596,6 +548,56 @@ const PricingPage: React.FC = () => {
             <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl"></div>
             <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
           </div>
+        </div>
+
+        {/* Free Plan */}
+        <div className="order-2 md:order-1 bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+          <div className="mb-8">
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Gratis</h3>
+            <p className="text-slate-500 dark:text-slate-400">Para uso casual y esporádico.</p>
+            <div className="mt-6 flex items-baseline gap-1">
+              <span className="text-4xl font-black text-slate-900 dark:text-white">$0</span>
+              <span className="text-slate-400 dark:text-slate-500 font-medium">/mes</span>
+            </div>
+          </div>
+
+          <ul className="space-y-4 mb-6 md:mb-8 flex-1">
+            <li className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
+              <span className="text-green-500 text-xl">✓</span>
+              <span>
+                {freeConfig.access?.daily_limit ?? 5} mensajes diarios
+              </span>
+            </li>
+            <li className="flex items-center gap-3 text-slate-600 dark:text-slate-300">
+              <span className="text-green-500 text-xl">✓</span>
+              <span>Tonos básicos</span>
+            </li>
+            <li className="flex items-center gap-3 text-slate-400 dark:text-slate-500">
+              <span
+                className={`${!freeConfig.monetization?.show_ads ? "text-green-500" : "text-slate-300 dark:text-slate-600"} text-xl`}
+              >
+                {!freeConfig.monetization?.show_ads ? "✓" : "✕"}
+              </span>
+              <span>Sin anuncios</span>
+            </li>
+            <li className="flex items-center gap-3 text-slate-400 dark:text-slate-500">
+              <span
+                className={`${freeConfig.access?.exclusive_tones === "all" ? "text-green-500" : "text-slate-300 dark:text-slate-600"} text-xl`}
+              >
+                {freeConfig.access?.exclusive_tones === "all" ? "✓" : "✕"}
+              </span>
+              <span>Tonos exclusivos</span>
+            </li>
+          </ul>
+
+          <button
+            disabled={true}
+            className="w-full py-4 rounded-2xl font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 cursor-default"
+          >
+            {planLevel === "freemium" || planLevel === "guest"
+              ? "Tu plan actual"
+              : "Incluido"}
+          </button>
         </div>
       </div>
     </div>
