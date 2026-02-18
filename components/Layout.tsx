@@ -364,7 +364,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div
-      className={`min-h-screen flex flex-col ${selectionClass} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300`}
+      className={`min-h-screen supports-[min-height:100dvh]:min-h-[100dvh] flex flex-col ${selectionClass} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300`}
     >
       <NotificationManager />
       <OfferBanner />
