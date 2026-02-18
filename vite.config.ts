@@ -28,6 +28,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate", // Actualiza el SW automáticamente cuando hay nueva versión
       injectRegister: "inline", // Inyecta el script de registro inline para evitar bloqueo de renderizado
+      filename: "service-worker.js", // Cambiamos el nombre para evitar conflictos con caché antigua
       includeAssets: [
         "favicon.ico",
         "apple-touch-icon.png",
@@ -40,7 +41,7 @@ export default defineConfig({
       ],
       manifest: {
         name: "MensajeMágico",
-        short_name: "MensajeMágico",
+        short_name: "Mensaje",
         description: "Genera mensajes y cartas personalizadas con IA.",
         start_url: "/",
         display: "standalone",
