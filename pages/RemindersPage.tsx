@@ -6,6 +6,7 @@ import { useToast } from "../context/ToastContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useUpsell } from "../context/UpsellContext";
 import { useNavigate, Link } from "react-router-dom";
+import { useConfirm } from "../context/ConfirmContext";
 
 interface Reminder {
   _id: string;
@@ -43,6 +44,7 @@ const RemindersPage: React.FC = () => {
   const { showToast } = useToast();
   const { triggerUpsell } = useUpsell();
   const navigate = useNavigate();
+  const { confirm } = useConfirm();
 
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [holidays, setHolidays] = useState<Holiday[]>([]);
@@ -74,7 +76,7 @@ const RemindersPage: React.FC = () => {
   const fetchReminders = async () => {
     try {
       setLoading(true);
-      
+
       if (isPremium) {
         const [remindersData, holidaysData] = await Promise.all([
           api.get("/api/reminders"),
@@ -84,7 +86,9 @@ const RemindersPage: React.FC = () => {
         setHolidays(holidaysData);
       } else {
         // Modo Teaser: Solo cargamos festivos para mostrar el valor
-        const holidaysData = await api.get(`/api/reminders/holidays?country=${country}`);
+        const holidaysData = await api.get(
+          `/api/reminders/holidays?country=${country}`,
+        );
         setHolidays(holidaysData);
         setReminders([]); // Sin recordatorios personales
       }
@@ -98,7 +102,9 @@ const RemindersPage: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isPremium) {
-      triggerUpsell("Mejora a Premium para crear recordatorios personalizados ilimitados.");
+      triggerUpsell(
+        "Mejora a Premium para crear recordatorios personalizados ilimitados.",
+      );
       return;
     }
     if (!title || !date) return;
@@ -113,7 +119,10 @@ const RemindersPage: React.FC = () => {
       const todayStr = `${year}-${month}-${day}`;
 
       if (date < todayStr) {
-        showToast("La fecha debe ser futura para recordatorios únicos.", "error");
+        showToast(
+          "La fecha debe ser futura para recordatorios únicos.",
+          "error",
+        );
         return;
       }
     }
@@ -127,7 +136,7 @@ const RemindersPage: React.FC = () => {
         isRecurring,
         notes,
         notificationTime,
-        socialPlatform
+        socialPlatform,
       };
 
       if (editingId) {
@@ -135,9 +144,12 @@ const RemindersPage: React.FC = () => {
         showToast("¡Hecho! Tu recordatorio está al día.", "success");
       } else {
         await api.post("/api/reminders", payload);
-        showToast("¡Anotado! No dejaremos que se te pase esta fecha.", "success");
+        showToast(
+          "¡Anotado! No dejaremos que se te pase esta fecha.",
+          "success",
+        );
       }
-      
+
       setShowForm(false);
       resetForm();
       fetchReminders();
@@ -150,13 +162,15 @@ const RemindersPage: React.FC = () => {
 
   const handleAddHoliday = async (holiday: Holiday) => {
     if (!isPremium) {
-      triggerUpsell("Activa los recordatorios automáticos de festivos con el plan Premium.");
+      triggerUpsell(
+        "Activa los recordatorios automáticos de festivos con el plan Premium.",
+      );
       return;
     }
     setAddingHoliday(holiday.title);
     try {
       // Asegurar formato YYYY-MM-DD para evitar problemas de zona horaria
-      const dateStr = holiday.date.toString().split('T')[0];
+      const dateStr = holiday.date.toString().split("T")[0];
 
       await api.post("/api/reminders", {
         title: holiday.title,
@@ -175,7 +189,12 @@ const RemindersPage: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("¿Eliminar este recordatorio?")) return;
+    const isConfirmed = await confirm({
+      title: "¿Eliminar recordatorio?",
+      message: "Dejarás de recibir avisos para esta fecha.",
+      isDangerous: true,
+    });
+    if (!isConfirmed) return;
     try {
       await api.delete(`/api/reminders/${id}`);
       showToast("Recordatorio eliminado.", "success");
@@ -187,27 +206,27 @@ const RemindersPage: React.FC = () => {
 
   const handleEdit = (reminder: Reminder) => {
     if (!isPremium) return;
-    
+
     setTitle(reminder.title);
     // Formatear fecha para input date (YYYY-MM-DD)
     const d = new Date(reminder.date);
-    setDate(d.toISOString().split('T')[0]);
+    setDate(d.toISOString().split("T")[0]);
     setType(reminder.type);
     setIsRecurring(reminder.isRecurring);
     setNotes(reminder.notes || "");
     setNotificationTime(reminder.notificationTime || "09:00");
     setSocialPlatform(reminder.socialPlatform || "");
-    
+
     setEditingId(reminder._id);
     setShowForm(true);
     // Scroll suave hacia el formulario
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleSnooze = async (id: string, days?: number, date?: string) => {
     try {
       await api.post(`/api/reminders/${id}/snooze`, { days, targetDate: date });
-      
+
       let message = "Recordatorio pospuesto";
       if (days) message = `Pospuesto ${days} día(s)`;
       else if (date) message = "Pospuesto hasta la fecha seleccionada";
@@ -289,7 +308,7 @@ const RemindersPage: React.FC = () => {
     target.setHours(0, 0, 0, 0);
     const now = new Date();
     now.setHours(0, 0, 0, 0);
-    
+
     const diff = target.getTime() - now.getTime();
     return Math.ceil(diff / (1000 * 3600 * 24));
   };
@@ -301,16 +320,19 @@ const RemindersPage: React.FC = () => {
   const isOverdue = (reminder: Reminder) => {
     const dateStr = reminder.nextOccurrence || reminder.date;
     // Crear fecha local desde el string para comparar días correctamente
-    const [y, m, d] = dateStr.toString().split('T')[0].split('-').map(Number);
+    const [y, m, d] = dateStr.toString().split("T")[0].split("-").map(Number);
     const reminderDate = new Date(y, m - 1, d);
-    
+
     return reminderDate < now;
   };
 
   const overdueReminders = reminders.filter(isOverdue);
-  const upcomingReminders = reminders.filter(r => !isOverdue(r));
+  const upcomingReminders = reminders.filter((r) => !isOverdue(r));
 
-  const renderReminderCard = (reminder: Reminder, isOverdueItem: boolean = false) => {
+  const renderReminderCard = (
+    reminder: Reminder,
+    isOverdueItem: boolean = false,
+  ) => {
     const isHoliday = reminder.isAutomatic || reminder.type === "holiday";
     const displayDate = reminder.nextOccurrence || reminder.date;
 
@@ -318,11 +340,12 @@ const RemindersPage: React.FC = () => {
       <div
         key={reminder._id}
         className={`p-5 rounded-2xl border transition-all hover:shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 dark:bg-opacity-10
-          ${isOverdueItem 
-            ? "bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30" 
-            : isHoliday 
-              ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30" 
-              : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
+          ${
+            isOverdueItem
+              ? "bg-red-50/50 dark:bg-red-900/10 border-red-200 dark:border-red-900/30"
+              : isHoliday
+                ? "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-900/30"
+                : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800"
           }
         `}
       >
@@ -336,7 +359,9 @@ const RemindersPage: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <h3 className={`font-bold text-lg ${isOverdueItem ? "text-red-700 dark:text-red-300" : "text-slate-900 dark:text-white"}`}>
+              <h3
+                className={`font-bold text-lg ${isOverdueItem ? "text-red-700 dark:text-red-300" : "text-slate-900 dark:text-white"}`}
+              >
                 {reminder.title}
               </h3>
               {isOverdueItem && (
@@ -355,10 +380,14 @@ const RemindersPage: React.FC = () => {
                 </span>
               )}
             </div>
-            <p className={`${isOverdueItem ? "text-red-500 dark:text-red-400" : "text-slate-500 dark:text-slate-400"} font-medium text-sm flex items-center gap-2`}>
+            <p
+              className={`${isOverdueItem ? "text-red-500 dark:text-red-400" : "text-slate-500 dark:text-slate-400"} font-medium text-sm flex items-center gap-2`}
+            >
               <span>🗓️ {formatDate(displayDate)}</span>
               {reminder.notificationTime && (
-                <span className={`text-xs px-2 py-0.5 rounded ${isOverdueItem ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}>
+                <span
+                  className={`text-xs px-2 py-0.5 rounded ${isOverdueItem ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-300" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"}`}
+                >
                   ⏰ {reminder.notificationTime}
                 </span>
               )}
@@ -410,11 +439,14 @@ const RemindersPage: React.FC = () => {
               Escribir Mensaje
             </Link>
           )}
-          
+
           {/* Botón de Posponer (Snooze) */}
           {!isHoliday && (
             <button
-              onClick={() => { setSnoozeTarget(reminder); setCustomSnoozeDate(""); }}
+              onClick={() => {
+                setSnoozeTarget(reminder);
+                setCustomSnoozeDate("");
+              }}
               className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isOverdueItem ? "text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30" : "text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"}`}
               title="Posponer"
             >
@@ -468,16 +500,24 @@ const RemindersPage: React.FC = () => {
             {isPremium ? "Mis Recordatorios" : "Agenda Mágica"}
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-1">
-            {isPremium 
-              ? "Tu asistente personal para fechas importantes." 
+            {isPremium
+              ? "Tu asistente personal para fechas importantes."
               : "Nunca más olvides un cumpleaños o fecha especial."}
           </p>
         </div>
         <button
-          onClick={() => isPremium ? setShowForm(!showForm) : triggerUpsell("Crea recordatorios personalizados con Premium.")}
+          onClick={() =>
+            isPremium
+              ? setShowForm(!showForm)
+              : triggerUpsell("Crea recordatorios personalizados con Premium.")
+          }
           className="bg-blue-600 dark:bg-blue-500 text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-all active:scale-95 flex items-center gap-2"
         >
-          {showForm ? "✕ Cerrar" : isPremium ? "+ Nuevo Recordatorio" : "🔓 Desbloquear Agenda"}
+          {showForm
+            ? "✕ Cerrar"
+            : isPremium
+              ? "+ Nuevo Recordatorio"
+              : "🔓 Desbloquear Agenda"}
         </button>
       </div>
 
@@ -486,20 +526,31 @@ const RemindersPage: React.FC = () => {
         <div className="mb-10 bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-indigo-700 dark:to-blue-700 rounded-3xl p-6 text-white shadow-xl shadow-blue-900/20 dark:shadow-none relative overflow-hidden">
           <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div className="text-center sm:text-left">
-              <span className="text-blue-200 text-xs font-bold uppercase tracking-widest">Próximo Evento</span>
-              <h2 className="text-2xl md:text-3xl font-black mt-1">{nextEvent.title}</h2>
+              <span className="text-blue-200 text-xs font-bold uppercase tracking-widest">
+                Próximo Evento
+              </span>
+              <h2 className="text-2xl md:text-3xl font-black mt-1">
+                {nextEvent.title}
+              </h2>
               <p className="text-blue-100 font-medium mt-1">
                 {formatDate(nextEvent.nextOccurrence || nextEvent.date)}
               </p>
             </div>
             <div className="flex items-center gap-4">
               <div className="text-center">
-                {getDaysUntil(nextEvent.nextOccurrence || nextEvent.date) === 0 ? (
-                  <span className="block text-3xl font-black animate-pulse">¡Es Hoy!</span>
+                {getDaysUntil(nextEvent.nextOccurrence || nextEvent.date) ===
+                0 ? (
+                  <span className="block text-3xl font-black animate-pulse">
+                    ¡Es Hoy!
+                  </span>
                 ) : (
                   <>
-                    <span className="block text-4xl font-black">{getDaysUntil(nextEvent.nextOccurrence || nextEvent.date)}</span>
-                    <span className="text-xs text-blue-200 font-bold uppercase">Días</span>
+                    <span className="block text-4xl font-black">
+                      {getDaysUntil(nextEvent.nextOccurrence || nextEvent.date)}
+                    </span>
+                    <span className="text-xs text-blue-200 font-bold uppercase">
+                      Días
+                    </span>
                   </>
                 )}
               </div>
@@ -582,7 +633,9 @@ const RemindersPage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Hora de Aviso</label>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
+                  Hora de Aviso
+                </label>
                 <input
                   type="time"
                   value={notificationTime}
@@ -591,7 +644,9 @@ const RemindersPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Publicar en (Opcional)</label>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">
+                  Publicar en (Opcional)
+                </label>
                 <select
                   value={socialPlatform}
                   onChange={(e) => setSocialPlatform(e.target.value)}
@@ -623,7 +678,10 @@ const RemindersPage: React.FC = () => {
               {editingId && (
                 <button
                   type="button"
-                  onClick={() => { resetForm(); setShowForm(false); }}
+                  onClick={() => {
+                    resetForm();
+                    setShowForm(false);
+                  }}
                   className="px-6 py-3 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
                 >
                   Cancelar
@@ -634,7 +692,11 @@ const RemindersPage: React.FC = () => {
                 disabled={submitting}
                 className="bg-slate-900 dark:bg-slate-700 text-white px-8 py-3 rounded-xl font-bold hover:bg-slate-800 dark:hover:bg-slate-600 transition-all disabled:opacity-50"
               >
-                {submitting ? "Guardando..." : editingId ? "Actualizar" : "Guardar Recordatorio"}
+                {submitting
+                  ? "Guardando..."
+                  : editingId
+                    ? "Actualizar"
+                    : "Guardar Recordatorio"}
               </button>
             </div>
           </form>
@@ -649,25 +711,39 @@ const RemindersPage: React.FC = () => {
         // Estado de Venta (No Premium)
         <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-8 text-center">
           <div className="absolute inset-0 bg-white/50 dark:bg-black/50 backdrop-blur-[2px] z-10 flex flex-col items-center justify-center p-6">
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-full shadow-xl mb-4 text-4xl">🔒</div>
-            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">Tus Recordatorios Personales</h3>
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-full shadow-xl mb-4 text-4xl">
+              🔒
+            </div>
+            <h3 className="text-2xl font-black text-slate-900 dark:text-white mb-2">
+              Tus Recordatorios Personales
+            </h3>
             <p className="text-slate-600 dark:text-slate-300 max-w-md mb-6">
-              Desbloquea el plan Premium para guardar cumpleaños, aniversarios y recibir avisos automáticos antes de que sea tarde.
+              Desbloquea el plan Premium para guardar cumpleaños, aniversarios y
+              recibir avisos automáticos antes de que sea tarde.
             </p>
-            <Link to="/pricing" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-blue-500/30 transition-all active:scale-95">
+            <Link
+              to="/pricing"
+              className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-blue-500/30 transition-all active:scale-95"
+            >
               Desbloquear Premium
             </Link>
           </div>
           {/* Fondo decorativo borroso */}
-          <div className="opacity-30 filter blur-sm pointer-events-none select-none" aria-hidden="true">
-             <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex gap-4 items-center">
-                    <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
-                    <div className="flex-1 h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
-                  </div>
-                ))}
-             </div>
+          <div
+            className="opacity-30 filter blur-sm pointer-events-none select-none"
+            aria-hidden="true"
+          >
+            <div className="space-y-4">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 flex gap-4 items-center"
+                >
+                  <div className="w-12 h-12 bg-slate-200 dark:bg-slate-700 rounded-lg"></div>
+                  <div className="flex-1 h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       ) : reminders.length === 0 ? (
@@ -689,50 +765,77 @@ const RemindersPage: React.FC = () => {
                 <span>⚠️</span> Requieren Atención ({overdueReminders.length})
               </h3>
               <div className="grid gap-4">
-                {overdueReminders.map(r => renderReminderCard(r, true))}
+                {overdueReminders.map((r) => renderReminderCard(r, true))}
               </div>
             </div>
           )}
 
           {/* Sección de Próximos */}
           <div className="grid gap-4">
-            {upcomingReminders.map(r => renderReminderCard(r, false))}
+            {upcomingReminders.map((r) => renderReminderCard(r, false))}
           </div>
         </div>
       )}
 
       {/* Modal de Snooze */}
       {snoozeTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setSnoozeTarget(null)}>
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative overflow-hidden" onClick={e => e.stopPropagation()}>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">Posponer "{snoozeTarget.title}"</h3>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">¿Cuándo quieres que te avisemos de nuevo?</p>
-            
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={() => setSnoozeTarget(null)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-sm w-full p-6 relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+              Posponer "{snoozeTarget.title}"
+            </h3>
+            <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+              ¿Cuándo quieres que te avisemos de nuevo?
+            </p>
+
             <div className="grid grid-cols-2 gap-3 mb-6">
-              <button onClick={() => handleSnooze(snoozeTarget._id, 1)} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1">
+              <button
+                onClick={() => handleSnooze(snoozeTarget._id, 1)}
+                className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1"
+              >
                 <span className="text-xl">🌅</span> Mañana
               </button>
-              <button onClick={() => handleSnooze(snoozeTarget._id, 3)} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1">
+              <button
+                onClick={() => handleSnooze(snoozeTarget._id, 3)}
+                className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1"
+              >
                 <span className="text-xl">🗓️</span> 3 Días
               </button>
-              <button onClick={() => handleSnooze(snoozeTarget._id, 7)} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1">
+              <button
+                onClick={() => handleSnooze(snoozeTarget._id, 7)}
+                className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1"
+              >
                 <span className="text-xl">📅</span> 1 Semana
               </button>
-              <button onClick={() => handleSnooze(snoozeTarget._id, 30)} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1">
+              <button
+                onClick={() => handleSnooze(snoozeTarget._id, 30)}
+                className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-blue-500 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-slate-700 dark:text-slate-300 font-bold text-sm transition-all flex flex-col items-center gap-1"
+              >
                 <span className="text-xl">📆</span> 1 Mes
               </button>
             </div>
 
             <div className="border-t border-slate-100 dark:border-slate-800 pt-4">
-              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">O elige una fecha</label>
+              <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-2">
+                O elige una fecha
+              </label>
               <div className="flex gap-2">
-                <input 
-                  type="date" 
+                <input
+                  type="date"
                   className="flex-1 px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none text-sm"
                   onChange={(e) => setCustomSnoozeDate(e.target.value)}
                 />
-                <button 
-                  onClick={() => customSnoozeDate && handleSnooze(snoozeTarget._id, undefined, customSnoozeDate)}
+                <button
+                  onClick={() =>
+                    customSnoozeDate &&
+                    handleSnooze(snoozeTarget._id, undefined, customSnoozeDate)
+                  }
                   disabled={!customSnoozeDate}
                   className="bg-slate-900 dark:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-800 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -740,8 +843,11 @@ const RemindersPage: React.FC = () => {
                 </button>
               </div>
             </div>
-            
-            <button onClick={() => setSnoozeTarget(null)} className="absolute top-4 right-4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+
+            <button
+              onClick={() => setSnoozeTarget(null)}
+              className="absolute top-4 right-4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
               ✕
             </button>
           </div>
@@ -752,11 +858,13 @@ const RemindersPage: React.FC = () => {
       {!loading && holidays.length > 0 && (
         <div className="mt-12 border-t border-slate-100 dark:border-slate-800 pt-8">
           <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-2 flex items-center gap-2">
-            <span>🎉</span> Festivos Sugeridos en {COUNTRY_NAMES[country] || country}
+            <span>🎉</span> Festivos Sugeridos en{" "}
+            {COUNTRY_NAMES[country] || country}
           </h2>
           {!isPremium && (
             <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-              Estos son los eventos que podríamos rastrear por ti automáticamente.
+              Estos son los eventos que podríamos rastrear por ti
+              automáticamente.
             </p>
           )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -790,7 +898,9 @@ const RemindersPage: React.FC = () => {
                       ? "Agregado"
                       : isProcessing
                         ? "..."
-                        : isPremium ? "Agregar +" : "🔒 Agregar"}
+                        : isPremium
+                          ? "Agregar +"
+                          : "🔒 Agregar"}
                   </button>
                 </div>
               );

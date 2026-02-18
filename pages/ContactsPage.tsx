@@ -7,6 +7,7 @@ import RelationalHealthChart from "../components/RelationalHealthChart";
 import { Link } from "react-router-dom";
 import CreateContactModal from "../components/CreateContactModal";
 import { useToast } from "../context/ToastContext";
+import { useConfirm } from "../context/ConfirmContext";
 
 interface Contact {
   _id: string;
@@ -21,6 +22,7 @@ interface Contact {
 const ContactsPage: React.FC = () => {
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,7 +58,13 @@ const ContactsPage: React.FC = () => {
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm("¿Estás seguro de eliminar este contacto?")) return;
+    const isConfirmed = await confirm({
+      title: "¿Eliminar contacto?",
+      message: "Esta acción no se puede deshacer. El Guardián olvidará todo lo aprendido sobre esta relación.",
+      isDangerous: true,
+      confirmText: "Sí, eliminar"
+    });
+    if (!isConfirmed) return;
 
     try {
       await api.delete(`/api/contacts/${id}`);

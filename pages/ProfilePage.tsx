@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 import { ENABLE_UPGRADES } from "../config";
 import { api } from "../context/api";
 import CitySelector from "../components/CitySelector";
+import { useConfirm } from "../context/ConfirmContext";
 
 const ProfilePage: React.FC = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -19,6 +20,7 @@ const ProfilePage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [reactivating, setReactivating] = useState(false);
+  const { confirm } = useConfirm();
 
   // Estado para edición de ubicación
   const [isEditingLoc, setIsEditingLoc] = useState(false);
@@ -70,13 +72,13 @@ const ProfilePage: React.FC = () => {
 
   const handleCancel = async () => {
     if (!user) return;
-    if (
-      !window.confirm(
-        "¿Estás seguro de que quieres cancelar tu suscripción? Perderás los beneficios al final del periodo actual.",
-      )
-    ) {
-      return;
-    }
+    const isConfirmed = await confirm({
+      title: "¿Cancelar suscripción?",
+      message: "¿Estás seguro? Perderás los beneficios Premium al final del periodo actual.",
+      confirmText: "Sí, cancelar",
+      isDangerous: true
+    });
+    if (!isConfirmed) return;
 
     setCancelling(true);
     try {

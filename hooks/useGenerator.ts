@@ -34,6 +34,7 @@ import { useToast } from "../context/ToastContext";
 import { useFeature } from "./useFeature";
 import { GiftSuggestion } from "../components/GiftRecommendations";
 import { buildGuardianPrompt } from "../services/guardianPromptUtils";
+import { useConfirm } from "../context/ConfirmContext";
 import {
   GUARDIAN_WARNINGS,
   GUARDIAN_FALLBACKS,
@@ -67,6 +68,7 @@ export const useGenerator = (
   const { country } = useLocalization();
   const { triggerUpsell } = useUpsell();
   const { addFavorite, isFavorite } = useFavorites();
+  const { confirm } = useConfirm();
 
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
@@ -550,8 +552,14 @@ export const useGenerator = (
         msg.id === id ? { ...msg, content: newContent } : msg,
       ),
     );
-  const handleClearHistory = () =>
-    window.confirm("¿Borrar todo?") && setMessages([]);
+  const handleClearHistory = async () => {
+    const isConfirmed = await confirm({
+      title: "¿Borrar historial?",
+      message: "Se eliminarán todos los mensajes generados en esta sesión. Esta acción no se puede deshacer.",
+      isDangerous: true,
+    });
+    if (isConfirmed) setMessages([]);
+  };
 
   const handleMarkAsUsed = async (msg: ExtendedGeneratedMessage) => {
     if (!user || !selectedContactId) return;

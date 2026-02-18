@@ -211,7 +211,7 @@ const PricingPage: React.FC = () => {
 
   const handleSubscribe = async (gateway: string) => {
     if (!ENABLE_UPGRADES) {
-      alert("Las nuevas suscripciones están temporalmente deshabilitadas.");
+      showToast("Las nuevas suscripciones están temporalmente deshabilitadas.", "info");
       return;
     }
 

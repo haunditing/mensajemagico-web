@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { api } from "../context/api";
 import { useAuth } from "../context/AuthContext";
 import LoadingSpinner from "./LoadingSpinner";
+import { useToast } from "../context/ToastContext";
 
 interface WompiCheckoutButtonProps {
   planId: string; // 'premium_monthly' | 'premium_yearly'
@@ -22,6 +23,7 @@ const WompiCheckoutButton: React.FC<WompiCheckoutButtonProps> = ({
 }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   const loadWompiScript = () => {
     return new Promise((resolve, reject) => {
@@ -80,7 +82,7 @@ const WompiCheckoutButton: React.FC<WompiCheckoutButtonProps> = ({
       });
     } catch (error) {
       console.error("Error en checkout Wompi:", error);
-      alert("Error al iniciar el pago con Wompi");
+      showToast("Error al iniciar el pago con Wompi", "error");
     } finally {
       setLoading(false);
     }

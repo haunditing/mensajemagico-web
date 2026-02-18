@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../context/api';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { useToast } from '../context/ToastContext';
 
 const ResetPasswordPage: React.FC = () => {
   const [password, setPassword] = useState('');
@@ -12,6 +13,7 @@ const ResetPasswordPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { token } = useParams();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,7 +31,7 @@ const ResetPasswordPage: React.FC = () => {
     setIsLoading(true);
     try {
       await api.post(`/api/auth/reset-password/${token}`, { password });
-      alert('¡Contraseña actualizada! Ahora puedes iniciar sesión.');
+      showToast('¡Contraseña actualizada! Ahora puedes iniciar sesión.', 'success');
       navigate('/login');
     } catch (err: any) {
       setError(err.message || 'Error al restablecer la contraseña');

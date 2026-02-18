@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { LocalizationProvider } from './context/LocalizationContext';
 import { AuthProvider } from './context/AuthContext';
+import { ConfirmProvider } from './context/ConfirmContext';
 import './index.css';
 
 
@@ -16,9 +17,11 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <AuthProvider>
-      <LocalizationProvider>
-        <App />
-      </LocalizationProvider>
+      <ConfirmProvider>
+        <LocalizationProvider>
+          <App />
+        </LocalizationProvider>
+      </ConfirmProvider>
     </AuthProvider>
   </React.StrictMode>
 );
