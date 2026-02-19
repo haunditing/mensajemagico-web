@@ -11,6 +11,8 @@ import { faqData } from "../components/FaqSection";
 import { useLocalization } from "../context/LocalizationContext";
 import { isOccasionActive } from "../services/holidayService.ts";
 import LoadingSpinner from "../components/LoadingSpinner";
+import { useOnboarding } from "../context/OnboardingContext";
+import OnboardingTooltip from "../components/OnboardingTooltip";
 
 const FallingParticles = React.lazy(() => import("../components/FallingParticles"));
 const ValentineCountdown = React.lazy(() => import("../components/ValentineCountdown"));
@@ -76,6 +78,12 @@ const HomePage: React.FC = () => {
   const { triggerUpsell } = useUpsell();
   const { country } = useLocalization();
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
+  const { startTour } = useOnboarding();
+
+  // Iniciar tour general al cargar la home
+  useEffect(() => {
+    startTour("onboarding_tour");
+  }, []);
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
@@ -223,16 +231,17 @@ const HomePage: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {OCCASIONS.filter((o) => isOccasionActive(o.id, country)).map(
-            (occasion) => {
+            (occasion, index) => {
               const isVisto = occasion.slug === "no-me-dejes-en-visto";
               const isResponder = occasion.slug === "responder-un-mensaje";
               const isGreeting = occasion.slug === "un-saludo";
 
-              return (
+              // Envolvemos el primer elemento para el tour
+              const cardContent = (
                 <Link
                   key={occasion.id}
                   to={`/mensajes/${occasion.slug}`}
-                  className={`group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col hover:shadow-xl transition-all duration-300 
+                  className={`group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col hover:shadow-xl transition-all duration-300 h-full
                   ${isVisto ? "hover:border-green-400 dark:hover:border-green-500 hover:shadow-green-500/5" : ""}
                   ${isResponder ? "hover:border-blue-500 dark:hover:border-blue-500 border-blue-50 dark:border-blue-900/30" : "hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-blue-500/5"}
                 `}
@@ -276,6 +285,21 @@ const HomePage: React.FC = () => {
                   </div>
                 </Link>
               );
+
+              if (index === 0) {
+                return (
+                  <OnboardingTooltip
+                    key={occasion.id}
+                    tourId="onboarding_tour"
+                    stepIndex={0}
+                    content="¡Bienvenido! Empieza por elegir la ocasión perfecta para tu mensaje."
+                    position="top"
+                  >
+                    {cardContent}
+                  </OnboardingTooltip>
+                );
+              }
+              return cardContent;
             },
           )}
         </div>

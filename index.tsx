@@ -5,6 +5,7 @@ import App from './App';
 import { LocalizationProvider } from './context/LocalizationContext';
 import { AuthProvider } from './context/AuthContext';
 import { ConfirmProvider } from './context/ConfirmContext';
+import { OnboardingProvider } from './context/OnboardingContext';
 import './index.css';
 
 
@@ -17,11 +18,13 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <AuthProvider>
-      <ConfirmProvider>
-        <LocalizationProvider>
-          <App />
-        </LocalizationProvider>
-      </ConfirmProvider>
+      <OnboardingProvider>
+        <ConfirmProvider>
+          <LocalizationProvider>
+            <App />
+          </LocalizationProvider>
+        </ConfirmProvider>
+      </OnboardingProvider>
     </AuthProvider>
   </React.StrictMode>
 );

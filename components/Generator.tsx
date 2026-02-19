@@ -20,6 +20,8 @@ import GreetingSelector from "./GreetingSelector";
 import GuardianObjectiveSelector from "./GuardianObjectiveSelector";
 import ReceivedMessageInput from "./ReceivedMessageInput";
 import GenerateButton from "./GenerateButton";
+import { useOnboarding } from "../context/OnboardingContext";
+import OnboardingTooltip, { TooltipColor } from "./OnboardingTooltip";
 
 interface GeneratorProps {
   occasion: Occasion;
@@ -137,6 +139,35 @@ const Generator: React.FC<GeneratorProps> = ({
   const totalSteps = steps.length;
   const isLastStep = currentStep === totalSteps;
 
+  // --- ONBOARDING: Lógica del Tour Completo ---
+  const { activeTour, currentStepIndex, nextStep } = useOnboarding();
+  
+  React.useEffect(() => {
+    if (activeTour === 'onboarding_tour') {
+      // Si viene de la Home (Paso 0), avanzar automáticamente al Paso 1
+      if (currentStepIndex === 0) {
+        nextStep();
+      }
+      
+      // Sincronizar UI del Generador con el paso del Tour
+      if (isPensamiento) {
+        // En Pensamiento: Paso 1 (Formato) y Paso 2 (Contexto) ocurren en la UI "Paso 1"
+        if ((currentStepIndex === 1 || currentStepIndex === 2) && currentStep !== 1) {
+          setCurrentStep(1);
+        }
+        // Paso 3 (Tono) ocurre en la UI "Paso 2"
+        if (currentStepIndex === 3 && currentStep !== 2) {
+          setCurrentStep(2);
+        }
+      } else {
+        // Flujo normal: Paso 1 (Destinatario), Paso 2 (Contexto), Paso 3 (Tono)
+        if (currentStepIndex === 1 && currentStep !== 1) setCurrentStep(1);
+        if (currentStepIndex === 2 && currentStep !== 2) setCurrentStep(2);
+        if (currentStepIndex === 3 && currentStep !== 3) setCurrentStep(3);
+      }
+    }
+  }, [activeTour, currentStepIndex, isPensamiento, nextStep, currentStep]);
+
   const canAdvance = React.useMemo(() => {
     if (safetyError) return false;
     if (!isPensamiento && currentStep === 2 && isResponder) {
@@ -217,6 +248,51 @@ const Generator: React.FC<GeneratorProps> = ({
       setIsContactModalOpen(true);
     }
   };
+
+  // Textos dinámicos para el tour según la ocasión
+  const getStep1Text = () => {
+    if (isResponder) return "¿Quién te escribió? El Guardián analizará vuestra relación.";
+    if (isGreeting) return "¿A quién quieres saludar hoy?";
+    return "Primero, dinos a quién le escribes. El Guardián adaptará el mensaje a vuestra relación.";
+  };
+
+  const getStep2Text = () => {
+    if (isPensamiento) return "¿Sobre qué quieres reflexionar? Escribe un tema (ej: 'tiempo', 'amor').";
+    if (isResponder) return "Pega aquí el mensaje que recibiste. La IA lo analizará para responderte.";
+    if (isGreeting) return "Añade contexto si quieres (ej: 'hace tiempo no hablamos').";
+    return "Danos contexto. Escribe palabras clave (ej: 'cena', 'ayer') o usa las sugerencias.";
+  };
+
+  const getStep3Text = () => {
+    if (isPensamiento) return "Elige la emoción que quieres transmitir en tu reflexión.";
+    if (isResponder) return "Elige la intención de tu respuesta (ej. Cortante, Amable).";
+    if (isGreeting) return "Elige el estilo de tu saludo (ej. Dulce, Formal).";
+    return "Elige el tono emocional perfecto. El Guardián adaptará el mensaje a tu elección.";
+  };
+
+  const getStep4Text = () => {
+    if (isPensamiento) return "¡Listo! Crea tu reflexión mágica.";
+    if (isResponder) return "¡Listo! Generar respuesta inteligente.";
+    return "¡Listo! Pulsa aquí para que la IA cree tu mensaje mágico.";
+  };
+
+  // Determinar color del tooltip según la ocasión
+  const getTooltipColor = (): TooltipColor => {
+    if (isPensamiento) return "indigo";
+    if (isResponder) return "sky";
+    if (isGreeting) return "orange";
+    if (isPerdoname) return "amber";
+    if (occasion.id === "amor") return "rose";
+    if (occasion.id === "birthday") return "orange";
+    if (occasion.id === "anniversary") return "cyan";
+    if (occasion.id === "mothers_day") return "pink";
+    if (occasion.id === "fathers_day") return "blue";
+    if (occasion.id === "christmas") return "red";
+    if (occasion.id === "visto") return "emerald";
+    return "indigo";
+  };
+
+  const tooltipColor = getTooltipColor();
 
   return (
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>
@@ -317,13 +393,21 @@ const Generator: React.FC<GeneratorProps> = ({
           {!isPensamiento && currentStep === 1 && (
             <div className="animate-fade-in">
               {!occasion.fixedRelation && (
-                <div className="relative group">
+                <OnboardingTooltip
+                  tourId="onboarding_tour"
+                  stepIndex={1}
+                  content={getStep1Text()}
+                  position="bottom"
+                  color={tooltipColor}
+                >
                   <RelationshipSelector
                     relationshipId={relationshipId}
                     onRelationshipChange={handleRelChange}
                     contacts={contacts}
                     selectedContact={selectedContact}
                   />
+                </OnboardingTooltip>
+              )}
                   {selectedContact && (
                     <button
                       onClick={handleEditContact}
@@ -335,8 +419,6 @@ const Generator: React.FC<GeneratorProps> = ({
                       </svg>
                     </button>
                   )}
-                </div>
-              )}
             </div>
           )}
 
@@ -344,10 +426,18 @@ const Generator: React.FC<GeneratorProps> = ({
           {((!isPensamiento && currentStep === 2) || (isPensamiento && currentStep === 1)) && (
             <div className="space-y-6 animate-fade-in">
               {isPensamiento && (
-                <FormatSelector
-                  isForPost={isForPost}
-                  setIsForPost={setIsForPost}
-                />
+                <OnboardingTooltip
+                  tourId="onboarding_tour"
+                  stepIndex={1}
+                  content="Define el destino: ¿Es para un chat privado o para publicar en tus redes (Post)?"
+                  position="bottom"
+                  color={tooltipColor}
+                >
+                  <FormatSelector
+                    isForPost={isForPost}
+                    setIsForPost={setIsForPost}
+                  />
+                </OnboardingTooltip>
               )}
 
               {isGreeting && (
@@ -379,45 +469,88 @@ const Generator: React.FC<GeneratorProps> = ({
               )}
 
               {isResponder && (
-                <ReceivedMessageInput
-                  receivedText={receivedText}
-                  setReceivedText={setReceivedText}
-                  maxChars={MAX_CHARS}
-                  safetyError={safetyError}
-                  disabled={isLoading}
-                />
+                <OnboardingTooltip
+                  tourId="onboarding_tour"
+                  stepIndex={2}
+                  content={getStep2Text()}
+                  position="top"
+                  color={tooltipColor}
+                >
+                  <ReceivedMessageInput
+                    receivedText={receivedText}
+                    setReceivedText={setReceivedText}
+                    maxChars={MAX_CHARS}
+                    safetyError={safetyError}
+                    disabled={isLoading}
+                  />
+                </OnboardingTooltip>
               )}
 
-              <ContextInputSection
-                isPensamiento={isPensamiento}
-                occasionId={occasion.id}
-                tone={tone as string}
-                isContextLocked={isContextLocked}
-                maxContext={MAX_CONTEXT}
-                currentWord={currentWord}
-                onCurrentWordChange={setCurrentWord}
-                onKeyDown={handleKeyDown}
-                contextWords={contextWords}
-                onAddWord={addContextWord}
-                onRemoveWord={removeContextWord}
-                onTrendingTopicClick={handleTrendingTopicClick}
-                showHandAnimation={showHandAnimation}
-                onTriggerUpsell={triggerUpsell}
-              />
+              {isResponder ? (
+                <ContextInputSection
+                  isPensamiento={isPensamiento}
+                  occasionId={occasion.id}
+                  tone={tone as string}
+                  isContextLocked={isContextLocked}
+                  maxContext={MAX_CONTEXT}
+                  currentWord={currentWord}
+                  onCurrentWordChange={setCurrentWord}
+                  onKeyDown={handleKeyDown}
+                  contextWords={contextWords}
+                  onAddWord={addContextWord}
+                  onRemoveWord={removeContextWord}
+                  onTrendingTopicClick={handleTrendingTopicClick}
+                  showHandAnimation={showHandAnimation}
+                  onTriggerUpsell={triggerUpsell}
+                />
+              ) : (
+                <OnboardingTooltip
+                  tourId="onboarding_tour"
+                  stepIndex={2}
+                  content={getStep2Text()}
+                  position="top"
+                  color={tooltipColor}
+                >
+                  <ContextInputSection
+                    isPensamiento={isPensamiento}
+                    occasionId={occasion.id}
+                    tone={tone as string}
+                    isContextLocked={isContextLocked}
+                    maxContext={MAX_CONTEXT}
+                    currentWord={currentWord}
+                    onCurrentWordChange={setCurrentWord}
+                    onKeyDown={handleKeyDown}
+                    contextWords={contextWords}
+                    onAddWord={addContextWord}
+                    onRemoveWord={removeContextWord}
+                    onTrendingTopicClick={handleTrendingTopicClick}
+                    showHandAnimation={showHandAnimation}
+                    onTriggerUpsell={triggerUpsell}
+                  />
+                </OnboardingTooltip>
+              )}
             </div>
           )}
 
           {/* --- PASO 3 (o 2 en Pensamiento): ESTILO Y GENERACIÓN --- */}
           {((!isPensamiento && currentStep === 3) || (isPensamiento && currentStep === 2)) && (
             <div className="space-y-6 animate-fade-in">
-              <ToneSelector
-                isPensamiento={isPensamiento}
-                isGreeting={isGreeting}
-                tone={tone}
-                setTone={setTone}
-                availableTones={availableTones}
-                guardianWarning={guardianWarning}
-              />
+              <OnboardingTooltip
+                tourId="onboarding_tour"
+                stepIndex={3}
+                content={getStep3Text()}
+                position="top"
+                color={tooltipColor}
+              >
+                <ToneSelector
+                  isPensamiento={isPensamiento}
+                  isGreeting={isGreeting}
+                  tone={tone}
+                  setTone={setTone}
+                  availableTones={availableTones}
+                  guardianWarning={guardianWarning}
+                />
+              </OnboardingTooltip>
 
               <GuardianObjectiveSelector
                 intention={intention}
@@ -501,16 +634,25 @@ const Generator: React.FC<GeneratorProps> = ({
           
           {isLastStep ? (
             <div className="flex-1">
-              <GenerateButton
-                onClick={handleGenerateAndReset}
-                isLoading={isLoading}
-                safetyError={safetyError}
-                user={user}
-                remainingCredits={remainingCredits}
-                isOccasionLocked={isOccasionLocked}
-                isPensamiento={isPensamiento}
-                isGreeting={isGreeting}
-              />
+              <OnboardingTooltip
+                tourId="onboarding_tour"
+                stepIndex={4}
+                content={getStep4Text()}
+                position="top"
+                color={tooltipColor}
+                isLast
+              >
+                <GenerateButton
+                  onClick={handleGenerateAndReset}
+                  isLoading={isLoading}
+                  safetyError={safetyError}
+                  user={user}
+                  remainingCredits={remainingCredits}
+                  isOccasionLocked={isOccasionLocked}
+                  isPensamiento={isPensamiento}
+                  isGreeting={isGreeting}
+                />
+              </OnboardingTooltip>
             </div>
           ) : (
             <button
