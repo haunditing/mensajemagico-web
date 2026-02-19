@@ -26,8 +26,9 @@ const GreetingSelector: React.FC<GreetingSelectorProps> = ({
           ¿En qué momento estás?
         </label>
         {greetingMoment === suggestedGreeting && (
-          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full flex items-center gap-1 animate-fade-in">
-            <span role="img" aria-hidden="true">{getIcon(suggestedGreeting)}</span> Sugerido por la hora
+          <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full flex items-center gap-1 animate-fade-in shrink-0">
+            <span role="img" aria-hidden="true">{getIcon(suggestedGreeting)}</span>
+            <span>Sugerido<span className="hidden sm:inline"> por la hora</span></span>
           </span>
         )}
       </div>
