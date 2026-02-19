@@ -4,7 +4,7 @@ interface OnboardingContextType {
   activeTour: string | null;
   currentStepIndex: number;
   startTour: (tourId: string) => void;
-  nextStep: () => void;
+  nextStep: (expectedCurrentIndex?: number) => void;
   skipTour: () => void;
   isTourCompleted: (tourId: string) => boolean;
   resetTour: (tourId: string) => void;
@@ -52,8 +52,11 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   };
 
-  const nextStep = () => {
-    setCurrentStepIndex((prev) => prev + 1);
+  const nextStep = (expectedCurrentIndex?: number) => {
+    setCurrentStepIndex((prev) => {
+      if (expectedCurrentIndex !== undefined && prev !== expectedCurrentIndex) return prev;
+      return prev + 1;
+    });
   };
 
   const skipTour = () => {

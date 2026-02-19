@@ -143,13 +143,13 @@ const Generator: React.FC<GeneratorProps> = ({
   const isLastStep = currentStep === totalSteps;
 
   // --- ONBOARDING: Lógica del Tour Completo ---
-  const { activeTour, currentStepIndex, nextStep } = useOnboarding();
+  const { activeTour, currentStepIndex, nextStep, skipTour } = useOnboarding();
   
   React.useEffect(() => {
     if (activeTour === 'onboarding_tour') {
       // Si viene de la Home (Paso 0), avanzar automáticamente al Paso 1
       if (currentStepIndex === 0) {
-        nextStep();
+        nextStep(0);
       }
       
       // Sincronizar UI del Generador con el paso del Tour
@@ -186,6 +186,11 @@ const Generator: React.FC<GeneratorProps> = ({
       return;
     }
     
+    // Sincronizar avance manual con el tour si está activo
+    if (activeTour === 'onboarding_tour') {
+      nextStep();
+    }
+
     setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
     // Scroll suave al inicio del contenedor para mantener el foco
     document.getElementById("generator-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -198,6 +203,10 @@ const Generator: React.FC<GeneratorProps> = ({
   const handleGenerateAndReset = async () => {
     const success = await handleGenerate();
     if (success) {
+      // Si el usuario completa la acción principal, damos por terminado el tour
+      if (activeTour === 'onboarding_tour') {
+        skipTour();
+      }
       setCurrentStep(1);
       resetForm();
     }
@@ -418,37 +427,37 @@ const Generator: React.FC<GeneratorProps> = ({
                   </OnboardingTooltip>
                 )
               ) : (
-                <>
-                  <OnboardingTooltip
-                    tourId="onboarding_tour"
-                    stepIndex={1}
-                    content="Define el destino: ¿Es para un chat privado o para publicar en tus redes (Post)?"
-                    position="bottom"
-                    color={tooltipColor}
-                  >
+                <OnboardingTooltip
+                  tourId="onboarding_tour"
+                  stepIndex={1}
+                  content={getStep1Text()}
+                  position="bottom"
+                  color={tooltipColor}
+                >
+                  <div className="space-y-6">
                     <FormatSelector
                       isForPost={isForPost}
                       setIsForPost={setIsForPost}
                     />
-                  </OnboardingTooltip>
 
-                  <div className="animate-fade-in">
-                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                      Tema Central
-                    </label>
-                    <select
-                      value={relationshipId}
-                      onChange={handleRelChange}
-                      className="w-full h-12 md:h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
-                    >
-                      {PENSAMIENTO_THEMES.map((theme) => (
-                        <option key={theme.id} value={theme.id}>
-                          {theme.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="animate-fade-in">
+                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                        Tema Central
+                      </label>
+                      <select
+                        value={relationshipId}
+                        onChange={handleRelChange}
+                        className="w-full h-12 md:h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                      >
+                        {PENSAMIENTO_THEMES.map((theme) => (
+                          <option key={theme.id} value={theme.id}>
+                            {theme.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                </>
+                </OnboardingTooltip>
               )}
             </div>
           )}

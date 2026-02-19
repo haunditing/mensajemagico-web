@@ -121,7 +121,7 @@ const OnboardingTooltip: React.FC<OnboardingTooltipProps> = ({
     <div className="relative w-full h-full" ref={tooltipRef}>
       {children}
       {isActive && (
-        <div className={`absolute z-50 w-64 max-w-[90vw] p-4 text-white rounded-xl shadow-xl animate-fade-in-up border ${theme.container}
+        <div className={`absolute z-[60] w-64 max-w-[90vw] p-4 text-white rounded-xl shadow-xl animate-fade-in-up border ${theme.container}
           ${position === 'bottom' ? 'top-full mt-4 left-1/2 -translate-x-1/2' : ''}
           ${position === 'top' ? 'bottom-full mb-4 left-1/2 -translate-x-1/2' : ''}
         `}>
@@ -133,8 +133,8 @@ const OnboardingTooltip: React.FC<OnboardingTooltipProps> = ({
           
           <p className="text-sm font-medium mb-3 leading-relaxed">{content}</p>
           <div className="flex justify-between items-center">
-            <button onClick={skipTour} className={`text-xs font-medium hover:text-white ${theme.text}`}>Omitir</button>
-            <button onClick={isLast ? skipTour : nextStep} className={`bg-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors ${theme.button}`}>
+            <button onClick={() => skipTour()} className={`text-xs font-medium hover:text-white ${theme.text}`}>Omitir</button>
+            <button onClick={() => isLast ? skipTour() : nextStep()} className={`bg-white px-3 py-1.5 rounded-lg text-xs font-bold shadow-sm transition-colors ${theme.button}`}>
               {isLast ? '¡Entendido!' : 'Siguiente'}
             </button>
           </div>
