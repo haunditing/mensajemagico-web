@@ -90,7 +90,14 @@ const CompactGiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ 
             {!imageLoaded && <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800 animate-pulse" />}
           </>
         ) : (
-          <span className="text-3xl" role="img" aria-label="Icono de regalo">🎁</span>
+          <div className="w-full h-full flex items-center justify-center bg-white p-2">
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" 
+              alt="Amazon" 
+              className="w-full h-full object-contain" 
+              loading="lazy"
+            />
+          </div>
         )}
       </div>
       <div className="flex-1 min-w-0 flex flex-col h-full">
@@ -209,7 +216,14 @@ const GiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ gift, c
             {!imageLoaded && <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800 animate-pulse" />}
           </>
         ) : (
-          <div className="text-5xl transform group-hover:scale-110 transition-transform duration-300 drop-shadow-sm" role="img" aria-label="Icono de regalo">🎁</div>
+          <div className="w-full h-full flex items-center justify-center bg-white p-8 group-hover:scale-105 transition-transform duration-300">
+            <img 
+              src="https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg" 
+              alt="Amazon" 
+              className="w-full h-full object-contain" 
+              loading="lazy"
+            />
+          </div>
         )}
         
         {/* Etiqueta de Precio */}
