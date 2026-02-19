@@ -626,9 +626,13 @@ const Generator: React.FC<GeneratorProps> = ({
           {currentStep > 1 && (
             <button
               onClick={handleBack}
-              className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="flex-none w-14 h-14 md:w-auto md:h-auto md:px-6 md:py-3 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center border border-slate-200 dark:border-slate-700 md:border-0"
+              aria-label="Volver al paso anterior"
             >
-              Atrás
+              <svg className="w-5 h-5 md:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              <span className="hidden md:inline">Atrás</span>
             </button>
           )}
           
@@ -657,13 +661,16 @@ const Generator: React.FC<GeneratorProps> = ({
           ) : (
             <button
               onClick={handleNext}
-              className={`flex-1 px-6 py-3 rounded-xl font-bold transition-all ${
+              className={`flex-1 h-14 md:h-auto md:py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
                 !canAdvance
                   ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"
                   : "bg-slate-900 dark:bg-slate-700 text-white hover:bg-slate-800 dark:hover:bg-slate-600 shadow-lg active:scale-95"
               } ${isShaking ? "animate-shake" : ""}`}
             >
-              Siguiente
+              <span>Siguiente</span>
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           )}
         </div>
