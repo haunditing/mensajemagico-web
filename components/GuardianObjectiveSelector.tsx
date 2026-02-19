@@ -34,11 +34,11 @@ const GuardianObjectiveSelector: React.FC<GuardianObjectiveSelectorProps> = ({
       </div>
       
       {/* Carrusel en móvil (flex + overflow), Grid en escritorio (md:grid) */}
-      <div className="flex overflow-x-auto pb-2 -mx-6 px-6 md:flex md:flex-wrap md:gap-2 md:pb-0 md:mx-0 md:px-0 no-scrollbar snap-x mb-2">
+      <div className="flex overflow-x-auto pb-2 gap-2 md:flex md:flex-wrap md:pb-0 no-scrollbar snap-x mb-2">
         {GUARDIAN_INTENTIONS.map((int) => {
           const isSelected = intention === int.id;
           return (
-            <div key={int.id} className="snap-center shrink-0 pr-2 md:pr-0 last:pr-6 md:last:pr-0">
+            <div key={int.id} className="snap-center shrink-0">
               <button
                 type="button"
                 aria-pressed={isSelected}

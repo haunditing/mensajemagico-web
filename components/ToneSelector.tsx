@@ -66,12 +66,12 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
           <div
             ref={scrollRef}
             onScroll={handleScroll}
-            className="flex overflow-x-auto pb-2 -mx-6 px-6 md:block md:space-y-3 md:w-full md:pb-0 md:mx-0 md:px-0 no-scrollbar snap-x"
+            className="flex overflow-x-auto pb-2 gap-4 md:block md:space-y-3 md:w-full md:pb-0 md:gap-0 no-scrollbar snap-x"
           >
             {Object.entries(EMOTIONAL_GROUPS).map(([groupName, stateIds]) => (
               <div
                 key={groupName}
-                className="snap-center shrink-0 w-[85vw] max-w-[300px] md:w-full md:max-w-none pr-4 md:pr-0 last:pr-6 md:last:pr-0 flex flex-col gap-2"
+                className="snap-center shrink-0 w-[85vw] max-w-[300px] md:w-full md:max-w-none flex flex-col gap-2"
               >
                 <span
                   className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider"
@@ -120,14 +120,14 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
         </>
       ) : (
         // Carrusel en móvil (flex + overflow), Flex Wrap en escritorio (ajuste automático)
-        <div className="flex overflow-x-auto pt-4 pb-2 -mx-6 px-6 md:flex-wrap md:gap-2 md:pt-2 md:pb-0 md:mx-0 md:px-0 md:overflow-visible no-scrollbar snap-x">
+        <div className="flex overflow-x-auto pt-4 pb-2 gap-2 md:flex-wrap md:pt-2 md:pb-0 md:overflow-visible no-scrollbar snap-x">
           {isGreeting
             ? GREETING_TONES.map((t) => {
                 const isSelected = tone === (t.id as any);
                 return (
                   <div
                     key={t.id}
-                    className="snap-center shrink-0 pr-2 md:pr-0 last:pr-6 md:last:pr-0"
+                    className="snap-center shrink-0"
                   >
                     <button
                       type="button"
@@ -156,7 +156,7 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                 return (
                   <div
                     key={t.value}
-                    className="snap-center shrink-0 pr-2 md:pr-0 last:pr-6 md:last:pr-0"
+                    className="snap-center shrink-0"
                   >
                     <FeatureGuard featureKey={t.value} type="tone">
                       <button
