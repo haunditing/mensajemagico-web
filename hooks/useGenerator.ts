@@ -262,13 +262,15 @@ export const useGenerator = (
 
   // Sincronizar Intención con el Tono (Matriz Psicológica)
   useEffect(() => {
-    if (!manualIntentionOverride && tone) {
+    if (tone) {
       const defaultIntention = PSYCHOLOGICAL_MATRIX[tone as string];
       if (defaultIntention) {
         setIntention(defaultIntention);
+        // Al cambiar el tono, reseteamos el override para aplicar la nueva intención por defecto
+        setManualIntentionOverride(false);
       }
     }
-  }, [tone, manualIntentionOverride]);
+  }, [tone]);
 
   const guardianDescription = useMemo(() => {
     if (isPensamiento) {
