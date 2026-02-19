@@ -46,6 +46,30 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
   const [canScrollRight, setCanScrollRight] = useState(true);
   const [activeIndex, setActiveIndex] = useState(0);
   const lastMessageIdRef = useRef<string | null>(null);
+  
+  // Estado para Drag-to-Scroll (Arrastre con mouse)
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (!scrollRef.current) return;
+    e.preventDefault(); // Evita selección de texto al iniciar arrastre
+    setIsDragging(true);
+    setStartX(e.pageX - scrollRef.current.offsetLeft);
+    setScrollLeft(scrollRef.current.scrollLeft);
+  };
+
+  const handleMouseLeave = () => setIsDragging(false);
+  const handleMouseUp = () => setIsDragging(false);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5; // Velocidad del scroll
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  };
 
   const checkScroll = () => {
     if (scrollRef.current) {
@@ -120,7 +144,11 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
           <div 
             ref={scrollRef}
             onScroll={checkScroll}
-            className="flex overflow-x-auto gap-4 pb-8 snap-x touch-pan-x cursor-grab active:cursor-grabbing no-scrollbar -mx-6 px-6 md:-mx-10 md:px-10 items-start"
+            onMouseDown={handleMouseDown}
+            onMouseLeave={handleMouseLeave}
+            onMouseUp={handleMouseUp}
+            onMouseMove={handleMouseMove}
+            className={`flex overflow-x-auto gap-4 pb-8 no-scrollbar -mx-6 px-6 md:-mx-10 md:px-10 items-start ${isDragging ? "cursor-grabbing snap-none select-none" : "cursor-grab snap-x active:cursor-grabbing"}`}
           >
           {messages.map((msg) => {
             const isError = msg.content === AI_ERROR_FALLBACK;
@@ -225,7 +253,7 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
                         if (onMarkAsUsed) onMarkAsUsed(msg);
                         return onShareAction(platform);
                       }}
-                      disabled={isError || isLoading}
+                      disabled={isError || isLoading || !!msg.isStreaming}
                       className="animate-fade-in-up flex-1"
                       highlightedPlatform={shareParam}
                     />
@@ -233,11 +261,12 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
                     {!isError && (
                       <button
                         onClick={() => onToggleFavorite(msg)}
+                        disabled={!!msg.isStreaming}
                         className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
                           isFav
                             ? "bg-red-50 text-red-500"
                             : "bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500 hover:text-red-400"
-                        }`}
+                        } ${msg.isStreaming ? "opacity-50 cursor-not-allowed" : ""}`}
                         title="Guardar en favoritos"
                       >
                         <span
