@@ -422,7 +422,7 @@ const PricingPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto pb-24">
+      <div className="max-w-md mx-auto pb-24 md:pb-12">
         {/* Premium Plan */}
         {activeTab === "premium" && (
         <div className="bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none flex flex-col relative animate-fade-in">
@@ -490,6 +490,16 @@ const PricingPage: React.FC = () => {
                 )}
               </div>
             )}
+          </div>
+
+          {/* Desktop CTA Button (Oculto en móvil) */}
+          <div className="hidden md:block mb-8 relative z-10">
+            <button
+              onClick={() => setIsPaymentModalOpen(true)}
+              className="w-full py-4 rounded-2xl font-bold text-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            >
+              <span>✨</span> Suscribirse Ahora
+            </button>
           </div>
 
           <ul className="space-y-5 mb-8 flex-1 relative z-10">
@@ -585,9 +595,9 @@ const PricingPage: React.FC = () => {
         )}
       </div>
 
-      {/* Sticky Call to Action (Solo Premium) */}
+      {/* Sticky Call to Action (Solo Premium - Solo Móvil) */}
       {activeTab === "premium" && planLevel !== "premium" && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 z-40 animate-slide-up-mobile">
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 z-40 animate-slide-up-mobile md:hidden">
           <div className="max-w-md mx-auto">
             <button
               onClick={() => setIsPaymentModalOpen(true)}
