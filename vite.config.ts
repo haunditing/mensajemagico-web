@@ -40,6 +40,7 @@ export default defineConfig({
         "android-chrome-512x512.png",
         "android-chrome-192x192-maskable.png",
         "android-chrome-512x512-maskable.png",
+        "android-chrome-splash.png",
         "screenshot-mobile.png",
         "screenshot-desktop.png",
       ],
@@ -86,6 +87,12 @@ export default defineConfig({
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
+          },
+          {
+            src: "/android-chrome-splash.png",
+            sizes: "512x512",
+            type: "image/png",
+            purpose: "any",
           },
         ],
         screenshots: [

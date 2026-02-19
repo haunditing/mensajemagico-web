@@ -1,6 +1,6 @@
 import React from "react";
 import { Occasion, Relationship } from "../types";
-import { APOLOGY_REASONS } from "../constants";
+import { APOLOGY_REASONS, PENSAMIENTO_THEMES } from "../constants";
 import { useLocalization } from "../context/LocalizationContext";
 import { useAuth } from "../context/AuthContext";
 import { useUpsell } from "../context/UpsellContext";
@@ -127,8 +127,9 @@ const Generator: React.FC<GeneratorProps> = ({
   const steps = React.useMemo(() => {
     if (isPensamiento) {
       return [
-        { id: 1, label: "Contexto" },
-        { id: 2, label: "Estilo" },
+        { id: 1, label: "Formato" },
+        { id: 2, label: "Contexto" },
+        { id: 3, label: "Estilo" },
       ];
     }
     return [
@@ -152,21 +153,10 @@ const Generator: React.FC<GeneratorProps> = ({
       }
       
       // Sincronizar UI del Generador con el paso del Tour
-      if (isPensamiento) {
-        // En Pensamiento: Paso 1 (Formato) y Paso 2 (Contexto) ocurren en la UI "Paso 1"
-        if ((currentStepIndex === 1 || currentStepIndex === 2) && currentStep !== 1) {
-          setCurrentStep(1);
-        }
-        // Paso 3 (Tono) ocurre en la UI "Paso 2"
-        if (currentStepIndex === 3 && currentStep !== 2) {
-          setCurrentStep(2);
-        }
-      } else {
-        // Flujo normal: Paso 1 (Destinatario), Paso 2 (Contexto), Paso 3 (Tono)
-        if (currentStepIndex === 1 && currentStep !== 1) setCurrentStep(1);
-        if (currentStepIndex === 2 && currentStep !== 2) setCurrentStep(2);
-        if (currentStepIndex === 3 && currentStep !== 3) setCurrentStep(3);
-      }
+      // Ahora ambos flujos tienen 3 pasos, la lógica es uniforme
+      if (currentStepIndex === 1 && currentStep !== 1) setCurrentStep(1);
+      if (currentStepIndex === 2 && currentStep !== 2) setCurrentStep(2);
+      if (currentStepIndex === 3 && currentStep !== 3) setCurrentStep(3);
     }
   }, [activeTour, currentStepIndex, isPensamiento, nextStep, currentStep]);
 
@@ -253,13 +243,14 @@ const Generator: React.FC<GeneratorProps> = ({
 
   // Textos dinámicos para el tour según la ocasión
   const getStep1Text = () => {
+    if (isPensamiento) return "Define el formato y el tema central de tu reflexión.";
     if (isResponder) return "¿Quién te escribió? El Guardián analizará vuestra relación.";
     if (isGreeting) return "¿A quién quieres saludar hoy?";
     return "Primero, dinos a quién le escribes. El Guardián adaptará el mensaje a vuestra relación.";
   };
 
   const getStep2Text = () => {
-    if (isPensamiento) return "¿Sobre qué quieres reflexionar? Escribe un tema (ej: 'tiempo', 'amor').";
+    if (isPensamiento) return "Añade detalles o palabras clave para enriquecer tu reflexión.";
     if (isResponder) return "Pega aquí el mensaje que recibiste. La IA lo analizará para responderte.";
     if (isGreeting) return "Añade contexto si quieres (ej: 'hace tiempo no hablamos').";
     return "Danos contexto. Escribe palabras clave (ej: 'cena', 'ayer') o usa las sugerencias.";
@@ -393,59 +384,78 @@ const Generator: React.FC<GeneratorProps> = ({
         </nav>
 
         <div className="space-y-6 mb-8">
-          {/* --- PASO 1: DESTINATARIO (Solo si no es Pensamiento) --- */}
-          {!isPensamiento && currentStep === 1 && (
-            <div className="animate-fade-in">
-              {!occasion.fixedRelation && (
-                <OnboardingTooltip
-                  tourId="onboarding_tour"
-                  stepIndex={1}
-                  content={getStep1Text()}
-                  position="bottom"
-                  color={tooltipColor}
-                >
-                  <div className="relative group">
-                    <RelationshipSelector
-                      relationshipId={relationshipId}
-                      onRelationshipChange={handleRelChange}
-                      contacts={contacts}
-                      selectedContact={selectedContact}
+          {/* --- PASO 1: DESTINATARIO / FORMATO --- */}
+          {currentStep === 1 && (
+            <div className="animate-fade-in space-y-6">
+              {!isPensamiento ? (
+                !occasion.fixedRelation && (
+                  <OnboardingTooltip
+                    tourId="onboarding_tour"
+                    stepIndex={1}
+                    content={getStep1Text()}
+                    position="bottom"
+                    color={tooltipColor}
+                  >
+                    <div className="relative group">
+                      <RelationshipSelector
+                        relationshipId={relationshipId}
+                        onRelationshipChange={handleRelChange}
+                        contacts={contacts}
+                        selectedContact={selectedContact}
+                      />
+                      {selectedContact && (
+                        <button
+                          onClick={handleEditContact}
+                          className="absolute right-2 bottom-2 md:bottom-3 p-1.5 text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 transition-all rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 md:opacity-0 md:group-hover:opacity-100"
+                          title="Editar nombre del contacto"
+                        >
+                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                      )}
+                    </div>
+                  </OnboardingTooltip>
+                )
+              ) : (
+                <>
+                  <OnboardingTooltip
+                    tourId="onboarding_tour"
+                    stepIndex={1}
+                    content="Define el destino: ¿Es para un chat privado o para publicar en tus redes (Post)?"
+                    position="bottom"
+                    color={tooltipColor}
+                  >
+                    <FormatSelector
+                      isForPost={isForPost}
+                      setIsForPost={setIsForPost}
                     />
-                    {selectedContact && (
-                      <button
-                        onClick={handleEditContact}
-                        className="absolute right-2 bottom-2 md:bottom-3 p-1.5 text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 transition-all rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 md:opacity-0 md:group-hover:opacity-100"
-                        title="Editar nombre del contacto"
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                    )}
+                  </OnboardingTooltip>
+
+                  <div className="animate-fade-in">
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                      Tema Central
+                    </label>
+                    <select
+                      value={relationshipId}
+                      onChange={handleRelChange}
+                      className="w-full h-12 md:h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                    >
+                      {PENSAMIENTO_THEMES.map((theme) => (
+                        <option key={theme.id} value={theme.id}>
+                          {theme.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                </OnboardingTooltip>
+                </>
               )}
             </div>
           )}
 
-          {/* --- PASO 2 (o 1 en Pensamiento): CONTEXTO --- */}
-          {((!isPensamiento && currentStep === 2) || (isPensamiento && currentStep === 1)) && (
+          {/* --- PASO 2: CONTEXTO --- */}
+          {currentStep === 2 && (
             <div className="space-y-6 animate-fade-in">
-              {isPensamiento && (
-                <OnboardingTooltip
-                  tourId="onboarding_tour"
-                  stepIndex={1}
-                  content="Define el destino: ¿Es para un chat privado o para publicar en tus redes (Post)?"
-                  position="bottom"
-                  color={tooltipColor}
-                >
-                  <FormatSelector
-                    isForPost={isForPost}
-                    setIsForPost={setIsForPost}
-                  />
-                </OnboardingTooltip>
-              )}
-
               {isGreeting && (
                 <GreetingSelector
                   greetingMoment={greetingMoment}
@@ -538,8 +548,8 @@ const Generator: React.FC<GeneratorProps> = ({
             </div>
           )}
 
-          {/* --- PASO 3 (o 2 en Pensamiento): ESTILO Y GENERACIÓN --- */}
-          {((!isPensamiento && currentStep === 3) || (isPensamiento && currentStep === 2)) && (
+          {/* --- PASO 3: ESTILO Y GENERACIÓN --- */}
+          {currentStep === 3 && (
             <div className="space-y-6 animate-fade-in">
               <OnboardingTooltip
                 tourId="onboarding_tour"
@@ -571,7 +581,7 @@ const Generator: React.FC<GeneratorProps> = ({
         </div>
 
         {/* Toggle Regalos */}
-        {isLastStep && (!isPensamiento || !isForPost) && (
+        {isLastStep && !isPensamiento && (
           <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
             <div
               className="flex items-center gap-3 cursor-pointer group w-fit"

@@ -137,7 +137,7 @@ export const buildGuardianPrompt = ({
       ESTRUCTURA OBLIGATORIA:
       1. Hook (Gancho): Empieza con una verdad incómoda o una observación aguda.
       2. Observación (Análisis): Analiza el concepto de forma abstracta o filosófica. NO inventes historias personales ni anécdotas que no ocurrieron.
-      3. Lesson (Cierre): Termina con una pregunta que invite a pensar o una conclusión potente.`;
+      3. Lesson (Cierre): Termina con una conclusión potente.${hasRealHistory ? " Si los ejemplos del usuario tienen preguntas, úsalas. Si no, EVITA las preguntas." : " EVITA terminar con preguntas directas."}`;
 
     // 3. Niveles de Consciencia (según el tono/estado emocional)
     if (
@@ -154,14 +154,14 @@ export const buildGuardianPrompt = ({
 
     // 4. Formato (Chat vs Post)
     if (isForPost) {
-      styleInstructions += ` FORMATO: "Para Redes Sociales (Post)". NO incluyas saludos personales ni nombres. Escribe para una audiencia general. INCLUYE UN CALL TO ACTION AL FINAL (ej. "¿Te ha pasado?", "¿Qué opinas?").`;
+      styleInstructions += ` FORMATO: Redes Sociales (Post). NO incluyas saludos personales ni nombres. Escribe para una audiencia general. OBLIGATORIO: Termina con una frase que invite a la interacción (Call to Action). PROHIBIDO incluir el texto "Para Redes Sociales" en la respuesta.`;
     } else {
-      styleInstructions += ` FORMATO: "Para Chat Privado". Mantén la intimidad de una conversación uno a uno.`;
+      styleInstructions += ` FORMATO: Chat Privado. Mantén la intimidad de una conversación uno a uno. PROHIBIDO incluir el texto "Para Chat Privado" en la respuesta.`;
     }
   }
 
-  // Determinar si realmente pedimos regalos (Desactivar para Posts de Pensamiento)
-  const shouldIncludeGifts = showGifts && !(isPensamiento && isForPost);
+  // Determinar si realmente pedimos regalos (Desactivar para cualquier Pensamiento)
+  const shouldIncludeGifts = showGifts && !isPensamiento;
 
   // Inyectamos instrucción para formato JSON y regalos si está activo
   const currencyMap: Record<string, string> = {
