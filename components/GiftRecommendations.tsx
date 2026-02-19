@@ -131,28 +131,28 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
 
   return (
     <div className="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800 animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-3">
           <div className="bg-[#FF9900]/10 p-2 rounded-lg text-xl" aria-hidden="true">🎁</div>
           <div>
-            <div className="flex items-center gap-2">
-              <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
-                Ideas de Regalo
-              </h4>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-bold text-[#B16000] dark:text-[#FF9900] bg-[#FF9900]/10 px-2 py-0.5 rounded-full border border-[#B16000]/20 dark:border-[#FF9900]/30">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-                Amazon Finds
-              </span>
-            </div>
+            <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
+              Ideas de Regalo
+            </h4>
             <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
               Seleccionadas por nuestra IA para esta ocasión
             </p>
           </div>
         </div>
-        <span className="sm:hidden flex items-center gap-1 text-[9px] font-bold text-[#B16000] dark:text-[#FF9900] bg-[#FF9900]/10 px-2 py-0.5 rounded-full border border-[#B16000]/20 dark:border-[#FF9900]/30 whitespace-nowrap">
-          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+      <a
+        href="https://www.amazon.com/gp/goldbox?tag=mensajemagico-20"
+        target="_blank"
+        rel="noopener noreferrer sponsored"
+        className="flex items-center justify-center sm:justify-start gap-1 text-[9px] font-bold text-[#B16000] dark:text-[#FF9900] bg-[#FF9900]/10 px-3 py-1 rounded-full border border-[#B16000]/20 dark:border-[#FF9900]/30 whitespace-nowrap w-full sm:w-auto hover:bg-[#FF9900]/20 transition-colors"
+      >
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
           Amazon Finds
-        </span>
+        <svg className="w-2.5 h-2.5 ml-0.5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+      </a>
       </div>
 
       {isLoading ? (
