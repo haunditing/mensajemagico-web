@@ -26,6 +26,9 @@ const PricingPage: React.FC = () => {
     return state?.interval === "yearly" ? "yearly" : "monthly";
   });
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"premium" | "free">("premium");
+  const [showAllBenefits, setShowAllBenefits] = useState(false);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
@@ -345,6 +348,17 @@ const PricingPage: React.FC = () => {
         ? priceConfig.yearlyOriginal / 12
         : priceConfig.monthly;
 
+  const premiumBenefitsList = [
+    { icon: "💬", title: premiumConfig.access?.daily_limit > 100 ? "Inspiración Ilimitada" : `${premiumConfig.access?.daily_limit} mensajes diarios`, desc: "Nunca te quedes sin palabras." },
+    { icon: "✨", title: "Editor Mágico", desc: "La IA pule tus textos manteniendo tu esencia." },
+    { icon: "🧠", title: "Guardián de Sentimientos", desc: "Inteligencia emocional para tus relaciones." },
+    { icon: "🌎", title: "Acento Local", desc: "Conecta auténticamente con modismos." },
+    { icon: "⏰", title: "Fechas Importantes", desc: "Recordatorios para momentos especiales." },
+    { icon: "🔓", title: "Versatilidad Total", desc: "Acceso a todos los tonos." },
+    { icon: "🚫", title: "Sin anuncios", desc: "Experiencia limpia sin marcas de agua." },
+    { icon: "🛟", title: "Soporte prioritario", desc: "Ayuda rápida cuando la necesites." },
+  ];
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in-up">
       <div className="text-center mb-16">
@@ -360,7 +374,7 @@ const PricingPage: React.FC = () => {
       </div>
 
       {/* Billing Toggle */}
-      <div className="flex justify-center mb-12">
+      <div className="flex justify-center mb-8">
         <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex items-center relative">
           <button
             onClick={() => setBillingInterval("monthly")}
@@ -390,9 +404,28 @@ const PricingPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      {/* Plan Tabs (Toggle) */}
+      <div className="flex justify-center mb-8">
+        <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex w-full max-w-md">
+          <button
+            onClick={() => setActiveTab("premium")}
+            className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === "premium" ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
+          >
+            Premium ✨
+          </button>
+          <button
+            onClick={() => setActiveTab("free")}
+            className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === "free" ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
+          >
+            Gratis
+          </button>
+        </div>
+      </div>
+
+      <div className="max-w-md mx-auto pb-24">
         {/* Premium Plan */}
-        <div className="order-1 md:order-2 bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none flex flex-col relative">
+        {activeTab === "premium" && (
+        <div className="bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none flex flex-col relative animate-fade-in">
           <div className="absolute top-0 inset-x-0 flex justify-center -mt-3 z-20">
             <span
               className={`bg-gradient-to-r ${isOfferActive ? "from-rose-600 to-orange-600" : "from-blue-600 to-purple-600"} text-white text-[10px] font-bold px-4 py-1 rounded-full shadow-lg uppercase tracking-widest border border-slate-800`}
@@ -459,80 +492,28 @@ const PricingPage: React.FC = () => {
             )}
           </div>
 
-          <ul className="space-y-4 mb-8 flex-1 relative z-10">
-            <li className="flex items-start gap-3 text-white">
-              <span className="text-xl">💬</span>
-              <span>
-                <strong>
-                  {premiumConfig.access?.daily_limit > 100
-                    ? "Inspiración Ilimitada"
-                    : `${premiumConfig.access?.daily_limit} mensajes diarios`}
-                </strong>
-                <span className="text-slate-400 text-sm block font-normal">
-                  Nunca te quedes sin palabras para tu pareja o audiencia.
-                </span>
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-white">
-              <span className="text-xl">✨</span>
-              <span>
-                <strong>Editor Mágico</strong>{" "}
-                <span className="text-slate-400 text-sm block font-normal">
-                  La IA pule tus textos manteniendo tu esencia única.
-                </span>
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-white">
-              <span className="text-xl">🧠</span>
-              <span>
-                <strong>Guardián de Sentimientos</strong>{" "}
-                <span className="text-slate-400 text-sm block font-normal">
-                  Inteligencia emocional para cuidar tus relaciones.
-                </span>
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-slate-300">
-              <span className="text-xl">🌎</span>
-              <span>
-                <strong>Acento Local</strong>
-                <span className="text-slate-500 text-xs block font-normal">
-                  Conecta auténticamente con modismos regionales.
-                </span>
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-slate-300">
-              <span className="text-xl">⏰</span>
-              <span>
-                <strong>Fechas Importantes</strong>
-                <span className="text-slate-500 text-xs block font-normal">
-                  Recordatorios para que nunca olvides un momento especial.
-                </span>
-              </span>
-            </li>
-            <li className="flex items-start gap-3 text-slate-300">
-              <span className="text-xl">🔓</span>
-              <span>
-                <strong>Versatilidad Total</strong>
-                <span className="text-slate-500 text-xs block font-normal">
-                  Acceso a todos los tonos: romántico, divertido, profesional...
-                </span>
-              </span>
-            </li>
-            <li className="flex items-center gap-3 text-slate-400 text-sm mt-6 pt-6 border-t border-slate-800">
-              <span className="text-lg">🚫</span>
-              <span>Sin anuncios ni marcas de agua</span>
-            </li>
-            <li className="flex items-center gap-3 text-slate-400 text-sm">
-              <span className="text-lg">🛟</span>
-              <span>Soporte prioritario</span>
-            </li>
+          <ul className="space-y-5 mb-8 flex-1 relative z-10">
+            {(showAllBenefits ? premiumBenefitsList : premiumBenefitsList.slice(0, 4)).map((benefit, idx) => (
+              <li key={idx} className="flex items-start gap-3 text-white animate-fade-in">
+                <span className="text-xl shrink-0">{benefit.icon}</span>
+                <div>
+                  <strong className="block text-sm">{benefit.title}</strong>
+                  <span className="text-slate-400 text-xs block font-normal leading-relaxed">
+                    {benefit.desc}
+                  </span>
+                </div>
+              </li>
+            ))}
           </ul>
 
-          <PaymentGateways
-            onSelectGateway={handleSubscribe}
-            isLoading={isPaymentLoading}
-            planLevel={planLevel}
-          />
+          {!showAllBenefits && (
+            <button
+              onClick={() => setShowAllBenefits(true)}
+              className="w-full py-2 text-xs font-bold text-slate-400 hover:text-white transition-colors mb-4 border border-slate-800 rounded-xl hover:bg-slate-800"
+            >
+              Ver todos los beneficios ↓
+            </button>
+          )}
 
           <div className="mt-6 text-center relative z-10">
             <Link
@@ -549,9 +530,11 @@ const PricingPage: React.FC = () => {
             <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
           </div>
         </div>
+        )}
 
         {/* Free Plan */}
-        <div className="order-2 md:order-1 bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col">
+        {activeTab === "free" && (
+        <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col animate-fade-in">
           <div className="mb-8">
             <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-2">Gratis</h3>
             <p className="text-slate-500 dark:text-slate-400">Para uso casual y esporádico.</p>
@@ -599,7 +582,40 @@ const PricingPage: React.FC = () => {
               : "Incluido"}
           </button>
         </div>
+        )}
       </div>
+
+      {/* Sticky Call to Action (Solo Premium) */}
+      {activeTab === "premium" && planLevel !== "premium" && (
+        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 z-40 animate-slide-up-mobile">
+          <div className="max-w-md mx-auto">
+            <button
+              onClick={() => setIsPaymentModalOpen(true)}
+              className="w-full py-4 rounded-2xl font-bold text-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            >
+              <span>✨</span> Suscribirse Ahora
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Modal */}
+      {isPaymentModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => setIsPaymentModalOpen(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-t-[2.5rem] sm:rounded-[2.5rem] shadow-2xl w-full max-w-md p-6 sm:p-8 relative animate-slide-up-mobile sm:animate-fade-in-up" onClick={e => e.stopPropagation()}>
+            <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto mb-6 sm:hidden" />
+            <h3 className="text-xl font-black text-slate-900 dark:text-white mb-6 text-center">Elige tu método de pago</h3>
+            
+            <PaymentGateways
+              onSelectGateway={handleSubscribe}
+              isLoading={isPaymentLoading}
+              planLevel={planLevel}
+            />
+            
+            <button onClick={() => setIsPaymentModalOpen(false)} className="mt-4 w-full py-3 text-slate-500 dark:text-slate-400 font-bold hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Cancelar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
