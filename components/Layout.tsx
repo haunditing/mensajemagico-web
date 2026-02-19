@@ -400,7 +400,7 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                   className="w-6 h-6 md:w-7 md:h-7 object-contain transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
                 />
               </div>
-              <div className="flex flex-col">
+              <div className="hidden md:flex flex-col">
                 <span className="font-extrabold text-lg md:text-xl tracking-tight text-slate-900 dark:text-white leading-none">
                   {siteName}
                 </span>
