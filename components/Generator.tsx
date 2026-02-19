@@ -362,33 +362,35 @@ const Generator: React.FC<GeneratorProps> = ({
         )}
 
         {/* --- STEPPER INDICATOR (Móvil First) --- */}
-        <div className="flex items-center justify-between mb-8 px-2 relative">
+        <nav aria-label="Progreso" className="relative mb-8 px-2">
           {/* Línea de progreso de fondo */}
-          <div className="absolute top-4 left-4 right-4 h-0.5 bg-slate-100 dark:bg-slate-800 -z-10" />
+          <div className="absolute top-4 left-4 right-4 h-0.5 bg-slate-200 dark:bg-slate-700 -z-10" aria-hidden="true" />
           
-          {steps.map((step) => {
-            const isActive = step.id === currentStep;
-            const isCompleted = step.id < currentStep;
-            
-            return (
-              <div key={step.id} className="flex flex-col items-center z-10">
-                <div 
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 
-                  ${isActive 
-                    ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20 scale-110" 
-                    : isCompleted 
-                      ? "bg-green-500 border-green-500 text-white" 
-                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-600"}`}
-                >
-                  {isCompleted ? "✓" : step.id}
-                </div>
-                <span className={`text-[10px] font-bold uppercase tracking-wider mt-2 transition-colors ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-600"}`}>
-                  {step.label}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+          <ol className="flex items-center justify-between w-full">
+            {steps.map((step) => {
+              const isActive = step.id === currentStep;
+              const isCompleted = step.id < currentStep;
+              
+              return (
+                <li key={step.id} className="flex flex-col items-center z-10" aria-current={isActive ? "step" : undefined}>
+                  <div 
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 
+                    ${isActive 
+                      ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20 scale-110" 
+                      : isCompleted 
+                        ? "bg-green-600 border-green-600 text-white" 
+                        : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400"}`}
+                  >
+                    {isCompleted ? <span aria-label="Completado">✓</span> : step.id}
+                  </div>
+                  <span className={`text-[10px] font-bold uppercase tracking-wider mt-2 transition-colors ${isActive ? "text-blue-700 dark:text-blue-400" : "text-slate-600 dark:text-slate-400"}`}>
+                    {step.label}
+                  </span>
+                </li>
+              );
+            })}
+          </ol>
+        </nav>
 
         <div className="space-y-6 mb-8">
           {/* --- PASO 1: DESTINATARIO (Solo si no es Pensamiento) --- */}
@@ -601,13 +603,13 @@ const Generator: React.FC<GeneratorProps> = ({
 
             {showGifts && (
               <div className="flex items-center gap-2 animate-fade-in pl-8 sm:pl-0">
-                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Presupuesto:</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Presupuesto:</span>
                 <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
                   {(['low', 'medium', 'high'] as const).map((b) => (
                     <button
                       key={b}
                       onClick={() => setGiftBudget(b)}
-                      className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${giftBudget === b ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                      className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${giftBudget === b ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
                       title={b === 'low' ? 'Económico' : b === 'medium' ? 'Estándar' : 'Lujo'}
                     >
                       {b === 'low' ? '$' : b === 'medium' ? '$$' : '$$$'}
@@ -687,7 +689,7 @@ const Generator: React.FC<GeneratorProps> = ({
               onClick={handleNext}
               className={`flex-1 h-14 md:h-auto md:py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
                 !canAdvance
-                  ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"
+                  ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed"
                   : "bg-slate-900 dark:bg-slate-700 text-white hover:bg-slate-800 dark:hover:bg-slate-600 shadow-lg active:scale-95"
               } ${isShaking ? "animate-shake" : ""}`}
             >

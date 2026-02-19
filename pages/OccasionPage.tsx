@@ -81,7 +81,7 @@ const OccasionPage: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 animate-fade-in-up">
-      <nav className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-8 flex items-center gap-3">
+      <nav className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-8 flex items-center gap-3">
         <Link
           to="/"
           className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
@@ -152,7 +152,7 @@ const OccasionPage: React.FC = () => {
           ></div>
           <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 font-light leading-relaxed max-w-4xl italic">
             {localized.description}{" "}
-            <span className="text-slate-400 dark:text-slate-500 font-normal not-italic">
+            <span className="text-slate-500 dark:text-slate-400 font-normal not-italic">
               — Elige a quién escribes y el tono para crear un mensaje
               inolvidable.
             </span>
@@ -192,7 +192,7 @@ const OccasionPage: React.FC = () => {
                     <OccasionIcon slug={relOcc.slug} icon={relOcc.icon} />
                   </div>
                   <div>
-                    <span className="block text-[10px] uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-0.5 group-hover:text-blue-400 dark:group-hover:text-blue-300 transition-colors italic">
+                    <span className="block text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-0.5 group-hover:text-blue-400 dark:group-hover:text-blue-300 transition-colors italic">
                       Ver más
                     </span>
                     <span className="text-base">{locOcc.name}</span>

@@ -132,7 +132,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
         </label>
         {!isContextLocked && (
           <div className="flex flex-col items-end gap-1">
-            <span className={`text-xs font-bold transition-colors ${willExceedLimit ? "text-red-500 dark:text-red-400" : "text-slate-400 dark:text-slate-500"}`}>
+            <span className={`text-xs font-bold transition-colors ${willExceedLimit ? "text-red-600 dark:text-red-400" : "text-slate-500 dark:text-slate-400"}`}>
               {totalWordCount}/{maxContext} palabras
             </span>
             <div className="w-20 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -160,7 +160,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
                   : "Ej: playa, pizza, 5 años..."
             }
             disabled={currentContextCount >= maxContext || isContextLocked}
-            className={`w-full h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed ${isContextLocked ? "bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 disabled:opacity-100 placeholder:text-slate-500 dark:placeholder:text-slate-400" : ""}`}
+            className={`w-full h-12 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-slate-500 dark:placeholder:text-slate-400 ${isContextLocked ? "bg-slate-100 dark:bg-slate-900 text-slate-500 dark:text-slate-400 disabled:opacity-100" : ""}`}
           />
           {isContextLocked && (
             <div
@@ -184,7 +184,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
               willExceedLimit ||
               isContextLocked
             }
-            className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50"
+            className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 rounded-xl flex items-center justify-center hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50"
             title="Añadir palabra"
             aria-label="Añadir palabra al contexto"
           >
@@ -213,7 +213,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
           </div>
         ))}
         {contextWords.length === 0 && (
-          <span className="text-[10px] text-slate-400 dark:text-slate-500 font-medium italic">
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium italic">
             Opcional: añade palabras para personalizar el mensaje.
           </span>
         )}

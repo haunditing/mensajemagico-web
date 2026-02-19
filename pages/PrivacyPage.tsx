@@ -88,9 +88,9 @@ const PrivacyPage: React.FC = () => {
       </div>
 
       <div className="mt-20 flex flex-col md:flex-row justify-center items-center gap-4 border-t border-slate-200 dark:border-slate-800 pt-12">
-        <Link to="/terminos" className="text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors">Términos de Uso</Link>
+        <Link to="/terminos" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors">Términos de Uso</Link>
         <span className="hidden md:block text-slate-200 dark:text-slate-700">|</span>
-        <Link to="/contacto" className="text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors">Soporte y Contacto</Link>
+        <Link to="/contacto" className="text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 font-bold transition-colors">Soporte y Contacto</Link>
       </div>
     </div>
   );

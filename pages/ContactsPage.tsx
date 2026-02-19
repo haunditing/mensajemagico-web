@@ -206,14 +206,14 @@ const ContactsPage: React.FC = () => {
                   <div className="hidden lg:group-hover:flex gap-1">
                     <button
                       onClick={(e) => handleEdit(contact, e)}
-                      className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+                      className="p-1.5 text-slate-500 dark:text-slate- hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
                       title="Editar"
                     >
                       ✏️
                     </button>
                     <button
                       onClick={(e) => handleDelete(contact._id, e)}
-                      className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+                      className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                       title="Eliminar"
                     >
                       🗑️
@@ -227,7 +227,7 @@ const ContactsPage: React.FC = () => {
                         e.stopPropagation();
                         setOpenMenuId(openMenuId === contact._id ? null : contact._id);
                       }}
-                      className="p-2 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+                      className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
                     >
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
@@ -286,7 +286,7 @@ const ContactsPage: React.FC = () => {
               </div>
 
               <div className="mb-10">
-                <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">
+                <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
                   Evolución de la Relación
                 </h3>
                 <RelationalHealthChart
@@ -296,7 +296,7 @@ const ContactsPage: React.FC = () => {
               </div>
 
               <div>
-                <h3 className="text-sm font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">
+                <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-4">
                   Historial de Mensajes
                 </h3>
                 <div className="space-y-4">
@@ -307,7 +307,7 @@ const ContactsPage: React.FC = () => {
                         key={i}
                         className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700"
                       >
-                        <div className="flex justify-between text-xs text-slate-400 dark:text-slate-500 mb-2">
+                        <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-2">
                           <span className="font-bold uppercase">
                             {item.occasion}
                           </span>
@@ -321,7 +321,7 @@ const ContactsPage: React.FC = () => {
                       </div>
                     ))}
                   {selectedContact.history.length === 0 && (
-                    <p className="text-slate-400 dark:text-slate-500 text-sm italic">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm italic">
                       Sin interacciones aún.
                     </p>
                   )}
@@ -329,7 +329,7 @@ const ContactsPage: React.FC = () => {
               </div>
             </div>
           ) : (
-            <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-slate-400 dark:text-slate-500 p-10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem]">
+            <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem]">
               <span className="text-4xl mb-4">👈</span>
               <p className="text-center">Selecciona un contacto de la lista para ver su análisis y evolución.</p>
             </div>

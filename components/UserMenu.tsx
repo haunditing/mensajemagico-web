@@ -129,7 +129,7 @@ const UserMenu: React.FC = () => {
           label="PRO"
         />
         <svg
-          className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform ${isOpen ? "rotate-180" : ""}`}
+          className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -177,7 +177,7 @@ const UserMenu: React.FC = () => {
                 className={`overflow-y-auto ${isMobile ? "px-6 pb-4" : "p-2 overflow-visible"}`}
               >
                 <div className="px-3 py-2 border-b border-slate-50 dark:border-slate-800 mb-2">
-                  <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-widest mb-1">
+                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest mb-1">
                     Tu Plan
                   </p>
                   <div className="flex items-center justify-between">

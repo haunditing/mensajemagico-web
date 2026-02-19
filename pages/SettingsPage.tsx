@@ -100,7 +100,7 @@ const SettingsPage: React.FC = () => {
           {/* Estado del Navegador */}
           <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 border border-slate-100 dark:border-slate-700">
             <div className="flex flex-wrap items-center gap-3 mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Estado del Navegador</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">Estado del Navegador</span>
               {browserPermission === "granted" && <span className="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded-full font-bold">Permitido ✅</span>}
               {browserPermission === "denied" && <span className="text-xs bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">Bloqueado 🚫</span>}
               {browserPermission === "default" && <span className="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2 py-0.5 rounded-full font-bold">Preguntar ❓</span>}

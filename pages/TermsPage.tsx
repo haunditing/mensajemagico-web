@@ -60,7 +60,7 @@ const TermsPage: React.FC = () => {
       </div>
 
       <div className="mt-16 text-center">
-        <p className="text-slate-400 dark:text-slate-500 text-sm mb-8">Al usar este sitio, aceptas estos términos y nuestra Política de Privacidad.</p>
+        <p className="text-slate-500 dark:text-slate-400 text-sm mb-8">Al usar este sitio, aceptas estos términos y nuestra Política de Privacidad.</p>
         <Link to="/contacto" className="inline-flex items-center gap-2 bg-slate-900 dark:bg-slate-700 text-white px-8 py-4 rounded-2xl font-bold hover:bg-blue-600 dark:hover:bg-blue-500 transition-all shadow-lg">
           Hablar con el Equipo ✉️
         </Link>

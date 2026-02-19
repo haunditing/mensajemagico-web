@@ -138,7 +138,7 @@ const GuardianEditor: React.FC<GuardianEditorProps> = ({ generatedText, contactI
         <div className="mt-4 flex justify-between items-center animate-fade-in">
           <button
             onClick={handleRestore}
-            className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 text-xs font-bold transition-colors flex items-center gap-1"
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs font-bold transition-colors flex items-center gap-1"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
             Restaurar original

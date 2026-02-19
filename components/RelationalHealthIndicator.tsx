@@ -23,10 +23,10 @@ const RelationalHealthIndicator: React.FC<RelationalHealthIndicatorProps> = ({
   let label = "Íntima";
 
   if (clampedScore < 4) {
-    color = "#60a5fa"; // blue-400 (Fría/Distante)
+    color = "#2563eb"; // blue-600 (Mejor contraste que blue-400)
     label = "Distante";
   } else if (clampedScore < 7) {
-    color = "#fbbf24"; // amber-400 (Regular/Tibia)
+    color = "#d97706"; // amber-600 (Mejor contraste que amber-400)
     label = "Regular";
   }
 
@@ -66,7 +66,7 @@ const RelationalHealthIndicator: React.FC<RelationalHealthIndicatorProps> = ({
           <span className="text-xs font-black text-slate-700">
             {clampedScore.toFixed(1)}
           </span>
-          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400">
+          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
             {label}
           </span>
         </div>

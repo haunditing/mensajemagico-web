@@ -283,7 +283,7 @@ const ProfilePage: React.FC = () => {
                   )}
                 </span>
               ) : (
-                <span className="text-slate-400 dark:text-slate-500 italic">
+                <span className="text-slate-500 dark:text-slate-400 italic">
                   No definida (Se usará detección automática)
                 </span>
               )}
@@ -328,7 +328,7 @@ const ProfilePage: React.FC = () => {
               <option value="neutral">Prefiero no decirlo</option>
             </select>
           </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-3 italic">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-3 italic">
             Esto solo afecta la concordancia en los mensajes generados para ti (ej. "estoy listo" vs "estoy lista").
             No influye en la personalidad de la IA.
           </p>
@@ -545,7 +545,7 @@ const ProfilePage: React.FC = () => {
       <div className="text-center">
         <button
           onClick={logout}
-          className="text-slate-400 dark:text-slate-500 font-bold hover:text-red-500 dark:hover:text-red-400 transition-colors text-sm"
+          className="text-slate-500 dark:text-slate-400 font-bold hover:text-red-500 dark:hover:text-red-400 transition-colors text-sm"
         >
           Cerrar Sesión
         </button>

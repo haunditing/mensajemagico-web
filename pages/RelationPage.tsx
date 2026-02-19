@@ -33,7 +33,7 @@ const RelationPage: React.FC = () => {
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 animate-fade-in-up">
-      <nav className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 dark:text-slate-500 mb-8 flex items-center gap-3">
+      <nav className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400 mb-8 flex items-center gap-3">
         <Link to="/" className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors">
           Inicio
         </Link>

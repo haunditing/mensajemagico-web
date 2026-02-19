@@ -41,7 +41,7 @@ const RelationalHealthChart: React.FC<RelationalHealthChartProps> = ({
 
   if (dataPoints.length < 2) {
     return (
-      <div className={`flex items-center justify-center h-32 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 text-slate-400 dark:text-slate-500 text-xs ${className}`}>
+      <div className={`flex items-center justify-center h-32 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-xs ${className}`}>
         Necesitas más interacciones para ver la evolución.
       </div>
     );
@@ -93,7 +93,7 @@ const RelationalHealthChart: React.FC<RelationalHealthChartProps> = ({
           </defs>
         </svg>
       </div>
-      <div className="flex justify-between text-[10px] text-slate-400 dark:text-slate-500 mt-2 px-2">
+      <div className="flex justify-between text-[10px] text-slate-500 dark:text-slate-400 mt-2 px-2">
         <span>{dataPoints[0].date}</span>
         <span>{dataPoints[dataPoints.length - 1].date}</span>
       </div>

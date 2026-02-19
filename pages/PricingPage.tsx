@@ -550,7 +550,7 @@ const PricingPage: React.FC = () => {
             <p className="text-slate-500 dark:text-slate-400">Para uso casual y esporádico.</p>
             <div className="mt-6 flex items-baseline gap-1">
               <span className="text-4xl font-black text-slate-900 dark:text-white">$0</span>
-              <span className="text-slate-400 dark:text-slate-500 font-medium">/mes</span>
+              <span className="text-slate-500 dark:text-slate-400 font-medium">/mes</span>
             </div>
           </div>
 
@@ -565,7 +565,7 @@ const PricingPage: React.FC = () => {
               <span className="text-green-500 text-xl">✓</span>
               <span>Tonos básicos</span>
             </li>
-            <li className="flex items-center gap-3 text-slate-400 dark:text-slate-500">
+            <li className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
               <span
                 className={`${!freeConfig.monetization?.show_ads ? "text-green-500" : "text-slate-300 dark:text-slate-600"} text-xl`}
               >
@@ -573,7 +573,7 @@ const PricingPage: React.FC = () => {
               </span>
               <span>Sin anuncios</span>
             </li>
-            <li className="flex items-center gap-3 text-slate-400 dark:text-slate-500">
+            <li className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
               <span
                 className={`${freeConfig.access?.exclusive_tones === "all" ? "text-green-500" : "text-slate-300 dark:text-slate-600"} text-xl`}
               >
@@ -585,7 +585,7 @@ const PricingPage: React.FC = () => {
 
           <button
             disabled={true}
-            className="w-full py-4 rounded-2xl font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-800 cursor-default"
+            className="w-full py-4 rounded-2xl font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 cursor-default"
           >
             {planLevel === "freemium" || planLevel === "guest"
               ? "Tu plan actual"

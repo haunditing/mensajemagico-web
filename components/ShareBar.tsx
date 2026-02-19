@@ -134,25 +134,25 @@ const ShareBar: React.FC<ShareBarProps> = ({
     [SharePlatform.WHATSAPP]: {
       icon: <Icons.WhatsApp />,
       label: "Compartir por WhatsApp",
-      color: "text-[#25D366]",
+      color: "text-[#128C7E] dark:text-[#25D366]", // Verde más oscuro para fondo claro
       bg: "bg-[#25D366]/10 hover:bg-[#25D366]/20 dark:bg-[#25D366]/20 dark:hover:bg-[#25D366]/30",
     },
     [SharePlatform.INSTAGRAM]: {
       icon: <Icons.Instagram />,
       label: "Compartir en Instagram",
-      color: "text-[#E4405F]",
+      color: "text-[#C13584] dark:text-[#E4405F]", // Rosa más oscuro
       bg: "bg-[#E4405F]/10 hover:bg-[#E4405F]/20 dark:bg-[#E4405F]/20 dark:hover:bg-[#E4405F]/30",
     },
     [SharePlatform.FACEBOOK]: {
       icon: <Icons.Facebook />,
       label: "Compartir en Facebook",
-      color: "text-[#1877F2] dark:text-blue-400",
+      color: "text-[#0b58ca] dark:text-blue-400", // Azul más oscuro
       bg: "bg-[#1877F2]/10 hover:bg-[#1877F2]/20 dark:bg-[#1877F2]/20 dark:hover:bg-[#1877F2]/30",
     },
     [SharePlatform.TELEGRAM]: {
       icon: <Icons.Telegram />,
       label: "Compartir por Telegram",
-      color: "text-[#24A1DE]",
+      color: "text-[#0088cc] dark:text-[#24A1DE]", // Azul Telegram más oscuro
       bg: "bg-[#24A1DE]/10 hover:bg-[#24A1DE]/20 dark:bg-[#24A1DE]/20 dark:hover:bg-[#24A1DE]/30",
     },
     [SharePlatform.X]: {
@@ -170,7 +170,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
     [SharePlatform.SMS]: {
       icon: <Icons.SMS />,
       label: "Enviar por SMS",
-      color: "text-indigo-500 dark:text-indigo-400",
+      color: "text-indigo-600 dark:text-indigo-400", // Indigo-600 tiene mejor contraste
       bg: "bg-indigo-50 dark:bg-indigo-900/30 hover:bg-indigo-100 dark:hover:bg-indigo-900/50",
     },
     [SharePlatform.COPY]: {
@@ -236,7 +236,7 @@ const ShareBar: React.FC<ShareBarProps> = ({
     <div
       className={`w-full ${className} ${disabled ? "opacity-40 grayscale pointer-events-none" : ""}`}
     >
-      <p id={labelId} className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4 text-center sm:text-left">
+      <p id={labelId} className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-4 text-center sm:text-left">
         {disabled ? "Opciones desactivadas" : "Enviar Mensaje"}
       </p>
       <div 

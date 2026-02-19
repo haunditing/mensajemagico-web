@@ -33,10 +33,10 @@ const FavoritesPage: React.FC = () => {
       </div>
 
       {isLoading ? (
-        <div className="text-center py-20 text-slate-400 dark:text-slate-500">Cargando...</div>
+        <div className="text-center py-20 text-slate-500 dark:text-slate-400">Cargando...</div>
       ) : favorites.length === 0 ? (
         <div className="text-center py-20 bg-slate-50 dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800">
-          <p className="text-slate-400 dark:text-slate-500 font-medium mb-4">Aún no tienes mensajes guardados.</p>
+          <p className="text-slate-500 dark:text-slate-400 font-medium mb-4">Aún no tienes mensajes guardados.</p>
           <Link to="/" className="text-blue-600 dark:text-blue-400 font-bold hover:underline">¡Crea algo mágico!</Link>
         </div>
       ) : (

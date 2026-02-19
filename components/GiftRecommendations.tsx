@@ -18,7 +18,7 @@ interface GiftRecommendationsProps {
 
 const GiftCardSkeleton: React.FC = () => {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-pulse flex flex-col h-full">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden animate-pulse flex flex-col h-full" aria-hidden="true">
       {/* Image Placeholder */}
       <div className="h-32 w-full bg-slate-200 dark:bg-slate-800 shrink-0"></div>
       <div className="p-5 flex flex-col flex-grow">
@@ -42,7 +42,7 @@ const GiftCardSkeleton: React.FC = () => {
 
 const CompactGiftCardSkeleton: React.FC = () => {
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-3 flex items-start gap-3 h-full">
+    <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 p-3 flex items-start gap-3 h-full" aria-hidden="true">
       <div className="w-16 h-16 bg-slate-200 dark:bg-slate-800 rounded-lg shrink-0 animate-pulse"></div>
       <div className="flex-1 space-y-2 w-full pt-1">
         <div className="flex justify-between gap-2">
@@ -72,7 +72,9 @@ const CompactGiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ 
       href={generateAmazonLink(gift.search_term, country)}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      className="group flex flex-row items-start gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#FF9900]/50 transition-all shadow-sm h-full active:scale-[0.98]"
+      className="group flex flex-row items-start gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#FF9900]/50 transition-all shadow-sm h-full active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+      aria-label={`Ver ${gift.title} en Amazon (se abre en una nueva pestaña)`}
+      title={`Ver ${gift.title} en Amazon`}
     >
       <div className="w-16 h-16 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 rounded-lg flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform overflow-hidden relative">
         {hasValidImage ? (
@@ -88,7 +90,7 @@ const CompactGiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ 
             {!imageLoaded && <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800 animate-pulse" />}
           </>
         ) : (
-          <span className="text-3xl">🎁</span>
+          <span className="text-3xl" role="img" aria-label="Icono de regalo">🎁</span>
         )}
       </div>
       <div className="flex-1 min-w-0 flex flex-col h-full">
@@ -100,11 +102,11 @@ const CompactGiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ 
                 {gift.price_range}
             </span>
         </div>
-        <p className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2 flex-grow">
+        <p className="text-[10px] text-slate-600 dark:text-slate-400 line-clamp-2 leading-relaxed mb-2 flex-grow">
           {gift.reason}
         </p>
-        <div className="flex items-center gap-1 text-[10px] font-bold text-[#C77700] mt-auto">
-             Ver en Amazon <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+        <div className="flex items-center gap-1 text-[10px] font-bold text-[#B16000] dark:text-[#FF9900] mt-auto">
+             Ver en Amazon <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
         </div>
       </div>
     </a>
@@ -124,14 +126,14 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
     <div className="mt-10 pt-8 border-t border-slate-100 dark:border-slate-800 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
-          <div className="bg-[#FF9900]/10 p-2 rounded-lg text-xl">🎁</div>
+          <div className="bg-[#FF9900]/10 p-2 rounded-lg text-xl" aria-hidden="true">🎁</div>
           <div>
             <div className="flex items-center gap-2">
               <h4 className="text-sm font-black text-slate-900 dark:text-white uppercase tracking-widest">
                 Ideas de Regalo
               </h4>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-bold text-[#FF9900] bg-[#FF9900]/10 px-2 py-0.5 rounded-full border border-[#FF9900]/20">
-                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+              <span className="hidden sm:inline-flex items-center gap-1 text-[9px] font-bold text-[#B16000] dark:text-[#FF9900] bg-[#FF9900]/10 px-2 py-0.5 rounded-full border border-[#B16000]/20 dark:border-[#FF9900]/30">
+                <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
                 Amazon Finds
               </span>
             </div>
@@ -140,8 +142,8 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
             </p>
           </div>
         </div>
-        <span className="sm:hidden flex items-center gap-1 text-[9px] font-bold text-[#FF9900] bg-[#FF9900]/10 px-2 py-0.5 rounded-full border border-[#FF9900]/20 whitespace-nowrap">
-          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
+        <span className="sm:hidden flex items-center gap-1 text-[9px] font-bold text-[#B16000] dark:text-[#FF9900] bg-[#FF9900]/10 px-2 py-0.5 rounded-full border border-[#B16000]/20 dark:border-[#FF9900]/30 whitespace-nowrap">
+          <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
           Amazon Finds
         </span>
       </div>
@@ -166,7 +168,7 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
         </div>
       )}
       
-      <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-8 text-center italic opacity-70">
+      <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-8 text-center italic">
         {CONFIG.AMAZON.DISCLAIMER}
       </p>
     </div>
@@ -188,7 +190,9 @@ const GiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ gift, c
       href={generateAmazonLink(gift.search_term, country)}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:border-[#FF9900]/50 hover:shadow-xl hover:shadow-[#FF9900]/10 transition-all duration-300 flex flex-col h-full hover:-translate-y-1"
+      className="group relative bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 overflow-hidden hover:border-[#FF9900]/50 hover:shadow-xl hover:shadow-[#FF9900]/10 transition-all duration-300 flex flex-col h-full hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-[#FF9900] focus:ring-offset-2 dark:focus:ring-offset-slate-900"
+      aria-label={`Ver ${gift.title} en Amazon (se abre en una nueva pestaña)`}
+      title={`Ver ${gift.title} en Amazon`}
     >
       {/* Contenedor de Imagen */}
       <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center group-hover:from-[#FF9900]/5 group-hover:to-[#FF9900]/10 transition-colors duration-300">
@@ -205,7 +209,7 @@ const GiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ gift, c
             {!imageLoaded && <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800 animate-pulse" />}
           </>
         ) : (
-          <div className="text-5xl transform group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">🎁</div>
+          <div className="text-5xl transform group-hover:scale-110 transition-transform duration-300 drop-shadow-sm" role="img" aria-label="Icono de regalo">🎁</div>
         )}
         
         {/* Etiqueta de Precio */}
@@ -215,18 +219,18 @@ const GiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ gift, c
       </div>
 
       <div className="p-5 flex flex-col flex-grow">
-        <h5 className="font-bold text-slate-900 dark:text-white text-sm mb-2 leading-snug group-hover:text-[#C77700] transition-colors line-clamp-2">
+        <h5 className="font-bold text-slate-900 dark:text-white text-sm mb-2 leading-snug group-hover:text-[#B16000] dark:group-hover:text-[#FF9900] transition-colors line-clamp-2">
           {gift.title}
         </h5>
 
-        <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4 flex-grow line-clamp-3">
+        <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed mb-4 flex-grow line-clamp-3">
           {gift.reason}
         </p>
 
         <div className="mt-auto">
           <div className="w-full bg-[#FFD814] hover:bg-[#F7CA00] border border-[#FCD200] hover:border-[#F2C200] text-[#0F1111] text-xs font-bold py-2.5 rounded-xl shadow-sm flex items-center justify-center gap-2 transition-colors">
             Ver en Amazon
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
           </div>
         </div>
       </div>

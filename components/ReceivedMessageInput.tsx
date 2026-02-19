@@ -71,22 +71,23 @@ const ReceivedMessageInput = forwardRef<HTMLTextAreaElement, ReceivedMessageInpu
             }}
             placeholder={placeholder}
             disabled={disabled}
-            className={`w-full p-4 pr-10 bg-blue-50/30 dark:bg-blue-900/20 border ${safetyError ? "border-red-400 ring-2 ring-red-50 dark:ring-red-900/30" : "border-blue-100 dark:border-blue-900/30"} rounded-xl font-medium text-slate-800 dark:text-slate-200 focus:ring-2 ${safetyError ? "focus:ring-red-400" : "focus:ring-blue-500"} outline-none transition-all resize-none min-h-[120px] disabled:opacity-60 disabled:cursor-not-allowed dark:disabled:bg-slate-800 dark:disabled:text-slate-500 dark:disabled:border-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-500`}
+            className={`w-full p-4 pr-10 bg-blue-50/30 dark:bg-blue-900/20 border ${safetyError ? "border-red-400 ring-2 ring-red-50 dark:ring-red-900/30" : "border-blue-100 dark:border-blue-900/30"} rounded-xl font-medium text-slate-800 dark:text-slate-200 focus:ring-2 ${safetyError ? "focus:ring-red-400" : "focus:ring-blue-500"} outline-none transition-all resize-none min-h-[120px] disabled:opacity-60 disabled:cursor-not-allowed dark:disabled:bg-slate-800 dark:disabled:text-slate-500 dark:disabled:border-slate-700 placeholder:text-slate-500 dark:placeholder:text-slate-400`}
           />
           {receivedText.length > 0 && !disabled && (
             <button
               onClick={() => setReceivedText("")}
-              className="absolute top-3 right-3 text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-lg transition-all"
+              className="absolute top-3 right-3 text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-red-500"
               title="Borrar todo"
+              aria-label="Borrar todo el texto"
             >
               ✕
             </button>
           )}
-          <div className={`absolute bottom-3 right-3 text-[10px] font-bold ${receivedText.length >= maxChars ? "text-red-500" : "text-slate-400 dark:text-slate-500"}`}>
+          <div className={`absolute bottom-3 right-3 text-[10px] font-bold ${receivedText.length >= maxChars ? "text-red-600 dark:text-red-400" : "text-slate-500 dark:text-slate-400"}`}>
             {receivedText.length} / {maxChars}
           </div>
         </div>
-        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 italic">
+        <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 italic">
           🔐 Respetamos tu privacidad: no almacenamos el contenido que pegas.
         </p>
       </div>

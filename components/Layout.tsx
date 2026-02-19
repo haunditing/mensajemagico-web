@@ -75,7 +75,7 @@ const CountrySelector = () => {
           </span>
         </div>
         <svg
-          className={`w-4 h-4 text-slate-400 dark:text-slate-500 transition-transform duration-300 ${isOpen ? "rotate-180 text-blue-500" : "group-hover:text-blue-400"}`}
+          className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180 text-blue-500" : "group-hover:text-blue-400"}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"

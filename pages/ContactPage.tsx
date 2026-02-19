@@ -50,7 +50,7 @@ const ContactPage: React.FC = () => {
           </div>
 
           <div className="mt-12 pt-8 border-t border-slate-50 dark:border-slate-800">
-            <p className="text-sm text-slate-400 dark:text-slate-500 italic">
+            <p className="text-sm text-slate-500 dark:text-slate-400 italic">
               * Respondemos en menos de 48 horas hábiles. Siempre.
             </p>
           </div>
@@ -61,7 +61,7 @@ const ContactPage: React.FC = () => {
             <h3 className="text-2xl font-bold mb-4 relative z-10">
               ¿Dónde estamos?
             </h3>
-            <p className="text-slate-400 dark:text-slate-500 mb-6 relative z-10 font-bold uppercase tracking-widest text-[10px]">
+            <p className="text-slate-500 dark:text-slate-400 mb-6 relative z-10 font-bold uppercase tracking-widest text-[10px]">
               Mensaje Mágico
             </p>
             <div className="flex items-center gap-4 text-xl relative z-10">

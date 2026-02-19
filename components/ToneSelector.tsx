@@ -45,9 +45,9 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
   const getBadgeColor = (text: string) => {
     const lower = text.toLowerCase();
     if (lower.includes("nuevo") || lower.includes("nueva"))
-      return "bg-blue-500 shadow-lg shadow-blue-500/40";
+      return "bg-blue-600 shadow-lg shadow-blue-600/40"; // Blue-600 para contraste con texto blanco
     if (lower.includes("actualizado") || lower.includes("actualizada"))
-      return "bg-green-500 shadow-lg shadow-green-500/40";
+      return "bg-green-600 shadow-lg shadow-green-600/40"; // Green-600 para contraste
     return "bg-indigo-500 shadow-lg shadow-indigo-500/40"; // Color por defecto
   };
 
@@ -74,7 +74,7 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                 className="snap-center shrink-0 w-[85vw] max-w-[300px] md:w-full md:max-w-none flex flex-col gap-2"
               >
                 <span
-                  className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider"
+                  className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider"
                   id={`group-${groupName.replace(/\s+/g, "-")}`}
                 >
                   {groupName}

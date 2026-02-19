@@ -393,7 +393,7 @@ const RemindersPage: React.FC = () => {
               )}
             </p>
             {reminder.notes && (
-              <p className="text-slate-400 dark:text-slate-500 text-xs mt-2 italic">
+              <p className="text-slate-500 dark:text-slate-400 text-xs mt-2 italic">
                 "{reminder.notes}"
               </p>
             )}
@@ -447,7 +447,7 @@ const RemindersPage: React.FC = () => {
                 setSnoozeTarget(reminder);
                 setCustomSnoozeDate("");
               }}
-              className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isOverdueItem ? "text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30" : "text-slate-400 dark:text-slate-500 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"}`}
+              className={`w-9 h-9 flex items-center justify-center rounded-lg transition-all ${isOverdueItem ? "text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/30" : "text-slate-500 dark:text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"}`}
               title="Posponer"
             >
               ⏰
@@ -457,7 +457,7 @@ const RemindersPage: React.FC = () => {
           {!isHoliday && (
             <button
               onClick={() => handleEdit(reminder)}
-              className="w-9 h-9 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
+              className="w-9 h-9 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all"
               title="Editar"
             >
               ✏️
@@ -465,7 +465,7 @@ const RemindersPage: React.FC = () => {
           )}
           <button
             onClick={() => handleDelete(reminder._id)}
-            className="w-9 h-9 flex items-center justify-center text-slate-400 dark:text-slate-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
+            className="w-9 h-9 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all"
             title="Eliminar"
           >
             🗑️
@@ -846,7 +846,7 @@ const RemindersPage: React.FC = () => {
 
             <button
               onClick={() => setSnoozeTarget(null)}
-              className="absolute top-4 right-4 text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="absolute top-4 right-4 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
             >
               ✕
             </button>

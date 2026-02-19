@@ -30,7 +30,7 @@ const PaymentErrorPage: React.FC = () => {
         </div>
 
         <div className="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800">
-          <p className="text-xs text-slate-400 dark:text-slate-500">
+          <p className="text-xs text-slate-500 dark:text-slate-400">
             Si el problema persiste, intenta con otro método de pago.
           </p>
         </div>

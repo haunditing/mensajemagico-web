@@ -82,7 +82,7 @@ const PaymentGateways: React.FC<PaymentGatewaysProps> = ({ onSelectGateway, isLo
     return (
       <button
         disabled={true}
-        className="w-full py-4 rounded-2xl font-bold text-lg bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed relative z-10 border border-slate-200 dark:border-slate-700 shadow-inner flex items-center justify-center gap-2"
+        className="w-full py-4 rounded-2xl font-bold text-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed relative z-10 border border-slate-200 dark:border-slate-700 shadow-inner flex items-center justify-center gap-2"
       >
         <span>✨</span>
         Plan Activo
@@ -136,7 +136,7 @@ const PaymentGateways: React.FC<PaymentGatewaysProps> = ({ onSelectGateway, isLo
               {/* Radio Indicator */}
               <div className={`
                 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors shrink-0
-                ${isSelected ? "border-blue-600 dark:border-blue-500" : "border-slate-300 dark:border-slate-600 group-hover:border-slate-400 dark:group-hover:border-slate-500"}
+                ${isSelected ? "border-blue-600 dark:border-blue-500" : "border-slate-500 dark:border-slate-400 group-hover:border-slate-500 dark:group-hover:border-slate-400"}
               `}>
                 {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
               </div>
@@ -162,7 +162,7 @@ const PaymentGateways: React.FC<PaymentGatewaysProps> = ({ onSelectGateway, isLo
                   )}
                 </div>
                 {gateway.description && (
-                  <p className="text-xs text-slate-400 dark:text-slate-500 font-medium leading-tight mt-0.5">{gateway.description}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">{gateway.description}</p>
                 )}
               </div>
             </div>
@@ -188,7 +188,7 @@ const PaymentGateways: React.FC<PaymentGatewaysProps> = ({ onSelectGateway, isLo
         )}
       </button>
       
-      <p className="text-center text-[10px] text-slate-400 dark:text-slate-500 mt-4 font-medium">
+      <p className="text-center text-[10px] text-slate-500 dark:text-slate-400 mt-4 font-medium">
         Pagos procesados de forma segura. Cancelación en cualquier momento.
       </p>
     </div>

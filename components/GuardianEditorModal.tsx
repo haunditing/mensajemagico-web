@@ -118,7 +118,7 @@ const GuardianEditorModal: React.FC<GuardianEditorModalProps> = ({
       >
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-bold text-slate-900 dark:text-white">Editar Mensaje</h3>
-          <button onClick={onClose} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">✕</button>
+          <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">✕</button>
         </div>
 
         <div className="relative flex-grow">
@@ -141,7 +141,7 @@ const GuardianEditorModal: React.FC<GuardianEditorModalProps> = ({
         )}
 
         <div className="mt-6 flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800">
-          <button onClick={handleRestore} className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 text-xs font-bold transition-colors flex items-center gap-1" disabled={text === initialText}>
+          <button onClick={handleRestore} className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs font-bold transition-colors flex items-center gap-1" disabled={text === initialText}>
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg> Restaurar original
           </button>
           <button onClick={handleFinalize} disabled={isSaving} className="bg-slate-900 dark:bg-slate-700 text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors shadow-lg shadow-slate-900/20 dark:shadow-none disabled:opacity-50">{isSaving ? "Guardando..." : "Guardar Cambios"}</button>
