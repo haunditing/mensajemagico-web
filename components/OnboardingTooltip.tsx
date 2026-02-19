@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useOnboarding } from '../context/OnboardingContext';
 
 export type TooltipColor = 'indigo' | 'blue' | 'rose' | 'green' | 'amber' | 'orange' | 'purple' | 'sky' | 'emerald' | 'pink' | 'red' | 'cyan';
@@ -23,8 +23,22 @@ const OnboardingTooltip: React.FC<OnboardingTooltipProps> = ({
   color = 'indigo'
 }) => {
   const { activeTour, currentStepIndex, nextStep, skipTour } = useOnboarding();
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   const isActive = activeTour === tourId && currentStepIndex === stepIndex;
+
+  // Auto-scroll para asegurar visibilidad en móviles
+  useEffect(() => {
+    if (isActive && tooltipRef.current) {
+      setTimeout(() => {
+        tooltipRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        });
+      }, 500); // Retraso para permitir renderizado y animaciones
+    }
+  }, [isActive]);
 
   const colorStyles: Record<string, { container: string, arrow: string, text: string, button: string }> = {
     indigo: {
@@ -104,7 +118,7 @@ const OnboardingTooltip: React.FC<OnboardingTooltipProps> = ({
   const theme = colorStyles[color] || colorStyles.indigo;
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-full" ref={tooltipRef}>
       {children}
       {isActive && (
         <div className={`absolute z-50 w-64 max-w-[90vw] p-4 text-white rounded-xl shadow-xl animate-fade-in-up border ${theme.container}
