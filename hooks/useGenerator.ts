@@ -16,6 +16,7 @@ import {
   GREETING_CATEGORIES,
   GREETING_TONES,
   GUARDIAN_INTENTIONS,
+  PSYCHOLOGICAL_MATRIX,
 } from "../constants";
 import { generateMessageStream } from "../services/geminiService";
 import {
@@ -258,6 +259,16 @@ export const useGenerator = (
     const warning = GUARDIAN_WARNINGS[currentRelType]?.[tone as string] || null;
     setGuardianWarning(warning);
   }, [tone, currentRelType]);
+
+  // Sincronizar Intención con el Tono (Matriz Psicológica)
+  useEffect(() => {
+    if (!manualIntentionOverride && tone) {
+      const defaultIntention = PSYCHOLOGICAL_MATRIX[tone as string];
+      if (defaultIntention) {
+        setIntention(defaultIntention);
+      }
+    }
+  }, [tone, manualIntentionOverride]);
 
   const guardianDescription = useMemo(() => {
     if (isPensamiento) {

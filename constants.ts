@@ -304,10 +304,34 @@ export const TONES = [
 ];
 
 export const GUARDIAN_INTENTIONS = [
-  { id: "low_effort", label: "✨ Solo Cariño", description: "Para mantener el afecto sin pedir nada a cambio.", warmth: 5, pressure: 1 },
-  { id: "inquiry", label: "❓ Conectar", description: "Para saber cómo está y generar conversación.", warmth: 4, pressure: 2 },
-  { id: "resolutive", label: "✅ Resolver", description: "Para cerrar un plan o tomar una decisión.", warmth: 2, pressure: 4 },
-  { id: "action", label: "📢 Impulsar", description: "Para pedir una tarea o dar una instrucción.", warmth: 1, pressure: 5 },
+  {
+    id: "low_effort",
+    label: "✨ Solo Cariño",
+    description: "Para mantener el afecto sin pedir nada a cambio.",
+    warmth: 5,
+    pressure: 1,
+  },
+  {
+    id: "inquiry",
+    label: "❓ Conectar",
+    description: "Para saber cómo está y generar conversación.",
+    warmth: 4,
+    pressure: 2,
+  },
+  {
+    id: "resolutive",
+    label: "✅ Resolver",
+    description: "Para cerrar un plan o tomar una decisión.",
+    warmth: 2,
+    pressure: 4,
+  },
+  {
+    id: "action",
+    label: "📢 Impulsar",
+    description: "Para pedir una tarea o dar una instrucción.",
+    warmth: 1,
+    pressure: 5,
+  },
 ];
 
 export const PSYCHOLOGICAL_MATRIX: Record<string, string> = {
@@ -323,19 +347,19 @@ export const PSYCHOLOGICAL_MATRIX: Record<string, string> = {
   [Tone.FORMAL]: "resolutive",
   [Tone.LIGHT_DESPERATION]: "inquiry",
   [Tone.BELATED]: "low_effort",
-  "dulce": "low_effort",
-  "atento": "inquiry",
-  "fuerte": "action",
-  "fresco": "inquiry",
-  "sobrio": "resolutive",
-  "alegre": "low_effort",
+  dulce: "low_effort",
+  atento: "inquiry",
+  fuerte: "action",
+  fresco: "inquiry",
+  sobrio: "resolutive",
+  alegre: "low_effort",
   // Estados Emocionales (Pensamiento)
-  "tranquilo": "low_effort",
-  "reflexivo": "inquiry",
-  "triste": "low_effort",
-  "motivado": "action",
-  "neutro": "resolutive",
-  "feliz": "low_effort",
-  "sorprendido": "inquiry",
-  "sarcastico": "inquiry",
+  tranquilo: "low_effort",
+  reflexivo: "inquiry",
+  triste: "low_effort",
+  motivado: "action",
+  neutro: "resolutive",
+  feliz: "low_effort",
+  sorprendido: "inquiry",
+  sarcastico: "inquiry",
 };

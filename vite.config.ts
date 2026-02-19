@@ -103,9 +103,9 @@ export default defineConfig({
         ],
       },
       workbox: {
-        // Cachear todos los assets generados por Vite
-        globPatterns: ["**/*.{js,css,html,ico,png,svg,webmanifest}"],
-        // Fallback para SPA: redirigir a index.html si la ruta no está en caché (offline)
+        skipWaiting: true, // Fuerza al SW nuevo a activarse de inmediato
+        clientsClaim: true, // El SW toma el control de los clientes sin recargar
+        cleanupOutdatedCaches: true, // Borra versiones viejas automáticamente
         navigateFallback: "/index.html",
         runtimeCaching: [
           {
@@ -130,7 +130,7 @@ export default defineConfig({
         handler(html) {
           return html.replace(
             /<link rel="stylesheet"([^>]*?)>/g,
-            '<link rel="stylesheet"$1 media="print" onload="this.media=\'all\'">'
+            '<link rel="stylesheet"$1 media="print" onload="this.media=\'all\'">',
           );
         },
       },

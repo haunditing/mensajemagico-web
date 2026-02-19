@@ -208,7 +208,22 @@ const ShareBar: React.FC<ShareBarProps> = ({
     }
 
     setActiveAction(platform);
-    await executeShare(platform, content);
+    
+    if (platform === SharePlatform.WHATSAPP) {
+      // Asegurar que el mensaje esté correctamente codificado para la URL (emojis, saltos de línea)
+      const encodedMessage = encodeURIComponent(content);
+      
+      // Detectar móvil para usar deep link directo
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const url = isMobile ? `https://api.whatsapp.com/send?text=${encodedMessage}` : `https://web.whatsapp.com/send?text=${encodedMessage}`;
+      
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else if (platform === SharePlatform.TELEGRAM) {
+      const encodedMessage = encodeURIComponent(content);
+      window.open(`https://t.me/share/url?url=&text=${encodedMessage}`, '_blank', 'noopener,noreferrer');
+    } else {
+      await executeShare(platform, content);
+    }
 
     if (platform === SharePlatform.COPY) {
       showToast("¡Enlace copiado! Listo para compartir magia.", "success");

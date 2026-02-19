@@ -88,7 +88,12 @@ export const buildGuardianPrompt = ({
         .join(" ")
         .toLowerCase()
         .match(/[a-záéíóúñü]{5,}/g) || [];
+    
+    // FIX: Evitar que palabras temporales comunes (como "mañana") se bloqueen por repetición
+    const SAFE_WORDS = new Set(["mañana", "noche", "tarde", "tiempo", "ahora", "mucho", "todos", "favor", "gracias"]);
+
     const uniqueKeywords = Array.from(new Set<string>(allWords))
+      .filter(w => !SAFE_WORDS.has(w))
       .slice(0, 15)
       .join(", ");
     avoidTopics = uniqueKeywords;
