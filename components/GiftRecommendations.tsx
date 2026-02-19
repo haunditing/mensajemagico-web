@@ -7,6 +7,7 @@ export interface GiftSuggestion {
   search_term: string;
   reason: string;
   price_range: string;
+  image_url?: string;
 }
 
 interface GiftRecommendationsProps {
@@ -56,6 +57,16 @@ const CompactGiftCardSkeleton: React.FC = () => {
 };
 
 const CompactGiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ gift, country }) => {
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+  const [imageError, setImageError] = React.useState(false);
+
+  // Validación robusta: Si la URL es el placeholder, está vacía o falló la carga, usamos el fallback
+  const hasValidImage = gift.image_url && 
+                        gift.image_url !== "url_imagen_opcional" && 
+                        !gift.image_url.includes("example.com") &&
+                        gift.image_url.trim() !== "" &&
+                        !imageError;
+
   return (
     <a
       href={generateAmazonLink(gift.search_term, country)}
@@ -63,15 +74,29 @@ const CompactGiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ 
       rel="noopener noreferrer sponsored"
       className="group flex flex-row items-start gap-3 bg-white dark:bg-slate-900 p-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-[#FF9900]/50 transition-all shadow-sm h-full active:scale-[0.98]"
     >
-      <div className="w-16 h-16 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 rounded-lg flex items-center justify-center shrink-0 text-3xl shadow-inner group-hover:scale-105 transition-transform">
-        🎁
+      <div className="w-16 h-16 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 rounded-lg flex items-center justify-center shrink-0 shadow-inner group-hover:scale-105 transition-transform overflow-hidden relative">
+        {hasValidImage ? (
+          <>
+            <img 
+              src={gift.image_url} 
+              alt={gift.title} 
+              className={`w-full h-full object-cover transition-all duration-500 ${imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-sm"}`} 
+              loading="lazy" 
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+            />
+            {!imageLoaded && <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800 animate-pulse" />}
+          </>
+        ) : (
+          <span className="text-3xl">🎁</span>
+        )}
       </div>
       <div className="flex-1 min-w-0 flex flex-col h-full">
-        <div className="flex justify-between items-start gap-2 mb-1">
-            <h5 className="font-bold text-slate-900 dark:text-white text-xs leading-snug line-clamp-2">
+        <div className="mb-1">
+            <h5 className="font-bold text-slate-900 dark:text-white text-xs leading-snug line-clamp-2 mb-1">
             {gift.title}
             </h5>
-            <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 shrink-0 whitespace-nowrap">
+            <span className="text-[9px] font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 inline-block whitespace-nowrap">
                 {gift.price_range}
             </span>
         </div>
@@ -122,7 +147,7 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
       </div>
 
       {isLoading ? (
-        <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 snap-x no-scrollbar">
+        <div className="flex overflow-x-auto gap-4 pb-4 snap-x no-scrollbar">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="min-w-[260px] w-[80%] sm:w-[300px] snap-center shrink-0">
               <div className="block md:hidden h-full"><CompactGiftCardSkeleton /></div>
@@ -131,7 +156,7 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
           ))}
         </div>
       ) : (
-        <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 snap-x no-scrollbar">
+        <div className="flex overflow-x-auto gap-4 pb-4 snap-x no-scrollbar">
           {validGifts.map((gift, idx) => (
             <div key={idx} className="min-w-[260px] w-[80%] sm:w-[300px] snap-center shrink-0">
               <div className="block md:hidden h-full"><CompactGiftCard gift={gift} country={country} /></div>
@@ -149,6 +174,15 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
 };
 
 const GiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ gift, country }) => {
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+  const [imageError, setImageError] = React.useState(false);
+
+  const hasValidImage = gift.image_url && 
+                        gift.image_url !== "url_imagen_opcional" && 
+                        !gift.image_url.includes("example.com") &&
+                        gift.image_url.trim() !== "" &&
+                        !imageError;
+
   return (
     <a
       href={generateAmazonLink(gift.search_term, country)}
@@ -158,7 +192,21 @@ const GiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ gift, c
     >
       {/* Contenedor de Imagen */}
       <div className="relative h-32 w-full overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-900 flex items-center justify-center group-hover:from-[#FF9900]/5 group-hover:to-[#FF9900]/10 transition-colors duration-300">
-        <div className="text-5xl transform group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">🎁</div>
+        {hasValidImage ? (
+          <>
+            <img 
+              src={gift.image_url} 
+              alt={gift.title} 
+              className={`w-full h-full object-cover transform group-hover:scale-110 transition-all duration-700 ${imageLoaded ? "opacity-100 blur-0" : "opacity-0 blur-lg"}`} 
+              loading="lazy"
+              onLoad={() => setImageLoaded(true)}
+              onError={() => setImageError(true)}
+            />
+            {!imageLoaded && <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800 animate-pulse" />}
+          </>
+        ) : (
+          <div className="text-5xl transform group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">🎁</div>
+        )}
         
         {/* Etiqueta de Precio */}
         <div className="absolute top-3 right-3 bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm text-slate-800 dark:text-slate-200 text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700">

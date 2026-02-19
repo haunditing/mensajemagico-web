@@ -129,25 +129,27 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                     key={t.id}
                     className="snap-center shrink-0"
                   >
-                    <button
-                      type="button"
-                      aria-pressed={isSelected}
-                      onClick={() => setTone(t.id as any)}
-                      className={`relative px-4 py-2.5 rounded-xl text-sm font-bold transition-all border whitespace-nowrap w-full md:w-auto ${
-                        isSelected
-                          ? "bg-blue-600 dark:bg-blue-500 text-white border-blue-600 dark:border-blue-500 shadow-md scale-105"
-                          : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500"
-                      }`}
-                    >
-                      {t.label}
-                      {(t as any).badge && (
-                        <span
-                          className={`absolute -top-2 -right-1 ${getBadgeColor((t as any).badge)} text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-pulse z-10`}
-                        >
-                          {(t as any).badge}
-                        </span>
-                      )}
-                    </button>
+                    <FeatureGuard featureKey={t.id} type="tone">
+                      <button
+                        type="button"
+                        aria-pressed={isSelected}
+                        onClick={() => setTone(t.id as any)}
+                        className={`relative px-4 py-2.5 rounded-xl text-sm font-bold transition-all border whitespace-nowrap w-full md:w-auto ${
+                          isSelected
+                            ? "bg-blue-600 dark:bg-blue-500 text-white border-blue-600 dark:border-blue-500 shadow-md scale-105"
+                            : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500"
+                        }`}
+                      >
+                        {t.label}
+                        {(t as any).badge && (
+                          <span
+                            className={`absolute -top-2 -right-1 ${getBadgeColor((t as any).badge)} text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-pulse z-10`}
+                          >
+                            {(t as any).badge}
+                          </span>
+                        )}
+                      </button>
+                    </FeatureGuard>
                   </div>
                 );
               })

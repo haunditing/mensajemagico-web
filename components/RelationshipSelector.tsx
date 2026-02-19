@@ -20,9 +20,11 @@ const RelationshipSelector: React.FC<RelationshipSelectorProps> = ({
 
     // 1. Identificar qué roles exclusivos ya están ocupados por un contacto
     const occupiedRoles = new Set<string>();
-    
+
     contacts.forEach((c) => {
-      const rel = String(c.relationship || "").toLowerCase().trim();
+      const rel = String(c.relationship || "")
+        .toLowerCase()
+        .trim();
       if (rel === "pareja" || rel === "couple") occupiedRoles.add("couple");
       if (rel === "madre" || rel === "mother") occupiedRoles.add("mother");
       if (rel === "padre" || rel === "father") occupiedRoles.add("father");
@@ -60,19 +62,32 @@ const RelationshipSelector: React.FC<RelationshipSelectorProps> = ({
       <select
         value={relationshipId}
         onChange={onRelationshipChange}
-        className="w-full h-12 md:h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
+        className="w-full h-12 md:h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-4 pr-10 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
       >
-        <option value="new_contact" className="font-bold text-blue-600 dark:text-blue-400">
+        <option
+          value="new_contact"
+          className="font-bold text-blue-600 dark:text-blue-400"
+        >
           + Nuevo Contacto
         </option>
         {contacts.length > 0 && (
           <optgroup label="Mis Contactos">
             {contacts.map((c) => {
-              const rel = String(c.relationship || "").toLowerCase().trim();
-              const isExclusive = ["pareja", "couple", "madre", "mother", "padre", "father"].includes(rel);
+              const rel = String(c.relationship || "")
+                .toLowerCase()
+                .trim();
+              const isExclusive = [
+                "pareja",
+                "couple",
+                "madre",
+                "mother",
+                "padre",
+                "father",
+              ].includes(rel);
               return (
                 <option key={c._id} value={c._id}>
-                  {c.name} ({c.relationship}) {isExclusive ? "🔒" : ""} {c.relationalHealth >= 8 ? "❤️" : ""}
+                  {c.name} ({c.relationship}) {isExclusive ? "🔒" : ""}{" "}
+                  {c.relationalHealth >= 8 ? "❤️" : ""}
                 </option>
               );
             })}

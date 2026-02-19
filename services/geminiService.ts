@@ -212,3 +212,18 @@ export const generateMessageStream = async (
     throw error;
   }
 };
+
+/**
+ * Servicio de Generación de Imágenes
+ */
+export const generateImage = async (prompt: string): Promise<any> => {
+  try {
+    const response = await api.post("/api/magic/generate-image", {
+      prompt,
+    });
+    return response.result;
+  } catch (error) {
+    console.error("Error generando imagen:", error);
+    throw error;
+  }
+};

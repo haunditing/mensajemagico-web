@@ -88,6 +88,8 @@ const Generator: React.FC<GeneratorProps> = ({
     setUsageMessage,
     showGifts,
     setShowGifts,
+    giftBudget,
+    setGiftBudget,
     isForPost,
     setIsForPost,
     userLocation,
@@ -400,25 +402,27 @@ const Generator: React.FC<GeneratorProps> = ({
                   position="bottom"
                   color={tooltipColor}
                 >
-                  <RelationshipSelector
-                    relationshipId={relationshipId}
-                    onRelationshipChange={handleRelChange}
-                    contacts={contacts}
-                    selectedContact={selectedContact}
-                  />
+                  <div className="relative group">
+                    <RelationshipSelector
+                      relationshipId={relationshipId}
+                      onRelationshipChange={handleRelChange}
+                      contacts={contacts}
+                      selectedContact={selectedContact}
+                    />
+                    {selectedContact && (
+                      <button
+                        onClick={handleEditContact}
+                        className="absolute right-2 bottom-2 md:bottom-3 p-1.5 text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 transition-all rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 md:opacity-0 md:group-hover:opacity-100"
+                        title="Editar nombre del contacto"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </OnboardingTooltip>
               )}
-                  {selectedContact && (
-                    <button
-                      onClick={handleEditContact}
-                      className="absolute top-0 right-0 mt-8 mr-10 p-1.5 text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-                      title="Editar nombre del contacto"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
-                  )}
             </div>
           )}
 
@@ -566,32 +570,52 @@ const Generator: React.FC<GeneratorProps> = ({
 
         {/* Toggle Regalos */}
         {isLastStep && (!isPensamiento || !isForPost) && (
-          <div
-            className="flex items-center gap-3 mb-6 cursor-pointer group w-fit mx-auto md:mx-0"
-            onClick={() => setShowGifts(!showGifts)}
-          >
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
             <div
-              className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 ${showGifts ? "bg-blue-600 border-blue-600" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:border-blue-400 dark:group-hover:border-blue-500"}`}
+              className="flex items-center gap-3 cursor-pointer group w-fit"
+              onClick={() => setShowGifts(!showGifts)}
             >
-              {showGifts && (
-                <svg
-                  className="w-3.5 h-3.5 text-white"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={3}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              )}
+              <div
+                className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 ${showGifts ? "bg-blue-600 border-blue-600" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:border-blue-400 dark:group-hover:border-blue-500"}`}
+              >
+                {showGifts && (
+                  <svg
+                    className="w-3.5 h-3.5 text-white"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={3}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </svg>
+                )}
+              </div>
+              <span className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors select-none flex items-center gap-2">
+                🎁 Ver sugerencias de regalos
+              </span>
             </div>
-            <span className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors select-none flex items-center gap-2">
-              🎁 Ver sugerencias de regalos
-            </span>
+
+            {showGifts && (
+              <div className="flex items-center gap-2 animate-fade-in pl-8 sm:pl-0">
+                <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Presupuesto:</span>
+                <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
+                  {(['low', 'medium', 'high'] as const).map((b) => (
+                    <button
+                      key={b}
+                      onClick={() => setGiftBudget(b)}
+                      className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${giftBudget === b ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                      title={b === 'low' ? 'Económico' : b === 'medium' ? 'Estándar' : 'Lujo'}
+                    >
+                      {b === 'low' ? '$' : b === 'medium' ? '$$' : '$$$'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 

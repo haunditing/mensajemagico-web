@@ -268,8 +268,8 @@ const HomePage: React.FC = () => {
                       </span>
                     )}
                     {isGreeting && (
-                      <span className="ml-2 text-[10px] bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 px-2 py-0.5 rounded-full uppercase tracking-tighter">
-                        Nuevo
+                      <span className="ml-2 text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full uppercase tracking-tighter flex items-center gap-1">
+                        <span>💎</span> Premium
                       </span>
                     )}
                   </h3>

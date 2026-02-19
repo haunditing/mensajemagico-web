@@ -1,9 +1,11 @@
 export interface GuardianPromptOptions {
   tone: string;
   selectedContact?: any;
+  relationshipId?: string;
   isPensamiento: boolean;
   isForPost: boolean;
   showGifts: boolean;
+  giftBudget?: string;
   country: string;
 }
 
@@ -17,9 +19,11 @@ export interface GuardianPromptResult {
 export const buildGuardianPrompt = ({
   tone,
   selectedContact,
+  relationshipId,
   isPensamiento,
   isForPost,
   showGifts,
+  giftBudget = "medium",
   country,
 }: GuardianPromptOptions): GuardianPromptResult => {
   let styleInstructions = "";
@@ -170,6 +174,29 @@ export const buildGuardianPrompt = ({
     VE: "Bolívares",
   };
   const localCurrency = currencyMap[country] || "Dólares";
+  
+  let contactGender = selectedContact?.grammaticalGender || "neutral";
+  if (contactGender === "neutral" && !selectedContact && relationshipId) {
+    if (relationshipId === "mother") contactGender = "female";
+    if (relationshipId === "father") contactGender = "male";
+  }
+
+  // Inferencia de estilo de regalo según la relación para mejorar la relevancia
+  let giftStyle = "tendencia general";
+  if (relationshipId === "boss") giftStyle = "profesional, elegante y de oficina";
+  if (relationshipId === "couple") giftStyle = "romántico, significativo o de pareja";
+  if (relationshipId === "friend") giftStyle = "divertido, original o tecnológico";
+  if (relationshipId === "mother") giftStyle = "cuidado personal, hogar o emotivo";
+  if (relationshipId === "father") giftStyle = "tecnología, herramientas o accesorios";
+  if (relationshipId === "ligue") giftStyle = "detalle pequeño, coqueto pero no intenso";
+
+  const budgetMap: Record<string, string> = {
+    low: "económico / detalle pequeño",
+    medium: "precio medio / estándar",
+    high: "premium / lujo / alta gama",
+  };
+  const budgetDesc = budgetMap[giftBudget] || "precio medio";
+
   const formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido y MINIFICADO (sin espacios extra) con esta estructura: {
       "selected_strategy": "string",
       "generated_messages": [{ "tone": "string", "content": "string", "locked": boolean }],
@@ -180,12 +207,12 @@ export const buildGuardianPrompt = ({
       })"${
     shouldIncludeGifts
       ? `,
-      "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}" }]`
+      "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}", "image_url": "url_imagen_opcional" }]`
       : ""
   }
     }. ${
       shouldIncludeGifts
-        ? "Máximo 2 regalos (solo si es muy relevante)."
+        ? `Máximo 2 regalos. PARA REGALOS: Selecciona TENDENCIAS populares. Basa la selección en: País (${country}), Género (${contactGender}), Estilo (${giftStyle}) y Presupuesto (${budgetDesc}). Ignora el contenido del mensaje.`
         : "NO incluyas regalos."
     } Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
 

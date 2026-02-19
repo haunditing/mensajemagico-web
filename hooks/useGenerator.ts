@@ -191,6 +191,7 @@ export const useGenerator = (
   const [safetyError, setSafetyError] = useState<string | null>(null);
   const [usageMessage, setUsageMessage] = useState<string | null>(null);
   const [showGifts, setShowGifts] = useState(true);
+  const [giftBudget, setGiftBudget] = useState<"low" | "medium" | "high">("medium");
   const [isForPost, setIsForPost] = useState(false);
   const [userLocation, setUserLocation] = useState<string | undefined>(
     undefined,
@@ -206,6 +207,7 @@ export const useGenerator = (
   );
   const allowedOccasions = useFeature("access.occasions");
   const isOccasionLocked =
+    (occasion.id === "saludo" && planLevel !== "premium") ||
     allowedOccasions !== "all" &&
     (!Array.isArray(allowedOccasions) ||
       (!allowedOccasions.includes("all") &&
@@ -335,6 +337,7 @@ export const useGenerator = (
       overrideConfig?.greetingMoment ?? greetingMoment;
     const effectiveApologyReason =
       overrideConfig?.apologyReason ?? apologyReason;
+    const effectiveGiftBudget = overrideConfig?.giftBudget ?? giftBudget;
 
     if (isResponder && !effectiveReceivedText.trim()) {
       showToast(
@@ -388,9 +391,11 @@ export const useGenerator = (
     } = buildGuardianPrompt({
       tone: effectiveTone as string,
       selectedContact: effectiveSelectedContact,
+      relationshipId: effectiveRelationshipId,
       isPensamiento,
       isForPost,
       showGifts,
+      giftBudget: effectiveGiftBudget,
       country,
     });
 
@@ -405,6 +410,7 @@ export const useGenerator = (
       greetingMoment: effectiveGreetingMoment,
       apologyReason: effectiveApologyReason,
       contextWords: finalContextWords,
+      giftBudget: effectiveGiftBudget,
     };
 
     setMessages((prev) => [
@@ -673,6 +679,7 @@ export const useGenerator = (
     }
     if (msg.config.greetingMoment) setGreetingMoment(msg.config.greetingMoment);
     if (msg.config.apologyReason) setApologyReason(msg.config.apologyReason);
+    if (msg.config.giftBudget) setGiftBudget(msg.config.giftBudget);
 
     handleGenerate(msg.config);
   };
@@ -722,6 +729,8 @@ export const useGenerator = (
     setUsageMessage,
     showGifts,
     setShowGifts,
+    giftBudget,
+    setGiftBudget,
     isForPost,
     setIsForPost,
     userLocation,
