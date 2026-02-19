@@ -50,6 +50,8 @@ export interface ExtendedGeneratedMessage extends GeneratedMessage {
   isError?: boolean;
   isUsed?: boolean;
   originalContent?: string;
+  config?: any;
+  recipientLabel?: string;
 }
 
 const getWordCount = (text: string) =>
@@ -307,15 +309,26 @@ export const useGenerator = (
     }
   };
 
-  const handleGenerate = async () => {
-    if (safetyError || isLoading || isOccasionLocked) return;
+  const handleGenerate = async (overrideConfig?: any) => {
+    if (safetyError || isLoading || isOccasionLocked) return false;
 
-    if (isResponder && !receivedText.trim()) {
+    // Resolver valores efectivos (Override o Estado actual)
+    const effectiveTone = overrideConfig?.tone ?? tone;
+    const effectiveIntention = overrideConfig?.intention ?? intention;
+    const effectiveReceivedText = overrideConfig?.receivedText ?? receivedText;
+    const effectiveRelationshipId =
+      overrideConfig?.relationshipId ?? relationshipId;
+    const effectiveGreetingMoment =
+      overrideConfig?.greetingMoment ?? greetingMoment;
+    const effectiveApologyReason =
+      overrideConfig?.apologyReason ?? apologyReason;
+
+    if (isResponder && !effectiveReceivedText.trim()) {
       showToast(
         "Por favor, escribe el mensaje que recibiste para continuar.",
         "error",
       );
-      return;
+      return false;
     }
 
     let delay = 0;
@@ -323,7 +336,7 @@ export const useGenerator = (
       const check = canGenerate();
       if (!check.allowed) {
         setUsageMessage(check.message || null);
-        return;
+        return false;
       }
       if (check.delay) delay = check.delay;
     }
@@ -332,10 +345,27 @@ export const useGenerator = (
     setUsageMessage(null);
     if (delay) await new Promise((res) => setTimeout(res, delay));
 
-    const pendingWord = currentWord.trim();
-    const finalContextWords = [...contextWords];
-    if (pendingWord && !finalContextWords.includes(pendingWord))
-      finalContextWords.push(pendingWord);
+    // Lógica de palabras de contexto
+    let finalContextWords: string[] = [];
+    if (overrideConfig?.contextWords) {
+      finalContextWords = overrideConfig.contextWords;
+    } else {
+      const pendingWord = currentWord.trim();
+      finalContextWords = [...contextWords];
+      if (pendingWord && !finalContextWords.includes(pendingWord))
+        finalContextWords.push(pendingWord);
+    }
+
+    const effectiveSelectedContact = contacts.find(
+      (c) => c._id === effectiveRelationshipId,
+    );
+
+    // Determinar etiqueta del destinatario para mostrar en la tarjeta
+    const recipientLabel = isPensamiento
+      ? PENSAMIENTO_THEMES.find((t) => t.id === effectiveRelationshipId)?.label
+      : effectiveSelectedContact
+        ? effectiveSelectedContact.name
+        : RELATIONSHIPS.find((r) => r.id === effectiveRelationshipId)?.label;
 
     const {
       styleInstructions,
@@ -343,8 +373,8 @@ export const useGenerator = (
       avoidTopics,
       formatInstruction,
     } = buildGuardianPrompt({
-      tone: tone as string,
-      selectedContact,
+      tone: effectiveTone as string,
+      selectedContact: effectiveSelectedContact,
       isPensamiento,
       isForPost,
       showGifts,
@@ -352,6 +382,18 @@ export const useGenerator = (
     });
 
     const tempId = Math.random().toString(36).substr(2, 9);
+
+    // Guardar configuración para regeneración futura
+    const currentConfig = {
+      tone: effectiveTone,
+      intention: effectiveIntention,
+      receivedText: effectiveReceivedText,
+      relationshipId: effectiveRelationshipId,
+      greetingMoment: effectiveGreetingMoment,
+      apologyReason: effectiveApologyReason,
+      contextWords: finalContextWords,
+    };
+
     setMessages((prev) => [
       {
         id: tempId,
@@ -359,9 +401,12 @@ export const useGenerator = (
         timestamp: Date.now(),
         occasionName: occasion.name,
         toneLabel: isGreeting
-          ? GREETING_TONES.find((t) => (t.id as any) === tone)?.label
-          : availableTones.find((t) => t.value === tone)?.label || tone,
+          ? GREETING_TONES.find((t) => (t.id as any) === effectiveTone)?.label
+          : availableTones.find((t) => t.value === effectiveTone)?.label ||
+            effectiveTone,
         isStreaming: true,
+        config: currentConfig,
+        recipientLabel,
       },
       ...prev,
     ]);
@@ -384,26 +429,28 @@ export const useGenerator = (
         {
           occasion: occasion.id,
           relationship: isPensamiento
-            ? PENSAMIENTO_THEMES.find((t) => t.id === relationshipId)?.label ||
-              "la vida"
-            : selectedContact?.relationship ||
-              RELATIONSHIPS.find((r) => r.id === relationshipId)?.label ||
+            ? PENSAMIENTO_THEMES.find((t) => t.id === effectiveRelationshipId)
+                ?.label || "la vida"
+            : effectiveSelectedContact?.relationship ||
+              RELATIONSHIPS.find((r) => r.id === effectiveRelationshipId)
+                ?.label ||
               "alguien",
           tone: isPensamiento
-            ? EMOTIONAL_STATES.find((s) => s.id === tone)?.label || tone
+            ? EMOTIONAL_STATES.find((s) => s.id === effectiveTone)?.label ||
+              effectiveTone
             : isGreeting
-              ? GREETING_TONES.find((t) => (t.id as any) === tone)?.label ||
-                tone
-              : tone,
+              ? GREETING_TONES.find((t) => (t.id as any) === effectiveTone)
+                  ?.label || effectiveTone
+              : effectiveTone,
           receivedMessageType: isResponder ? receivedMessageType : undefined,
-          receivedText: isResponder ? receivedText : undefined,
+          receivedText: isResponder ? effectiveReceivedText : undefined,
           contextWords: finalContextWords,
           formatInstruction,
-          intention,
-          relationalHealth: selectedContact?.relationalHealth,
+          intention: effectiveIntention,
+          relationalHealth: effectiveSelectedContact?.relationalHealth,
           grammaticalGender: (user as any)?.preferences?.grammaticalGender,
-          greetingMoment: isGreeting ? greetingMoment : undefined,
-          apologyReason: isPerdoname ? apologyReason : undefined,
+          greetingMoment: isGreeting ? effectiveGreetingMoment : undefined,
+          apologyReason: isPerdoname ? effectiveApologyReason : undefined,
         },
         (token) => {
           rawStream += token;
@@ -446,7 +493,7 @@ export const useGenerator = (
         },
         user?._id,
         userLocation,
-        selectedContactId,
+        effectiveSelectedContact?._id,
         styleInstructions,
         creativityLevel,
         avoidTopics,
@@ -517,7 +564,8 @@ export const useGenerator = (
                 guardianInsight,
                 isStreaming: false,
                 usedLexicalDNA:
-                  !!selectedContact?.guardianMetadata?.preferredLexicon?.length,
+                  !!effectiveSelectedContact?.guardianMetadata?.preferredLexicon
+                    ?.length,
               }
             : msg,
         ),
@@ -527,6 +575,7 @@ export const useGenerator = (
       recordGeneration();
       incrementGlobalCounter();
       setCurrentWord("");
+      return true; // Éxito
     } catch (error: any) {
       setMessages((prev) =>
         prev.map((msg) =>
@@ -542,6 +591,7 @@ export const useGenerator = (
       );
       setIsLoading(false);
       if (error.upsell) triggerUpsell(error.upsell);
+      return false; // Fallo
     }
   };
 
@@ -555,14 +605,18 @@ export const useGenerator = (
   const handleClearHistory = async () => {
     const isConfirmed = await confirm({
       title: "¿Borrar historial?",
-      message: "Se eliminarán todos los mensajes generados en esta sesión. Esta acción no se puede deshacer.",
+      message:
+        "Se eliminarán todos los mensajes generados en esta sesión. Esta acción no se puede deshacer.",
       isDangerous: true,
     });
     if (isConfirmed) setMessages([]);
   };
 
   const handleMarkAsUsed = async (msg: ExtendedGeneratedMessage) => {
-    if (!user || !selectedContactId) return;
+    // Usar el contacto del mensaje si existe, o el seleccionado actualmente
+    const targetContactId = msg.config?.relationshipId || selectedContactId;
+
+    if (!user || !targetContactId) return;
 
     // Actualización optimista en la UI
     setMessages((prev) =>
@@ -572,15 +626,42 @@ export const useGenerator = (
     try {
       await api.post("/api/magic/mark-used", {
         userId: (user as any)._id,
-        contactId: selectedContactId,
+        contactId: targetContactId,
         content: msg.content,
         originalContent: msg.originalContent,
         occasion: occasion.id,
-        tone: tone,
+        tone: msg.config?.tone || tone,
       });
     } catch (e) {
       console.error("Error marking as used", e);
     }
+  };
+
+  const resetForm = () => {
+    setReceivedText("");
+    setContextWords([]);
+    setCurrentWord("");
+    setSafetyError(null);
+    setApologyReason("");
+  };
+
+  const handleRegenerate = (msg: ExtendedGeneratedMessage) => {
+    if (!msg.config) return;
+
+    // Sincronizar UI con la configuración del mensaje (Feedback visual)
+    if (msg.config.tone) setTone(msg.config.tone);
+    if (msg.config.intention) setIntention(msg.config.intention);
+    if (msg.config.contextWords) setContextWords(msg.config.contextWords);
+    if (msg.config.receivedText) setReceivedText(msg.config.receivedText);
+    if (msg.config.relationshipId) {
+      setRelationshipId(msg.config.relationshipId);
+      const contact = contacts.find((c) => c._id === msg.config.relationshipId);
+      setSelectedContactId(contact?._id);
+    }
+    if (msg.config.greetingMoment) setGreetingMoment(msg.config.greetingMoment);
+    if (msg.config.apologyReason) setApologyReason(msg.config.apologyReason);
+
+    handleGenerate(msg.config);
   };
 
   return {
@@ -673,5 +754,7 @@ export const useGenerator = (
       setSelectedContactId(c._id);
     },
     handleMarkAsUsed,
+    resetForm,
+    handleRegenerate,
   };
 };

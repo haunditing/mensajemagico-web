@@ -68,12 +68,20 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {[...Array(3)].map((_, i) => <GiftCardSkeleton key={i} />)}
+        <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 snap-x no-scrollbar">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="min-w-[260px] w-[80%] sm:w-[300px] snap-center shrink-0">
+              <GiftCardSkeleton />
+            </div>
+          ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {validGifts.map((gift, idx) => <GiftCard key={idx} gift={gift} country={country} />)}
+        <div className="flex overflow-x-auto gap-4 pb-4 -mx-6 px-6 snap-x no-scrollbar">
+          {validGifts.map((gift, idx) => (
+            <div key={idx} className="min-w-[260px] w-[80%] sm:w-[300px] snap-center shrink-0">
+              <GiftCard gift={gift} country={country} />
+            </div>
+          ))}
         </div>
       )}
       

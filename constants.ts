@@ -71,6 +71,7 @@ export const GREETING_TONES = [
   { id: "fresco", label: "Fresco" },
   { id: "sobrio", label: "Sobrio" },
   { id: "alegre", label: "Alegre" },
+  { id: "directo", label: "Directo", badge: "Nuevo" },
 ];
 
 export const APOLOGY_REASONS = [
@@ -292,7 +293,7 @@ export const TONES = [
   { value: Tone.SINCERE, label: "Sincero" },
   { value: Tone.FUNNY, label: "Divertido" },
   { value: Tone.FLIRTY, label: "Coqueto" },
-  { value: Tone.DIRECT, label: "Directo" },
+  { value: Tone.DIRECT, label: "Directo", badge: "Actualizado" },
   { value: Tone.SUBTLE, label: "Sutil" },
   { value: Tone.SARCASTIC, label: "Sarcástico" },
   { value: Tone.SHORT, label: "Corto" },

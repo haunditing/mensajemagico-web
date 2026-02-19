@@ -5,6 +5,7 @@ import { useLocalization } from "../context/LocalizationContext";
 import { useAuth } from "../context/AuthContext";
 import { useUpsell } from "../context/UpsellContext";
 import { useFavorites } from "../context/FavoritesContext";
+import { useToast } from "../context/ToastContext";
 import UsageBar from "./UsageBar";
 import { Link } from "react-router-dom";
 import CreateContactModal from "./CreateContactModal";
@@ -34,6 +35,7 @@ const Generator: React.FC<GeneratorProps> = ({
   const { user, remainingCredits, planLevel } = useAuth();
   const { triggerUpsell } = useUpsell();
   const { isFavorite } = useFavorites();
+  const { showToast } = useToast();
   const { country } = useLocalization(); // Necesario para pasar a GeneratedMessagesList
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
@@ -106,7 +108,77 @@ const Generator: React.FC<GeneratorProps> = ({
     handleContactCreated,
     handleClearHistory,
     handleMarkAsUsed,
+    resetForm,
+    handleRegenerate,
   } = useGenerator(occasion, initialRelationship, onRelationshipChange);
+
+  // --- STEPPER LOGIC (Progressive Disclosure) ---
+  const [currentStep, setCurrentStep] = React.useState(1);
+
+  // Resetear paso al cambiar de ocasión
+  React.useEffect(() => {
+    setCurrentStep(1);
+  }, [occasion.id]);
+
+  const steps = React.useMemo(() => {
+    if (isPensamiento) {
+      return [
+        { id: 1, label: "Contexto" },
+        { id: 2, label: "Estilo" },
+      ];
+    }
+    return [
+      { id: 1, label: "Destinatario" },
+      { id: 2, label: "Contexto" },
+      { id: 3, label: "Estilo" },
+    ];
+  }, [isPensamiento]);
+
+  const totalSteps = steps.length;
+  const isLastStep = currentStep === totalSteps;
+
+  const canAdvance = React.useMemo(() => {
+    if (safetyError) return false;
+    if (!isPensamiento && currentStep === 2 && isResponder) {
+      return receivedText.trim().length > 0;
+    }
+    return true;
+  }, [safetyError, isPensamiento, currentStep, isResponder, receivedText]);
+
+  // Estado para la animación de sacudida
+  const [isShaking, setIsShaking] = React.useState(false);
+
+  const handleNext = () => {
+    // Validaciones antes de avanzar
+    if (!canAdvance) {
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 500);
+
+      // Feedback específico
+      if (safetyError) {
+        showToast("Hay una advertencia de seguridad pendiente. Por favor revísala.", "error");
+      } else if (!isPensamiento && currentStep === 2 && isResponder && !receivedText.trim()) {
+        showToast("Por favor, escribe el mensaje que recibiste para continuar.", "error");
+      }
+      return;
+    }
+    
+    setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
+    // Scroll suave al inicio del contenedor para mantener el foco
+    document.getElementById("generator-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  const handleBack = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleGenerateAndReset = async () => {
+    const success = await handleGenerate();
+    if (success) {
+      setCurrentStep(1);
+      resetForm();
+    }
+  };
 
   // Botón flotante para seguir la escritura si el usuario hace scroll hacia arriba
   const [showScrollButton, setShowScrollButton] = React.useState(false);
@@ -138,11 +210,30 @@ const Generator: React.FC<GeneratorProps> = ({
     }
   };
 
+  const handleEditContactFromMessage = (contactId: string) => {
+    const contact = contacts.find((c) => c._id === contactId);
+    if (contact) {
+      setContactToEdit(contact);
+      setIsContactModalOpen(true);
+    }
+  };
+
   return (
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>
       <div
+        id="generator-card"
         className={`bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2rem] border border-slate-200 dark:border-slate-800 p-6 md:p-10 shadow-sm ${isPensamiento ? "border-blue-100 dark:border-blue-900/30 bg-blue-50/10 dark:bg-blue-900/10" : ""}`}
       >
+        <style>{`
+          @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+          }
+          .animate-shake {
+            animation: shake 0.4s ease-in-out;
+          }
+        `}</style>
         {/* Barra de Uso de Créditos */}
         <UsageBar />
 
@@ -192,17 +283,111 @@ const Generator: React.FC<GeneratorProps> = ({
           </div>
         )}
 
-        <div className="space-y-6 mb-8">
-          {/* --- SECCIÓN SUPERIOR PARA PENSAMIENTOS (Jerarquía Visual) --- */}
-          {isPensamiento && (
-            <div className="space-y-6">
-              {/* Selector de Formato */}
-              <FormatSelector
-                isForPost={isForPost}
-                setIsForPost={setIsForPost}
-              />
+        {/* --- STEPPER INDICATOR (Móvil First) --- */}
+        <div className="flex items-center justify-between mb-8 px-2 relative">
+          {/* Línea de progreso de fondo */}
+          <div className="absolute top-4 left-4 right-4 h-0.5 bg-slate-100 dark:bg-slate-800 -z-10" />
+          
+          {steps.map((step) => {
+            const isActive = step.id === currentStep;
+            const isCompleted = step.id < currentStep;
+            
+            return (
+              <div key={step.id} className="flex flex-col items-center z-10">
+                <div 
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 
+                  ${isActive 
+                    ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20 scale-110" 
+                    : isCompleted 
+                      ? "bg-green-500 border-green-500 text-white" 
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-600"}`}
+                >
+                  {isCompleted ? "✓" : step.id}
+                </div>
+                <span className={`text-[10px] font-bold uppercase tracking-wider mt-2 transition-colors ${isActive ? "text-blue-600 dark:text-blue-400" : "text-slate-400 dark:text-slate-600"}`}>
+                  {step.label}
+                </span>
+              </div>
+            );
+          })}
+        </div>
 
-              {/* Input de Reflexión (Movido arriba) */}
+        <div className="space-y-6 mb-8">
+          {/* --- PASO 1: DESTINATARIO (Solo si no es Pensamiento) --- */}
+          {!isPensamiento && currentStep === 1 && (
+            <div className="animate-fade-in">
+              {!occasion.fixedRelation && (
+                <div className="relative group">
+                  <RelationshipSelector
+                    relationshipId={relationshipId}
+                    onRelationshipChange={handleRelChange}
+                    contacts={contacts}
+                    selectedContact={selectedContact}
+                  />
+                  {selectedContact && (
+                    <button
+                      onClick={handleEditContact}
+                      className="absolute top-0 right-0 mt-8 mr-10 p-1.5 text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                      title="Editar nombre del contacto"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* --- PASO 2 (o 1 en Pensamiento): CONTEXTO --- */}
+          {((!isPensamiento && currentStep === 2) || (isPensamiento && currentStep === 1)) && (
+            <div className="space-y-6 animate-fade-in">
+              {isPensamiento && (
+                <FormatSelector
+                  isForPost={isForPost}
+                  setIsForPost={setIsForPost}
+                />
+              )}
+
+              {isGreeting && (
+                <GreetingSelector
+                  greetingMoment={greetingMoment}
+                  setGreetingMoment={setGreetingMoment}
+                  suggestedGreeting={suggestedGreeting}
+                />
+              )}
+
+              {isPerdoname && (
+                <div className="animate-fade-in-up">
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                    ¿Por qué pides perdón?
+                  </label>
+                  <select
+                    value={apologyReason}
+                    onChange={(e) => setApologyReason(e.target.value)}
+                    className="w-full p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                  >
+                    <option value="">Selecciona un motivo...</option>
+                    {APOLOGY_REASONS.map((reason) => (
+                      <option key={reason.id} value={reason.label}>
+                        {reason.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {isResponder && (
+                <ReceivedMessageInput
+                  receivedText={receivedText}
+                  setReceivedText={setReceivedText}
+                  maxChars={MAX_CHARS}
+                  safetyError={safetyError}
+                  disabled={isLoading}
+                />
+              )}
+
               <ContextInputSection
                 isPensamiento={isPensamiento}
                 occasionId={occasion.id}
@@ -222,139 +407,32 @@ const Generator: React.FC<GeneratorProps> = ({
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Destinatario Select (Oculto para Pensamiento) */}
-            {!isPensamiento && !occasion.fixedRelation && (
-              <div className="relative group">
-                <RelationshipSelector
-                  relationshipId={relationshipId}
-                  onRelationshipChange={handleRelChange}
-                  contacts={contacts}
-                  selectedContact={selectedContact}
-                />
-                {selectedContact && (
-                  <button
-                    onClick={handleEditContact}
-                    className="absolute top-0 right-0 mt-8 mr-10 p-1.5 text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 transition-colors rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-                    title="Editar nombre del contacto"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {isGreeting && (
-              <GreetingSelector
-                greetingMoment={greetingMoment}
-                setGreetingMoment={setGreetingMoment}
-                suggestedGreeting={suggestedGreeting}
-              />
-            )}
-
-            {isPerdoname && (
-              <div className="animate-fade-in-up">
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                  ¿Por qué pides perdón?
-                </label>
-                <select
-                  value={apologyReason}
-                  onChange={(e) => setApologyReason(e.target.value)}
-                  className="w-full p-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl font-medium text-slate-700 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
-                >
-                  <option value="">Selecciona un motivo...</option>
-                  {APOLOGY_REASONS.map((reason) => (
-                    <option key={reason.id} value={reason.label}>
-                      {reason.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            <ToneSelector
-              isPensamiento={isPensamiento}
-              isGreeting={isGreeting}
-              tone={tone}
-              setTone={setTone}
-              availableTones={availableTones}
-              guardianWarning={guardianWarning}
-            />
-          </div>
-
-          {/* --- UI: OBJETIVO DEL GUARDIÁN --- */}
-          <GuardianObjectiveSelector
-            intention={intention}
-            setIntention={setIntention}
-            setManualIntentionOverride={setManualIntentionOverride}
-            planLevel={planLevel}
-            manualIntentionOverride={manualIntentionOverride}
-            guardianDescription={guardianDescription}
-          />
-
-          {isResponder ? (
-            <>
-              <ReceivedMessageInput
-                receivedText={receivedText}
-                setReceivedText={setReceivedText}
-                maxChars={MAX_CHARS}
-                safetyError={safetyError}
-                disabled={isLoading}
-              />
-              <ContextInputSection
+          {/* --- PASO 3 (o 2 en Pensamiento): ESTILO Y GENERACIÓN --- */}
+          {((!isPensamiento && currentStep === 3) || (isPensamiento && currentStep === 2)) && (
+            <div className="space-y-6 animate-fade-in">
+              <ToneSelector
                 isPensamiento={isPensamiento}
-                occasionId={occasion.id}
-                tone={tone as string}
-                isContextLocked={isContextLocked}
-                maxContext={MAX_CONTEXT}
-                currentWord={currentWord}
-                onCurrentWordChange={setCurrentWord}
-                onKeyDown={handleKeyDown}
-                contextWords={contextWords}
-                onAddWord={addContextWord}
-                onRemoveWord={removeContextWord}
-                onTrendingTopicClick={handleTrendingTopicClick}
-                showHandAnimation={showHandAnimation}
-                onTriggerUpsell={triggerUpsell}
+                isGreeting={isGreeting}
+                tone={tone}
+                setTone={setTone}
+                availableTones={availableTones}
+                guardianWarning={guardianWarning}
               />
-            </>
-          ) : (
-            !isPensamiento && (
-              // Si no es responder ni pensamiento, mostramos el input de contexto aquí
-              <ContextInputSection
-                isPensamiento={isPensamiento}
-                occasionId={occasion.id}
-                tone={tone as string}
-                isContextLocked={isContextLocked}
-                maxContext={MAX_CONTEXT}
-                currentWord={currentWord}
-                onCurrentWordChange={setCurrentWord}
-                onKeyDown={handleKeyDown}
-                contextWords={contextWords}
-                onAddWord={addContextWord}
-                onRemoveWord={removeContextWord}
-                onTrendingTopicClick={handleTrendingTopicClick}
-                showHandAnimation={showHandAnimation}
-                onTriggerUpsell={triggerUpsell}
+
+              <GuardianObjectiveSelector
+                intention={intention}
+                setIntention={setIntention}
+                setManualIntentionOverride={setManualIntentionOverride}
+                planLevel={planLevel}
+                manualIntentionOverride={manualIntentionOverride}
+                guardianDescription={guardianDescription}
               />
-            )
+            </div>
           )}
         </div>
 
         {/* Toggle Regalos */}
-        {(!isPensamiento || !isForPost) && (
+        {isLastStep && (!isPensamiento || !isForPost) && (
           <div
             className="flex items-center gap-3 mb-6 cursor-pointer group w-fit mx-auto md:mx-0"
             onClick={() => setShowGifts(!showGifts)}
@@ -410,18 +488,43 @@ const Generator: React.FC<GeneratorProps> = ({
           </div>
         )}
 
-        <GenerateButton
-          onClick={handleGenerate}
-          isLoading={isLoading}
-          safetyError={safetyError}
-          user={user}
-          remainingCredits={remainingCredits}
-          isOccasionLocked={isOccasionLocked}
-          isPensamiento={isPensamiento}
-          isGreeting={isGreeting}
-          disabled={isResponder && !receivedText.trim()}
-          disabledLabel={isResponder ? "Escribe el mensaje" : undefined}
-        />
+        {/* --- NAVEGACIÓN DEL STEPPER --- */}
+        <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+          {currentStep > 1 && (
+            <button
+              onClick={handleBack}
+              className="flex-1 md:flex-none px-6 py-3 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              Atrás
+            </button>
+          )}
+          
+          {isLastStep ? (
+            <div className="flex-1">
+              <GenerateButton
+                onClick={handleGenerateAndReset}
+                isLoading={isLoading}
+                safetyError={safetyError}
+                user={user}
+                remainingCredits={remainingCredits}
+                isOccasionLocked={isOccasionLocked}
+                isPensamiento={isPensamiento}
+                isGreeting={isGreeting}
+              />
+            </div>
+          ) : (
+            <button
+              onClick={handleNext}
+              className={`flex-1 px-6 py-3 rounded-xl font-bold transition-all ${
+                !canAdvance
+                  ? "bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-600 cursor-not-allowed"
+                  : "bg-slate-900 dark:bg-slate-700 text-white hover:bg-slate-800 dark:hover:bg-slate-600 shadow-lg active:scale-95"
+              } ${isShaking ? "animate-shake" : ""}`}
+            >
+              Siguiente
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Banner de Registro para usuarios no logueados */}
@@ -465,6 +568,8 @@ const Generator: React.FC<GeneratorProps> = ({
         onEditMessage={setEditingMessageId}
         onClearHistory={handleClearHistory}
         onMarkAsUsed={handleMarkAsUsed}
+        onRegenerate={handleRegenerate}
+        onEditContact={handleEditContactFromMessage}
       />
 
       {showScrollButton && (

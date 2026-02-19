@@ -195,20 +195,21 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
+      <div className={`flex gap-2 ${contextWords.length > 0 ? "overflow-x-auto pb-2 -mx-6 px-6 md:flex-wrap md:pb-0 md:mx-0 md:px-0 no-scrollbar snap-x" : "flex-wrap"}`}>
         {contextWords.map((word, idx) => (
-          <div
-            key={idx}
-            className="bg-blue-600 dark:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in-up shadow-sm"
-            title={word}
-          >
-            <span>{word.length > 30 ? `${word.substring(0, 27)}...` : word}</span>
-            <button
-              onClick={() => onRemoveWord(word)}
-              className="hover:text-blue-200 dark:hover:text-blue-300 transition-colors"
+          <div key={idx} className="snap-center shrink-0 pr-2 md:pr-0 last:pr-6 md:last:pr-0">
+            <div
+              className="bg-blue-600 dark:bg-blue-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 animate-fade-in-up shadow-sm whitespace-nowrap"
+              title={word}
             >
-              ✕
-            </button>
+              <span>{word.length > 30 ? `${word.substring(0, 27)}...` : word}</span>
+              <button
+                onClick={() => onRemoveWord(word)}
+                className="hover:text-blue-200 dark:hover:text-blue-300 transition-colors"
+              >
+                ✕
+              </button>
+            </div>
           </div>
         ))}
         {contextWords.length === 0 && (
@@ -220,15 +221,16 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
 
       {/* Pills de Sugerencias del Guardián */}
       {!isContextLocked && (
-        <div className="mt-3 flex flex-wrap gap-2 animate-fade-in">
+        <div className="mt-3 flex overflow-x-auto pb-2 -mx-6 px-6 md:flex-wrap md:gap-2 md:pb-0 md:mx-0 md:px-0 no-scrollbar snap-x animate-fade-in">
           {suggestions.map((topic) => (
-            <button
-              key={topic}
-              onClick={() => onTrendingTopicClick(topic)}
-              className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700"
-            >
-              + {topic}
-            </button>
+            <div key={topic} className="snap-center shrink-0 pr-2 md:pr-0 last:pr-6 md:last:pr-0">
+              <button
+                onClick={() => onTrendingTopicClick(topic)}
+                className="text-[10px] font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-3 py-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors border border-slate-200 dark:border-slate-700 whitespace-nowrap"
+              >
+                + {topic}
+              </button>
+            </div>
           ))}
         </div>
       )}
