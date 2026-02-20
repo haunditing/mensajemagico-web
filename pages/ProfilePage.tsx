@@ -13,17 +13,7 @@ import { api, BASE_URL } from "../context/api";
 import CitySelector from "../components/CitySelector";
 import { useConfirm } from "../context/ConfirmContext";
 import Cropper from "react-easy-crop";
-
-const AVATAR_COLORS: Record<string, string> = {
-  blue: "from-blue-500 to-indigo-600",
-  cyan: "from-blue-600 to-cyan-600",
-  pink: "from-pink-500 to-rose-500",
-  purple: "from-purple-500 to-violet-600",
-  orange: "from-orange-500 to-amber-600",
-  green: "from-emerald-500 to-teal-600",
-  red: "from-red-500 to-rose-600",
-  slate: "from-slate-500 to-slate-700",
-};
+import UserAvatar, { AVATAR_COLORS } from "../components/UserAvatar";
 
 const ProfilePage: React.FC = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -39,7 +29,6 @@ const ProfilePage: React.FC = () => {
   const [nameInput, setNameInput] = useState("");
   const [isSavingName, setIsSavingName] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [imageLoadError, setImageLoadError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Estado para Cropper
@@ -73,7 +62,6 @@ const ProfilePage: React.FC = () => {
       loadSubscription();
       if ((user as any).location) setLocationInput((user as any).location);
       if ((user as any).name) setNameInput((user as any).name);
-      setImageLoadError(false); // Resetear error al cargar nuevo usuario
 
       // Cargar color o derivar del género si no existe
       if ((user as any).preferences?.avatarColor) {
@@ -159,6 +147,27 @@ const ProfilePage: React.FC = () => {
       showToast(error.message || "Error al actualizar nombre", "error");
     } finally {
       setIsSavingName(false);
+    }
+  };
+
+  const handleDeletePhoto = async () => {
+    const isConfirmed = await confirm({
+      title: "¿Eliminar foto?",
+      message: "¿Estás seguro de que quieres eliminar tu foto de perfil?",
+      confirmText: "Sí, eliminar",
+      isDangerous: true
+    });
+    if (!isConfirmed) return;
+
+    setIsUploadingPhoto(true);
+    try {
+      await api.put("/api/auth/profile", { deleteProfilePicture: true });
+      await refreshUser();
+      showToast("Foto de perfil eliminada", "success");
+    } catch (error: any) {
+      showToast(error.message || "Error al eliminar foto", "error");
+    } finally {
+      setIsUploadingPhoto(false);
     }
   };
 
@@ -339,31 +348,7 @@ const ProfilePage: React.FC = () => {
               className="w-20 h-20 rounded-full overflow-hidden focus:ring-4 focus:ring-blue-500 focus:outline-none transition-all relative"
               aria-label="Cambiar foto de perfil"
             >
-              {(user as any).profilePicture && !imageLoadError ? (
-                <img
-                  src={`${BASE_URL || "http://localhost:3000"}${(user as any).profilePicture}`}
-                  alt={`Foto de perfil de ${(user as any).name || "usuario"}`}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    console.error("Error cargando imagen:", e.currentTarget.src);
-                    setImageLoadError(true);
-                  }}
-                />
-              ) : (
-                <div
-                  className={`w-full h-full flex items-center justify-center text-3xl font-bold text-white bg-gradient-to-br ${AVATAR_COLORS[avatarColor] || AVATAR_COLORS.blue}`}
-                >
-                  {grammaticalGender === "female" ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 opacity-90">
-                      <path d="M12 2c-2.21 0-4 1.79-4 4 0 1.3.64 2.45 1.62 3.17-.83.7-1.44 1.67-1.59 2.78C6.1 12.56 4 14.53 4 17v2h16v-2c0-2.47-2.1-4.44-4.03-5.05-.15-1.11-.76-2.08-1.59-2.78C15.36 8.45 16 7.3 16 6c0-2.21-1.79-4-4-4z" />
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 opacity-90">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
-                    </svg>
-                  )}
-                </div>
-              )}
+              <UserAvatar user={user} className="w-full h-full text-3xl" />
               
               {/* Overlay de edición al pasar el mouse */}
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -372,6 +357,19 @@ const ProfilePage: React.FC = () => {
                 </span>
               </div>
             </button>
+            {(user as any).profilePicture && (
+              <button
+                onClick={handleDeletePhoto}
+                disabled={isUploadingPhoto}
+                className="absolute -bottom-1 -right-1 bg-white dark:bg-slate-800 text-red-500 dark:text-red-400 p-1.5 rounded-full shadow-md border border-slate-200 dark:border-slate-700 hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors z-10"
+                title="Eliminar foto"
+                aria-label="Eliminar foto de perfil"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-3.5 h-3.5">
+                  <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.52.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+                </svg>
+              </button>
+            )}
             <input
               type="file"
               ref={fileInputRef}
@@ -381,7 +379,7 @@ const ProfilePage: React.FC = () => {
             />
           </div>
 
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 w-full md:w-auto">
             {isEditingName ? (
               <div className="flex items-center gap-2 justify-center md:justify-start">
                 <input
@@ -404,7 +402,7 @@ const ProfilePage: React.FC = () => {
                 </h2>
                 <button 
                   onClick={() => setIsEditingName(true)}
-                  className="text-slate-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                  className="text-slate-400 hover:text-blue-500 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity p-1"
                   aria-label="Editar nombre"
                 >
                   ✏️

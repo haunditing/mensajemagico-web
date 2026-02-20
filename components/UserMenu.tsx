@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import PlanBadge from "./PlanBadge";
 import { ENABLE_UPGRADES } from "../config";
 import { useTheme } from "../context/ThemeContext";
+import UserAvatar from "./UserAvatar";
 
 const UserMenu: React.FC = () => {
   const { user, planLevel, logout, isPremium, isLoading } = useAuth();
@@ -113,15 +114,15 @@ const UserMenu: React.FC = () => {
     <div className="relative" ref={menuRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1 pr-2 sm:pr-3 rounded-full border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 transition-all bg-white dark:bg-slate-800"
+        className="flex items-center gap-2 p-1 pr-2 sm:pr-3 rounded-full transition-all bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700"
       >
         <div
-          className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white ${isPremium ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-slate-400 dark:bg-slate-600"}`}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white"
         >
-          {user.email[0].toUpperCase()}
+          <UserAvatar user={user} className="w-full h-full text-xs" />
         </div>
         <span className="text-xs font-bold text-slate-700 dark:text-slate-200 max-w-[100px] truncate hidden sm:block">
-          {user.email.split("@")[0]}
+          {((user as any).name ? (user as any).name.split(" ")[0] : user.email.split("@")[0])}
         </span>
         <PlanBadge
           feature="monetization.show_ads"
