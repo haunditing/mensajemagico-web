@@ -50,7 +50,7 @@ export default defineConfig({
         description: "Genera mensajes y cartas personalizadas con IA.",
         start_url: "/",
         display: "standalone",
-        background_color: "#FFFFFF",
+        background_color: "#f8fafc", // Coincide con bg-slate-50 del index.html
         theme_color: "#0f172a",
         orientation: "portrait",
         icons: [
