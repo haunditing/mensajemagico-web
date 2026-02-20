@@ -119,11 +119,6 @@ const Generator: React.FC<GeneratorProps> = ({
   // --- STEPPER LOGIC (Progressive Disclosure) ---
   const [currentStep, setCurrentStep] = React.useState(1);
 
-  // Resetear paso al cambiar de ocasión
-  React.useEffect(() => {
-    setCurrentStep(1);
-  }, [occasion.id]);
-
   const steps = React.useMemo(() => {
     if (isPensamiento) {
       return [
@@ -143,13 +138,34 @@ const Generator: React.FC<GeneratorProps> = ({
   const isLastStep = currentStep === totalSteps;
 
   // --- ONBOARDING: Lógica del Tour Completo ---
-  const { activeTour, currentStepIndex, nextStep, skipTour } = useOnboarding();
+  const { activeTour, currentStepIndex, nextStep, skipTour, goToStep, startTour } = useOnboarding();
+
+  // Resetear paso al cambiar de ocasión y sincronizar tour
+  const prevOccasionId = React.useRef(occasion.id);
+  React.useEffect(() => {
+    if (prevOccasionId.current !== occasion.id) {
+      setCurrentStep(1);
+      // Si el tour está activo, reiniciar al paso 1 para sincronizar con la nueva ocasión
+      if (activeTour === 'onboarding_tour' && goToStep) {
+        goToStep(1);
+      }
+      prevOccasionId.current = occasion.id;
+    }
+  }, [occasion.id, activeTour, goToStep]);
+  
+  // Iniciar el tour si no está activo (y no se ha completado previamente)
+  React.useEffect(() => {
+    if (!activeTour) {
+      startTour('onboarding_tour');
+    }
+  }, [activeTour, startTour]);
   
   React.useEffect(() => {
     if (activeTour === 'onboarding_tour') {
       // Si viene de la Home (Paso 0), avanzar automáticamente al Paso 1
       if (currentStepIndex === 0) {
-        nextStep(0);
+        const timer = setTimeout(() => nextStep(0), 100);
+        return () => clearTimeout(timer);
       }
       
       // Sincronizar UI del Generador con el paso del Tour
@@ -197,7 +213,11 @@ const Generator: React.FC<GeneratorProps> = ({
   };
 
   const handleBack = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
+    const prevStep = Math.max(currentStep - 1, 1);
+    if (activeTour === 'onboarding_tour' && goToStep) {
+      goToStep(prevStep);
+    }
+    setCurrentStep(prevStep);
   };
 
   const handleGenerateAndReset = async () => {
@@ -253,9 +273,9 @@ const Generator: React.FC<GeneratorProps> = ({
   // Textos dinámicos para el tour según la ocasión
   const getStep1Text = () => {
     if (isPensamiento) return "Define el formato y el tema central de tu reflexión.";
-    if (isResponder) return "¿Quién te escribió? El Guardián analizará vuestra relación.";
+    if (isResponder) return "¿Quién te escribió? El Guardián analizará su relación.";
     if (isGreeting) return "¿A quién quieres saludar hoy?";
-    return "Primero, dinos a quién le escribes. El Guardián adaptará el mensaje a vuestra relación.";
+    return "Primero, dinos a quién le escribes. El Guardián adaptará el mensaje a su relación.";
   };
 
   const getStep2Text = () => {

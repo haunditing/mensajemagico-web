@@ -29,8 +29,9 @@ const OnboardingTooltip: React.FC<OnboardingTooltipProps> = ({
 
   // Auto-scroll para asegurar visibilidad en móviles
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout>;
     if (isActive && tooltipRef.current) {
-      setTimeout(() => {
+      timer = setTimeout(() => {
         tooltipRef.current?.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
@@ -38,6 +39,7 @@ const OnboardingTooltip: React.FC<OnboardingTooltipProps> = ({
         });
       }, 500); // Retraso para permitir renderizado y animaciones
     }
+    return () => clearTimeout(timer);
   }, [isActive]);
 
   const colorStyles: Record<string, { container: string, arrow: string, text: string, button: string }> = {

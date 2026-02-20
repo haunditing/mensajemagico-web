@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface OnboardingContextType {
   activeTour: string | null;
@@ -8,11 +9,14 @@ interface OnboardingContextType {
   skipTour: () => void;
   isTourCompleted: (tourId: string) => boolean;
   resetTour: (tourId: string) => void;
+  goToStep: (index: number) => void;
 }
 
 const OnboardingContext = createContext<OnboardingContextType | undefined>(undefined);
 
 export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   // Inicializar desde sessionStorage para persistir entre navegaciones (Home -> Generator)
   const [activeTour, setActiveTour] = useState<string | null>(() => {
     return sessionStorage.getItem('onboarding_active_tour');
@@ -45,38 +49,52 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     }
   }, [activeTour, currentStepIndex]);
 
-  const startTour = (tourId: string) => {
+  const startTour = useCallback((tourId: string) => {
     if (!completedTours.includes(tourId)) {
       setActiveTour(tourId);
       setCurrentStepIndex(0);
     }
-  };
+  }, [completedTours]);
 
-  const nextStep = (expectedCurrentIndex?: number) => {
+  const nextStep = useCallback((expectedCurrentIndex?: number) => {
+    // Si estamos en el paso 0 (Home) y avanzamos, navegar a la ocasión por defecto (Pensamiento)
+    // Solo si NO estamos ya en una ruta de mensajes (para permitir navegación manual)
+    if (currentStepIndex === 0 && activeTour === 'onboarding_tour' && !location.pathname.includes('/mensajes/')) {
+      navigate('/mensajes/pensamiento-del-dia');
+    }
+
     setCurrentStepIndex((prev) => {
       if (expectedCurrentIndex !== undefined && prev !== expectedCurrentIndex) return prev;
       return prev + 1;
     });
-  };
+  }, [currentStepIndex, activeTour, navigate, location.pathname]);
 
-  const skipTour = () => {
+  const skipTour = useCallback(() => {
     if (activeTour) {
       setCompletedTours((prev) => [...prev, activeTour]);
       setActiveTour(null);
       setCurrentStepIndex(0);
     }
-  };
+  }, [activeTour]);
 
-  const isTourCompleted = (tourId: string) => completedTours.includes(tourId);
+  const isTourCompleted = useCallback((tourId: string) => completedTours.includes(tourId), [completedTours]);
 
-  const resetTour = (tourId: string) => {
+  const resetTour = useCallback((tourId: string) => {
     setCompletedTours((prev) => prev.filter((id) => id !== tourId));
     setActiveTour(null);
     setCurrentStepIndex(0);
-  };
+  }, []);
+
+  const goToStep = useCallback((index: number) => {
+    setCurrentStepIndex(index);
+  }, []);
+
+  const value = useMemo(() => ({
+    activeTour, currentStepIndex, startTour, nextStep, skipTour, isTourCompleted, resetTour, goToStep
+  }), [activeTour, currentStepIndex, startTour, nextStep, skipTour, isTourCompleted, resetTour, goToStep]);
 
   return (
-    <OnboardingContext.Provider value={{ activeTour, currentStepIndex, startTour, nextStep, skipTour, isTourCompleted, resetTour }}>
+    <OnboardingContext.Provider value={value}>
       {children}
     </OnboardingContext.Provider>
   );
