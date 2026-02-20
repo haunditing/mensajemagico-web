@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
 import {
   cancelSubscription,
@@ -9,9 +9,21 @@ import { useToast } from "../context/ToastContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { Link } from "react-router-dom";
 import { ENABLE_UPGRADES } from "../config";
-import { api } from "../context/api";
+import { api, BASE_URL } from "../context/api";
 import CitySelector from "../components/CitySelector";
 import { useConfirm } from "../context/ConfirmContext";
+import Cropper from "react-easy-crop";
+
+const AVATAR_COLORS: Record<string, string> = {
+  blue: "from-blue-500 to-indigo-600",
+  cyan: "from-blue-600 to-cyan-600",
+  pink: "from-pink-500 to-rose-500",
+  purple: "from-purple-500 to-violet-600",
+  orange: "from-orange-500 to-amber-600",
+  green: "from-emerald-500 to-teal-600",
+  red: "from-red-500 to-rose-600",
+  slate: "from-slate-500 to-slate-700",
+};
 
 const ProfilePage: React.FC = () => {
   const { user, logout, refreshUser } = useAuth();
@@ -22,6 +34,20 @@ const ProfilePage: React.FC = () => {
   const [reactivating, setReactivating] = useState(false);
   const { confirm } = useConfirm();
 
+  // Estado para Nombre y Foto
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [nameInput, setNameInput] = useState("");
+  const [isSavingName, setIsSavingName] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Estado para Cropper
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<any>(null);
+
   // Estado para edición de ubicación
   const [isEditingLoc, setIsEditingLoc] = useState(false);
   const [locationInput, setLocationInput] = useState("");
@@ -29,6 +55,7 @@ const ProfilePage: React.FC = () => {
   const [neutralMode, setNeutralMode] = useState(false);
   const [isSavingNeutral, setIsSavingNeutral] = useState(false);
   const [grammaticalGender, setGrammaticalGender] = useState("neutral");
+  const [avatarColor, setAvatarColor] = useState("blue");
   
   // Estado para cambio de contraseña
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -45,6 +72,17 @@ const ProfilePage: React.FC = () => {
     if (user) {
       loadSubscription();
       if ((user as any).location) setLocationInput((user as any).location);
+      if ((user as any).name) setNameInput((user as any).name);
+      setImageLoadError(false); // Resetear error al cargar nuevo usuario
+
+      // Cargar color o derivar del género si no existe
+      if ((user as any).preferences?.avatarColor) {
+        setAvatarColor((user as any).preferences.avatarColor);
+      } else if ((user as any).preferences?.grammaticalGender) {
+        const g = (user as any).preferences.grammaticalGender;
+        if (g === "female") setAvatarColor("pink");
+        else if (g === "male") setAvatarColor("cyan");
+      }
     }
   }, [user]);
 
@@ -109,6 +147,74 @@ const ProfilePage: React.FC = () => {
     }
   };
 
+  const handleSaveName = async () => {
+    if (!nameInput.trim()) return;
+    setIsSavingName(true);
+    try {
+      await api.put("/api/auth/profile", { name: nameInput });
+      await refreshUser();
+      setIsEditingName(false);
+      showToast("Nombre actualizado correctamente", "success");
+    } catch (error: any) {
+      showToast(error.message || "Error al actualizar nombre", "error");
+    } finally {
+      setIsSavingName(false);
+    }
+  };
+
+  const onCropComplete = (croppedArea: any, croppedAreaPixels: any) => {
+    setCroppedAreaPixels(croppedAreaPixels);
+  };
+
+  const handleUploadCroppedImage = async () => {
+    if (!imageSrc || !croppedAreaPixels) return;
+    
+    setIsUploadingPhoto(true);
+    try {
+      const croppedBlob = await getCroppedImg(imageSrc, croppedAreaPixels);
+      const file = new File([croppedBlob], "profile.jpg", { type: "image/jpeg" });
+      
+      const formData = new FormData();
+      formData.append("profilePicture", file);
+
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${BASE_URL}/api/auth/profile`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+        body: formData,
+      });
+
+      if (!response.ok) throw new Error("Error al subir imagen");
+
+      await refreshUser();
+      showToast("Foto de perfil actualizada", "success");
+      setImageSrc(null); // Cerrar modal
+    } catch (error: any) {
+      showToast(error.message || "Error al subir imagen", "error");
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("La imagen no debe superar los 5MB", "error");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      setImageSrc(reader.result as string);
+    });
+    reader.readAsDataURL(file);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSaveLocation = async () => {
     setIsSavingLoc(true);
     try {
@@ -149,6 +255,16 @@ const ProfilePage: React.FC = () => {
       showToast("Preferencia de género actualizada", "success");
     } catch (error: any) {
       showToast(error.message || "Error al actualizar", "error");
+    }
+  };
+
+  const handleColorChange = async (color: string) => {
+    setAvatarColor(color);
+    try {
+      await api.put("/api/auth/profile", { avatarColor: color });
+      await refreshUser();
+    } catch (error: any) {
+      showToast("Error al guardar el color", "error");
     }
   };
 
@@ -216,11 +332,86 @@ const ProfilePage: React.FC = () => {
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl p-8 border border-slate-200 dark:border-slate-800 shadow-sm mb-8">
         <div className="flex flex-col md:flex-row items-center gap-4 mb-8 text-center md:text-left">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-lg shadow-blue-500/30">
-            {user.email[0].toUpperCase()}
+          <div className="relative group">
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingPhoto}
+              className="w-20 h-20 rounded-full overflow-hidden focus:ring-4 focus:ring-blue-500 focus:outline-none transition-all relative"
+              aria-label="Cambiar foto de perfil"
+            >
+              {(user as any).profilePicture && !imageLoadError ? (
+                <img
+                  src={`${BASE_URL || "http://localhost:3000"}${(user as any).profilePicture}`}
+                  alt={`Foto de perfil de ${(user as any).name || "usuario"}`}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    console.error("Error cargando imagen:", e.currentTarget.src);
+                    setImageLoadError(true);
+                  }}
+                />
+              ) : (
+                <div
+                  className={`w-full h-full flex items-center justify-center text-3xl font-bold text-white bg-gradient-to-br ${AVATAR_COLORS[avatarColor] || AVATAR_COLORS.blue}`}
+                >
+                  {grammaticalGender === "female" ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 opacity-90">
+                      <path d="M12 2c-2.21 0-4 1.79-4 4 0 1.3.64 2.45 1.62 3.17-.83.7-1.44 1.67-1.59 2.78C6.1 12.56 4 14.53 4 17v2h16v-2c0-2.47-2.1-4.44-4.03-5.05-.15-1.11-.76-2.08-1.59-2.78C15.36 8.45 16 7.3 16 6c0-2.21-1.79-4-4-4z" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12 opacity-90">
+                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                    </svg>
+                  )}
+                </div>
+              )}
+              
+              {/* Overlay de edición al pasar el mouse */}
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-white text-xs font-bold">
+                  {isUploadingPhoto ? "..." : "📷"}
+                </span>
+              </div>
+            </button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handlePhotoUpload}
+              className="hidden"
+              accept="image/jpeg,image/png,image/webp"
+            />
           </div>
-          <div>
-            <h2 className="text-xl font-bold text-slate-900 dark:text-white">{user.email}</h2>
+
+          <div className="flex-1 min-w-0">
+            {isEditingName ? (
+              <div className="flex items-center gap-2 justify-center md:justify-start">
+                <input
+                  type="text"
+                  value={nameInput}
+                  onChange={(e) => setNameInput(e.target.value)}
+                  className="px-3 py-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white font-bold focus:ring-2 focus:ring-blue-500 outline-none w-full max-w-[200px]"
+                  placeholder="Tu nombre"
+                  autoFocus
+                />
+                <button onClick={handleSaveName} disabled={isSavingName} className="text-green-600 hover:text-green-700 p-1">
+                  {isSavingName ? "..." : "✓"}
+                </button>
+                <button onClick={() => setIsEditingName(false)} className="text-red-500 hover:text-red-600 p-1">✕</button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 justify-center md:justify-start group">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white truncate">
+                  {(user as any).name || "Usuario sin nombre"}
+                </h2>
+                <button 
+                  onClick={() => setIsEditingName(true)}
+                  className="text-slate-400 hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                  aria-label="Editar nombre"
+                >
+                  ✏️
+                </button>
+              </div>
+            )}
+            <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
             <p className="text-slate-500 dark:text-slate-400 capitalize font-medium">
               Plan {user.planLevel}
             </p>
@@ -332,6 +523,23 @@ const ProfilePage: React.FC = () => {
             Esto solo afecta la concordancia en los mensajes generados para ti (ej. "estoy listo" vs "estoy lista").
             No influye en la personalidad de la IA.
           </p>
+        </div>
+
+        {/* Sección de Color de Avatar */}
+        <div className="border-t border-slate-100 dark:border-slate-800 py-6">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-3">Color de Fondo</h3>
+          <div className="flex flex-wrap gap-3">
+            {Object.entries(AVATAR_COLORS).map(([key, gradientClass]) => (
+              <button
+                key={key}
+                onClick={() => handleColorChange(key)}
+                className={`w-10 h-10 rounded-full bg-gradient-to-br ${gradientClass} transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 focus:ring-blue-500 ${
+                  avatarColor === key ? "ring-2 ring-offset-2 ring-blue-600 dark:ring-offset-slate-900 scale-110" : ""
+                }`}
+                aria-label={`Seleccionar color ${key}`}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Sección de Cambio de Contraseña */}
@@ -590,8 +798,113 @@ const ProfilePage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Modal de Recorte de Imagen */}
+      {imageSrc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <h3 className="font-bold text-slate-900 dark:text-white">Ajustar Foto</h3>
+              <button onClick={() => setImageSrc(null)} className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">✕</button>
+            </div>
+            
+            <div className="relative h-64 sm:h-80 w-full bg-slate-100 dark:bg-slate-800">
+              <Cropper
+                image={imageSrc}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onCropComplete={onCropComplete}
+                onZoomChange={setZoom}
+                cropShape="round"
+                showGrid={false}
+              />
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase">Zoom</label>
+                <input
+                  type="range"
+                  value={zoom}
+                  min={1}
+                  max={3}
+                  step={0.1}
+                  onChange={(e) => setZoom(Number(e.target.value))}
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer dark:bg-slate-700 accent-blue-600"
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setImageSrc(null)}
+                  className="flex-1 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={handleUploadCroppedImage}
+                  disabled={isUploadingPhoto}
+                  className="flex-1 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition-colors disabled:opacity-50"
+                >
+                  {isUploadingPhoto ? "Guardando..." : "Guardar Foto"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default ProfilePage;
+
+// Utilidades para recortar imagen
+const createImage = (url: string): Promise<HTMLImageElement> =>
+  new Promise((resolve, reject) => {
+    const image = new Image();
+    image.addEventListener("load", () => resolve(image));
+    image.addEventListener("error", (error) => reject(error));
+    image.setAttribute("crossOrigin", "anonymous");
+    image.src = url;
+  });
+
+async function getCroppedImg(
+  imageSrc: string,
+  pixelCrop: { x: number; y: number; width: number; height: number }
+): Promise<Blob> {
+  const image = await createImage(imageSrc);
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) {
+    throw new Error("No 2d context");
+  }
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (!blob) {
+        reject(new Error("Canvas is empty"));
+        return;
+      }
+      resolve(blob);
+    }, "image/jpeg");
+  });
+}
