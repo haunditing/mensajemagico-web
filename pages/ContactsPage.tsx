@@ -31,6 +31,10 @@ const ContactsPage: React.FC = () => {
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [isFabVisible, setIsFabVisible] = useState(true);
   const lastScrollY = useRef(0);
+  const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+  const [resetContactId, setResetContactId] = useState<string | null>(null);
+  const [resetConfirmationText, setResetConfirmationText] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
 
   useEffect(() => {
     if (user) fetchContacts();
@@ -99,6 +103,37 @@ const ContactsPage: React.FC = () => {
     } catch (error) {
       console.error(error);
       showToast("Error al eliminar contacto", "error");
+    }
+  };
+
+  const handleReset = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setResetContactId(id);
+    setResetConfirmationText("");
+    setIsResetModalOpen(true);
+  };
+
+  const confirmReset = async () => {
+    if (!resetContactId || resetConfirmationText !== "RESET") return;
+
+    setIsResetting(true);
+    try {
+      await api.post(`/api/contacts/${resetContactId}/reset`, {});
+      showToast("Análisis reiniciado. El Guardián empezará de cero con este contacto.", "success");
+      
+      const data = await api.get("/api/contacts");
+      setContacts(data);
+      
+      if (selectedContact && selectedContact._id === resetContactId) {
+        const updated = data.find((c: Contact) => c._id === resetContactId);
+        if (updated) setSelectedContact(updated);
+      }
+      setIsResetModalOpen(false);
+    } catch (error: any) {
+      console.error(error);
+      showToast(error.message || "Error al reiniciar análisis", "error");
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -280,9 +315,21 @@ const ContactsPage: React.FC = () => {
                     {selectedContact.relationship}
                   </p>
                 </div>
-                <RelationalHealthIndicator
-                  score={selectedContact.relationalHealth}
-                />
+                <div className="flex flex-col items-end gap-2">
+                  <RelationalHealthIndicator
+                    score={selectedContact.relationalHealth}
+                  />
+                  <button
+                    onClick={(e) => handleReset(selectedContact._id, e)}
+                    className="text-[10px] text-slate-400 hover:text-blue-500 flex items-center gap-1 transition-colors font-medium"
+                    title="Reiniciar análisis y ADN"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                    Reiniciar
+                  </button>
+                </div>
               </div>
 
               <div className="mb-10">
@@ -354,6 +401,46 @@ const ContactsPage: React.FC = () => {
         onSuccess={fetchContacts}
         contactToEdit={editingContact}
       />
+
+      {/* Modal de Confirmación de Reset */}
+      {isResetModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => !isResetting && setIsResetModalOpen(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-3xl">🔄</span>
+              </div>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">¿Reiniciar análisis?</h3>
+              <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm">
+                Se borrará el historial de salud relacional y el ADN léxico aprendido. Esta acción es <strong>irreversible</strong>.
+              </p>
+              
+              <div className="mb-6">
+                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
+                  Escribe <span className="text-slate-900 dark:text-white select-none">RESET</span> para confirmar:
+                </label>
+                <input
+                  type="text"
+                  value={resetConfirmationText}
+                  onChange={(e) => setResetConfirmationText(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-amber-500 outline-none text-center font-bold uppercase tracking-widest"
+                  placeholder="RESET"
+                  autoFocus
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <button onClick={() => setIsResetModalOpen(false)} disabled={isResetting} className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50">
+                  Cancelar
+                </button>
+                <button onClick={confirmReset} disabled={isResetting || resetConfirmationText !== "RESET"} className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  {isResetting ? "Reiniciando..." : "Sí, reiniciar"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
