@@ -1,11 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { api } from "../context/api";
 import LoadingSpinner from "../components/LoadingSpinner";
 
 const SignupPage: React.FC = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [confirmEmail, setConfirmEmail] = useState("");
+  const [emailAvailabilityError, setEmailAvailabilityError] = useState("");
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -22,29 +26,132 @@ const SignupPage: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
+  // Referencias para gestión de foco
+  const nameRef = useRef<HTMLInputElement>(null);
+  const emailRef = useRef<HTMLInputElement>(null);
+  const confirmEmailRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
+  const confirmPasswordRef = useRef<HTMLInputElement>(null);
+  const termsRef = useRef<HTMLInputElement>(null);
+
+  // SEO: Título de la página
+  useEffect(() => {
+    document.title = "Crear Cuenta - Mensaje Mágico";
+  }, []);
+
+  // Validación asíncrona de correo
+  useEffect(() => {
+    const checkEmailAvailability = async () => {
+      // Resetear error si está vacío o formato inválido (ya lo valida el submit)
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setEmailAvailabilityError("");
+        return;
+      }
+
+      setIsCheckingEmail(true);
+      try {
+        const response = await api.post("/api/auth/check-email", { email });
+        if (response.exists) {
+          setEmailAvailabilityError("Este correo ya está registrado. Intenta iniciar sesión.");
+        } else {
+          setEmailAvailabilityError("");
+        }
+      } catch (error) {
+        console.error("Error verificando correo", error);
+      } finally {
+        setIsCheckingEmail(false);
+      }
+    };
+
+    // Debounce de 500ms para no saturar el servidor
+    const timeoutId = setTimeout(checkEmailAvailability, 500);
+    return () => clearTimeout(timeoutId);
+  }, [email]);
+
+  // Cálculo de fortaleza de contraseña
+  const getPasswordStrength = (pass: string) => {
+    let score = 0;
+    if (!pass) return 0;
+    if (pass.length >= 6) score++; // Mínimo requerido
+    if (pass.length >= 10) score++; // Longitud buena
+    if (/[0-9]/.test(pass)) score++; // Tiene números
+    if (/[^A-Za-z0-9]/.test(pass)) score++; // Tiene caracteres especiales
+    return score;
+  };
+
+  const strength = getPasswordStrength(password);
+
+  const getStrengthColor = (s: number) => {
+    if (s <= 2) return "bg-red-500";
+    if (s === 3) return "bg-yellow-500";
+    return "bg-green-500";
+  };
+
+  // Foco inicial al montar
+  useEffect(() => {
+    nameRef.current?.focus();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!acceptedTerms) {
       setError("Debes aceptar los Términos y Condiciones para continuar");
+      termsRef.current?.focus();
+      return;
+    }
+
+    if (!name.trim()) {
+      setError("Por favor ingresa tu nombre completo");
+      nameRef.current?.focus();
+      return;
+    }
+
+    // Validación: Solo letras y espacios (incluye tildes y ñ)
+    const nameRegex = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    if (!nameRegex.test(name)) {
+      setError("El nombre solo puede contener letras y espacios");
+      nameRef.current?.focus();
+      return;
+    }
+
+    if (emailAvailabilityError) {
+      setError("El correo electrónico no está disponible");
+      emailRef.current?.focus();
+      return;
+    }
+
+    // Validación de formato de correo
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Por favor ingresa un correo electrónico válido");
+      emailRef.current?.focus();
+      return;
+    }
+
+    if (email !== confirmEmail) {
+      setError("Los correos electrónicos no coinciden");
+      confirmEmailRef.current?.focus();
       return;
     }
 
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
+      confirmPasswordRef.current?.focus();
       return;
     }
 
     if (password.length < 6) {
       setError("La contraseña debe tener al menos 6 caracteres");
+      passwordRef.current?.focus();
       return;
     }
 
     setIsLoading(true);
 
     try {
-      const data = await api.post("/api/auth/signup", { email, password });
+      const data = await api.post("/api/auth/signup", { name, email, password });
 
       // Auto-login tras registro exitoso
       login(data.token);
@@ -69,32 +176,94 @@ const SignupPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm font-bold flex items-center gap-2">
+          <div role="alert" className="mb-6 p-4 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 rounded-xl text-red-600 dark:text-red-400 text-sm font-bold flex items-center gap-2">
             <span>⚠️</span> {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-              Correo Electrónico
+            <label htmlFor="name" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+              Nombre Completo
             </label>
             <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              ref={nameRef}
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => {
+                // Auto-capitalización: Primera letra de cada palabra
+                const val = e.target.value.replace(/(?:^|\s)\S/g, (a) => a.toUpperCase());
+                setName(val);
+              }}
               required
               className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-800 dark:text-slate-200"
-              placeholder="tu@email.com"
+              placeholder="Ej. Juan Pérez"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+            <label htmlFor="email" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+              Correo Electrónico
+            </label>
+            <div className="relative">
+              <input
+                ref={emailRef}
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className={`w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border focus:ring-2 outline-none transition-all font-medium text-slate-800 dark:text-slate-200 pr-10 ${
+                  emailAvailabilityError
+                    ? "border-red-300 dark:border-red-800 focus:ring-red-500"
+                    : !isCheckingEmail && email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+                    ? "border-green-300 dark:border-green-800 focus:ring-green-500"
+                    : "border-slate-200 dark:border-slate-700 focus:ring-blue-500"
+                }`}
+                placeholder="tu@email.com"
+                aria-invalid={!!emailAvailabilityError}
+                aria-describedby={emailAvailabilityError ? "email-error" : undefined}
+              />
+              {!isCheckingEmail && !emailAvailabilityError && email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500 animate-fade-in pointer-events-none">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                    <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clipRule="evenodd" />
+                  </svg>
+                </div>
+              )}
+            </div>
+            {isCheckingEmail && <p className="text-xs text-slate-500 mt-1 ml-1">Verificando disponibilidad...</p>}
+            {emailAvailabilityError && (
+              <p id="email-error" role="alert" className="text-xs text-red-500 font-bold mt-1 ml-1">{emailAvailabilityError}</p>
+            )}
+          </div>
+
+          <div>
+            <label htmlFor="confirmEmail" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+              Confirmar Correo Electrónico
+            </label>
+            <input
+              ref={confirmEmailRef}
+              id="confirmEmail"
+              type="email"
+              value={confirmEmail}
+              onChange={(e) => setConfirmEmail(e.target.value)}
+              onPaste={(e) => e.preventDefault()}
+              required
+              className="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all font-medium text-slate-800 dark:text-slate-200"
+              placeholder="Confirma tu correo"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
               Contraseña
             </label>
             <div className="relative">
               <input
+                ref={passwordRef}
+                id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -105,6 +274,7 @@ const SignupPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               >
                 {showPassword ? (
@@ -119,14 +289,37 @@ const SignupPage: React.FC = () => {
                 )}
               </button>
             </div>
+            
+            {/* Indicador de Fortaleza */}
+            {password && (
+              <div className="mt-3 animate-fade-in" aria-live="polite">
+                <div className="flex gap-1 h-1.5 mb-1">
+                  {[1, 2, 3, 4].map((level) => (
+                    <div
+                      key={level}
+                      className={`h-full flex-1 rounded-full transition-all duration-300 ${
+                        strength >= level ? getStrengthColor(strength) : "bg-slate-200 dark:bg-slate-700"
+                      }`}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs text-right font-bold text-slate-500 dark:text-slate-400">
+                  Fortaleza: <span className={`${strength <= 2 ? "text-red-500" : strength === 3 ? "text-yellow-500" : "text-green-500"}`}>
+                    {strength <= 2 ? "Débil" : strength === 3 ? "Buena" : "Fuerte"}
+                  </span>
+                </p>
+              </div>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+            <label htmlFor="confirmPassword" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
               Confirmar Contraseña
             </label>
             <div className="relative">
               <input
+                ref={confirmPasswordRef}
+                id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -137,6 +330,7 @@ const SignupPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                aria-label={showConfirmPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
               >
                 {showConfirmPassword ? (
@@ -156,6 +350,7 @@ const SignupPage: React.FC = () => {
           <div className="flex items-start gap-2">
             <input
               type="checkbox"
+              ref={termsRef}
               id="terms"
               checked={acceptedTerms}
               onChange={(e) => {

@@ -32,7 +32,7 @@ const ContactPage: React.FC = () => {
             </p>
 
             <a
-              href="mailto:mycsolucioneslogisticas@gmail.com"
+              href="mailto:soportemensajemagico@gmail.com"
               className="group flex items-center justify-between bg-blue-600 hover:bg-blue-700 p-6 rounded-3xl transition-all shadow-lg shadow-blue-600/20 active:scale-[0.98]"
             >
               <div className="text-left">
