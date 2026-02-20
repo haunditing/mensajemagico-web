@@ -29,11 +29,12 @@ root.render(
 // Eliminar Splash Screen con transición suave
 const loader = document.getElementById("app-loader");
 if (loader) {
-  loader.style.transition = "opacity 0.5s ease-out";
+  // Aceleramos la transición para que se sienta más ágil en móviles
+  loader.style.transition = "opacity 0.4s ease-out";
   setTimeout(() => {
     loader.style.opacity = "0";
     setTimeout(() => {
       loader.remove();
-    }, 500);
-  }, 150); // Pequeño retraso para asegurar que React ha montado
+    }, 400); // Debe coincidir con la duración de la transición
+  }, 50); // Reducimos el retraso inicial (antes 150ms) para que desaparezca apenas React pinte
 }
