@@ -89,15 +89,19 @@ const ContactsPage: React.FC = () => {
     e.stopPropagation();
     const isConfirmed = await confirm({
       title: "¿Eliminar contacto?",
-      message: "Esta acción no se puede deshacer. El Guardián olvidará todo lo aprendido sobre esta relación.",
+      message:
+        "Esta acción no se puede deshacer. El Guardián olvidará todo lo aprendido sobre esta relación.",
       isDangerous: true,
-      confirmText: "Sí, eliminar"
+      confirmText: "Sí, eliminar",
     });
     if (!isConfirmed) return;
 
     try {
       await api.delete(`/api/contacts/${id}`);
-      showToast("Contacto eliminado. El Guardián ha olvidado esta conexión.", "success");
+      showToast(
+        "Contacto eliminado. El Guardián ha olvidado esta conexión.",
+        "success",
+      );
       fetchContacts();
       if (selectedContact?._id === id) setSelectedContact(null);
     } catch (error) {
@@ -119,11 +123,14 @@ const ContactsPage: React.FC = () => {
     setIsResetting(true);
     try {
       await api.post(`/api/contacts/${resetContactId}/reset`, {});
-      showToast("Análisis reiniciado. El Guardián empezará de cero con este contacto.", "success");
-      
+      showToast(
+        "Análisis reiniciado. El Guardián empezará de cero con este contacto.",
+        "success",
+      );
+
       const data = await api.get("/api/contacts");
       setContacts(data);
-      
+
       if (selectedContact && selectedContact._id === resetContactId) {
         const updated = data.find((c: Contact) => c._id === resetContactId);
         if (updated) setSelectedContact(updated);
@@ -139,9 +146,10 @@ const ContactsPage: React.FC = () => {
 
   const getCleanContent = (content: any) => {
     if (!content) return "";
-    
+
     // Asegurar que trabajamos con string
-    let textToParse = typeof content === 'string' ? content : JSON.stringify(content);
+    let textToParse =
+      typeof content === "string" ? content : JSON.stringify(content);
 
     try {
       // Limpiar markdown que la IA suele añadir
@@ -152,8 +160,14 @@ const ContactsPage: React.FC = () => {
 
       if (cleanText.startsWith("{")) {
         const parsed = JSON.parse(cleanText);
-        if (parsed.generated_messages && Array.isArray(parsed.generated_messages)) {
-          const msg = parsed.generated_messages.find((m: any) => m.tone?.includes("Premium")) || parsed.generated_messages[0];
+        if (
+          parsed.generated_messages &&
+          Array.isArray(parsed.generated_messages)
+        ) {
+          const msg =
+            parsed.generated_messages.find((m: any) =>
+              m.tone?.includes("Premium"),
+            ) || parsed.generated_messages[0];
           return msg ? msg.content : "Mensaje generado";
         }
         if (parsed.message) return parsed.message;
@@ -170,19 +184,24 @@ const ContactsPage: React.FC = () => {
     const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
     let interval = Math.floor(seconds / 31536000);
-    if (interval >= 1) return `Hace ${interval} año${interval === 1 ? "" : "s"}`;
+    if (interval >= 1)
+      return `Hace ${interval} año${interval === 1 ? "" : "s"}`;
 
     interval = Math.floor(seconds / 2592000);
-    if (interval >= 1) return `Hace ${interval} mes${interval === 1 ? "" : "es"}`;
+    if (interval >= 1)
+      return `Hace ${interval} mes${interval === 1 ? "" : "es"}`;
 
     interval = Math.floor(seconds / 86400);
-    if (interval >= 1) return `Hace ${interval} día${interval === 1 ? "" : "s"}`;
+    if (interval >= 1)
+      return `Hace ${interval} día${interval === 1 ? "" : "s"}`;
 
     interval = Math.floor(seconds / 3600);
-    if (interval >= 1) return `Hace ${interval} hora${interval === 1 ? "" : "s"}`;
+    if (interval >= 1)
+      return `Hace ${interval} hora${interval === 1 ? "" : "s"}`;
 
     interval = Math.floor(seconds / 60);
-    if (interval >= 1) return `Hace ${interval} minuto${interval === 1 ? "" : "s"}`;
+    if (interval >= 1)
+      return `Hace ${interval} minuto${interval === 1 ? "" : "s"}`;
 
     return "Hace un momento";
   };
@@ -197,7 +216,11 @@ const ContactsPage: React.FC = () => {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 animate-fade-in-up">
       <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-        <h1 className="text-3xl font-black text-slate-900 dark:text-white">Mis Contactos</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-black text-slate-900 dark:text-white">
+            Mis Contactos
+          </h1>
+        </div>
         <button
           onClick={handleCreate}
           className="hidden lg:block bg-slate-900 dark:bg-slate-700 text-white px-4 py-2 rounded-xl font-bold text-sm hover:bg-slate-800 dark:hover:bg-slate-600"
@@ -225,7 +248,9 @@ const ContactsPage: React.FC = () => {
                     {contact.name[0]}
                   </div>
                   <div>
-                    <h3 className="font-bold text-slate-900 dark:text-white">{contact.name}</h3>
+                    <h3 className="font-bold text-slate-900 dark:text-white">
+                      {contact.name}
+                    </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400 capitalize">
                       {contact.relationship}
                     </p>
@@ -236,7 +261,7 @@ const ContactsPage: React.FC = () => {
                     score={contact.relationalHealth}
                     className="scale-75"
                   />
-                  
+
                   {/* Acciones Desktop (Hover) */}
                   <div className="hidden lg:group-hover:flex gap-1">
                     <button
@@ -260,21 +285,39 @@ const ContactsPage: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        setOpenMenuId(openMenuId === contact._id ? null : contact._id);
+                        setOpenMenuId(
+                          openMenuId === contact._id ? null : contact._id,
+                        );
                       }}
                       className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
                     >
-                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-6 h-6"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
                       </svg>
                     </button>
-                    
+
                     {openMenuId === contact._id && (
                       <div className="absolute right-0 top-8 z-20 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-100 dark:border-slate-800 min-w-[140px] overflow-hidden animate-fade-in">
-                        <button onClick={(e) => { handleEdit(contact, e); setOpenMenuId(null); }} className="w-full text-left px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 transition-colors">
+                        <button
+                          onClick={(e) => {
+                            handleEdit(contact, e);
+                            setOpenMenuId(null);
+                          }}
+                          className="w-full text-left px-4 py-3 text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 transition-colors"
+                        >
                           <span>✏️</span> Editar
                         </button>
-                        <button onClick={(e) => { handleDelete(contact._id, e); setOpenMenuId(null); }} className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors border-t border-slate-50 dark:border-slate-800">
+                        <button
+                          onClick={(e) => {
+                            handleDelete(contact._id, e);
+                            setOpenMenuId(null);
+                          }}
+                          className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 flex items-center gap-2 transition-colors border-t border-slate-50 dark:border-slate-800"
+                        >
                           <span>🗑️</span> Eliminar
                         </button>
                       </div>
@@ -324,8 +367,19 @@ const ContactsPage: React.FC = () => {
                     className="text-[10px] text-slate-400 hover:text-blue-500 flex items-center gap-1 transition-colors font-medium"
                     title="Reiniciar análisis y ADN"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      strokeWidth={1.5}
+                      stroke="currentColor"
+                      className="w-3 h-3"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
+                      />
                     </svg>
                     Reiniciar
                   </button>
@@ -347,8 +401,12 @@ const ContactsPage: React.FC = () => {
                   Historial de Mensajes
                 </h3>
                 <div className="space-y-4">
-                  {selectedContact.history.slice()
-                    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  {selectedContact.history
+                    .slice()
+                    .sort(
+                      (a, b) =>
+                        new Date(b.date).getTime() - new Date(a.date).getTime(),
+                    )
                     .map((item: any, i) => (
                       <div
                         key={i}
@@ -378,7 +436,10 @@ const ContactsPage: React.FC = () => {
           ) : (
             <div className="h-full min-h-[300px] flex flex-col items-center justify-center text-slate-500 dark:text-slate-400 p-10 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-[2rem]">
               <span className="text-4xl mb-4">👈</span>
-              <p className="text-center">Selecciona un contacto de la lista para ver su análisis y evolución.</p>
+              <p className="text-center">
+                Selecciona un contacto de la lista para ver su análisis y
+                evolución.
+              </p>
             </div>
           )}
         </div>
@@ -388,7 +449,9 @@ const ContactsPage: React.FC = () => {
       <button
         onClick={handleCreate}
         className={`fixed bottom-24 right-6 z-30 lg:hidden w-14 h-14 bg-blue-600 text-white rounded-full shadow-lg shadow-blue-600/30 flex items-center justify-center text-3xl pb-1 hover:bg-blue-700 transition-all duration-300 active:scale-90 ${
-          isFabVisible ? "translate-y-0 opacity-100" : "translate-y-32 opacity-0 pointer-events-none"
+          isFabVisible
+            ? "translate-y-0 opacity-100"
+            : "translate-y-32 opacity-0 pointer-events-none"
         }`}
         aria-label="Crear contacto"
       >
@@ -404,20 +467,33 @@ const ContactsPage: React.FC = () => {
 
       {/* Modal de Confirmación de Reset */}
       {isResetModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={() => !isResetting && setIsResetModalOpen(false)}>
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in"
+          onClick={() => !isResetting && setIsResetModalOpen(false)}
+        >
+          <div
+            className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="text-center">
               <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">🔄</span>
               </div>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">¿Reiniciar análisis?</h3>
+              <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">
+                ¿Reiniciar análisis?
+              </h3>
               <p className="text-slate-500 dark:text-slate-400 mb-6 text-sm">
-                Se borrará el historial de salud relacional y el ADN léxico aprendido. Esta acción es <strong>irreversible</strong>.
+                Se borrará el historial de salud relacional y el ADN léxico
+                aprendido. Esta acción es <strong>irreversible</strong>.
               </p>
-              
+
               <div className="mb-6">
                 <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">
-                  Escribe <span className="text-slate-900 dark:text-white select-none">RESET</span> para confirmar:
+                  Escribe{" "}
+                  <span className="text-slate-900 dark:text-white select-none">
+                    RESET
+                  </span>{" "}
+                  para confirmar:
                 </label>
                 <input
                   type="text"
@@ -428,12 +504,20 @@ const ContactsPage: React.FC = () => {
                   autoFocus
                 />
               </div>
-              
+
               <div className="flex gap-3">
-                <button onClick={() => setIsResetModalOpen(false)} disabled={isResetting} className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50">
+                <button
+                  onClick={() => setIsResetModalOpen(false)}
+                  disabled={isResetting}
+                  className="flex-1 px-4 py-3 rounded-xl font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                >
                   Cancelar
                 </button>
-                <button onClick={confirmReset} disabled={isResetting || resetConfirmationText !== "RESET"} className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                <button
+                  onClick={confirmReset}
+                  disabled={isResetting || resetConfirmationText !== "RESET"}
+                  className="flex-1 px-4 py-3 rounded-xl font-bold text-white bg-amber-500 hover:bg-amber-600 shadow-lg shadow-amber-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
                   {isResetting ? "Reiniciando..." : "Sí, reiniciar"}
                 </button>
               </div>

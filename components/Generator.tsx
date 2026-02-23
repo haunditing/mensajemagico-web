@@ -14,6 +14,7 @@ import { useGenerator } from "../hooks/useGenerator";
 import ContextInputSection from "./ContextInputSection";
 import ToneSelector from "./ToneSelector";
 import GeneratedMessagesList from "./GeneratedMessagesList";
+import GuardianInfoModal from "./GuardianInfoModal";
 import FormatSelector from "./FormatSelector";
 import RelationshipSelector from "./RelationshipSelector";
 import GreetingSelector from "./GreetingSelector";
@@ -137,6 +138,7 @@ const Generator: React.FC<GeneratorProps> = ({
   const totalSteps = steps.length;
   const isLastStep = currentStep === totalSteps;
 
+  const [showGuardianOnboarding, setShowGuardianOnboarding] = React.useState(false);
   // --- ONBOARDING: Lógica del Tour Completo ---
   const { activeTour, currentStepIndex, nextStep, skipTour, goToStep, startTour } = useOnboarding();
 
@@ -229,6 +231,12 @@ const Generator: React.FC<GeneratorProps> = ({
       }
       setCurrentStep(1);
       resetForm();
+
+      // Mostrar onboarding del Guardián si es la primera vez
+      if (!localStorage.getItem("guardian_onboarding_seen")) {
+        setShowGuardianOnboarding(true);
+        localStorage.setItem("guardian_onboarding_seen", "true");
+      }
     }
   };
 
@@ -832,6 +840,11 @@ const Generator: React.FC<GeneratorProps> = ({
           }
         }}
         contactToEdit={contactToEdit}
+      />
+
+      <GuardianInfoModal
+        isOpen={showGuardianOnboarding}
+        onClose={() => setShowGuardianOnboarding(false)}
       />
     </div>
   );
