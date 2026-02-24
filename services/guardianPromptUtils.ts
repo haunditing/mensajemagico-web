@@ -33,14 +33,14 @@ export const buildGuardianPrompt = ({
   // 1. Ajuste de Temperatura (Creatividad) basado en el tono
   const currentTone = tone as string;
   if (
-    ["divertido", "coqueto", "alegre", "fresco", "funny", "flirty"].some((t) =>
-      currentTone.toLowerCase().includes(t)
+    ["divertido", "coqueto", "alegre", "fresco", "funny", "flirty", "entusiasta"].some((t) =>
+      currentTone.toLowerCase().includes(t),
     )
   ) {
     creativityLevel = "high"; // Más arriesgado (0.9)
   } else if (
-    ["sobrio", "directo", "formal", "fuerte", "direct", "sober"].some((t) =>
-      currentTone.toLowerCase().includes(t)
+    ["sobrio", "directo", "formal", "fuerte", "direct", "sober", "orgulloso"].some((t) =>
+      currentTone.toLowerCase().includes(t),
     )
   ) {
     creativityLevel = "low"; // Más preciso (0.5)
@@ -67,7 +67,7 @@ export const buildGuardianPrompt = ({
       .filter((h: any) => h.isUsed)
       .slice(-3)
       .map((h: any) => h.content || "");
-    
+
     // Si no hay suficientes usados, rellenamos con editados o recientes
     const otherMessages = selectedContact.history
       .filter((h: any) => !h.isUsed && (h.wasEdited || h.content))
@@ -75,15 +75,21 @@ export const buildGuardianPrompt = ({
       .map((h: any) => h.content || "");
 
     const userExamples = [...successfulMessages, ...otherMessages];
-    
-    const examplesText = userExamples.map((msg: string) => `- "${msg}"`).join("\n");
-    
-    // Instrucción específica si hay ejemplos de éxito
-    const successInstruction = successfulMessages.length > 0 
-      ? "A continuación se presentan ejemplos de mensajes que el usuario SÍ aprobó y usó. Analiza su estructura y tono, y úsalos como base única para el nuevo mensaje."
-      : "EJEMPLOS DE MI ESTILO REAL (IMITA ESTA ESTRUCTURA Y LONGITUD):";
 
-    const fewShotInstruction = userExamples.length > 0 ? `\n${successInstruction}\n${examplesText}\n` : "";
+    const examplesText = userExamples
+      .map((msg: string) => `- "${msg}"`)
+      .join("\n");
+
+    // Instrucción específica si hay ejemplos de éxito
+    const successInstruction =
+      successfulMessages.length > 0
+        ? "A continuación se presentan ejemplos de mensajes que el usuario SÍ aprobó y usó. Analiza su estructura y tono, y úsalos como base única para el nuevo mensaje."
+        : "EJEMPLOS DE MI ESTILO REAL (IMITA ESTA ESTRUCTURA Y LONGITUD):";
+
+    const fewShotInstruction =
+      userExamples.length > 0
+        ? `\n${successInstruction}\n${examplesText}\n`
+        : "";
 
     // Estrategia 1: Lista de Exclusión (Extraer palabras clave usadas)
     // Filtramos palabras de más de 4 letras para evitar conectores
@@ -92,12 +98,22 @@ export const buildGuardianPrompt = ({
         .join(" ")
         .toLowerCase()
         .match(/[a-záéíóúñü]{5,}/g) || [];
-    
+
     // FIX: Evitar que palabras temporales comunes (como "mañana") se bloqueen por repetición
-    const SAFE_WORDS = new Set(["mañana", "noche", "tarde", "tiempo", "ahora", "mucho", "todos", "favor", "gracias"]);
+    const SAFE_WORDS = new Set([
+      "mañana",
+      "noche",
+      "tarde",
+      "tiempo",
+      "ahora",
+      "mucho",
+      "todos",
+      "favor",
+      "gracias",
+    ]);
 
     const uniqueKeywords = Array.from(new Set<string>(allWords))
-      .filter(w => !SAFE_WORDS.has(w))
+      .filter((w) => !SAFE_WORDS.has(w))
       .slice(0, 15)
       .join(", ");
     avoidTopics = uniqueKeywords;
@@ -110,8 +126,8 @@ export const buildGuardianPrompt = ({
     // Estrategia 2: Nuevo Formato de Prompt de Contraste
     styleInstructions += `[Contexto para el Guardián:
       Estás escribiendo a ${selectedContact?.name || "Tu Contacto"} (Relación: ${
-      selectedContact?.relationship || "Pareja"
-    }).
+        selectedContact?.relationship || "Pareja"
+      }).
       
       Historial Reciente (PARA EVITAR REPETICIÓN):
       En los últimos mensajes ya se mencionaron: '${uniqueKeywords}'.
@@ -121,6 +137,11 @@ export const buildGuardianPrompt = ({
       Instrucción de Apertura: ${selectedTrigger}${fewShotInstruction}]`;
   } else {
     // Instrucción por defecto para nuevos contactos o sin historial
+    if (selectedContact?.name) {
+      styleInstructions += `[Contexto: Estás escribiendo a ${selectedContact.name}.] `;
+    } else if (tone === "orgulloso") {
+      styleInstructions += `[Contexto: No se especificó nombre. OBLIGATORIO: Usa un vocativo genérico de admiración como "Campeón/a", "Crack" o "Genio/a".] `;
+    }
     styleInstructions += `[ESTILO: Sé espontáneo pero HONESTO. Evita saludos robóticos. ${selectedTrigger}
     IMPORTANTE: No tienes historial con esta persona. PROHIBIDO inventar recuerdos, decir "ayer", "la otra vez" o "me acordé". Habla solo del presente.]`;
   }
@@ -144,9 +165,7 @@ export const buildGuardianPrompt = ({
       ["triste", "reflexivo", "soledad", "nostalgia"].includes(tone as string)
     ) {
       styleInstructions += ` ESTILO: "Poético-Existencial". Evita jerga callejera. Sé profundo y vulnerable.`;
-    } else if (
-      ["motivado", "feliz", "crecimiento"].includes(tone as string)
-    ) {
+    } else if (["motivado", "feliz", "crecimiento"].includes(tone as string)) {
       styleInstructions += ` ESTILO: "Manifiesto". Frases cortas, contundentes y energéticas (tipo Twitter/X).`;
     } else if (tone === "sarcastico") {
       styleInstructions += ` ESTILO: "Humor Ácido". Usa ironía fina, observaciones agudas y un toque de cinismo elegante.`;
@@ -174,7 +193,7 @@ export const buildGuardianPrompt = ({
     VE: "Bolívares",
   };
   const localCurrency = currencyMap[country] || "Dólares";
-  
+
   let contactGender = selectedContact?.grammaticalGender || "neutral";
   if (contactGender === "neutral" && !selectedContact && relationshipId) {
     if (relationshipId === "mother") contactGender = "female";
@@ -183,12 +202,18 @@ export const buildGuardianPrompt = ({
 
   // Inferencia de estilo de regalo según la relación para mejorar la relevancia
   let giftStyle = "tendencia general";
-  if (relationshipId === "boss") giftStyle = "profesional, elegante y de oficina";
-  if (relationshipId === "couple") giftStyle = "romántico, significativo o de pareja";
-  if (relationshipId === "friend") giftStyle = "divertido, original o tecnológico";
-  if (relationshipId === "mother") giftStyle = "cuidado personal, hogar o emotivo";
-  if (relationshipId === "father") giftStyle = "tecnología, herramientas o accesorios";
-  if (relationshipId === "ligue") giftStyle = "detalle pequeño, coqueto pero no intenso";
+  if (relationshipId === "boss")
+    giftStyle = "profesional, elegante y de oficina";
+  if (relationshipId === "couple")
+    giftStyle = "romántico, significativo o de pareja";
+  if (relationshipId === "friend")
+    giftStyle = "divertido, original o tecnológico";
+  if (relationshipId === "mother")
+    giftStyle = "cuidado personal, hogar o emotivo";
+  if (relationshipId === "father")
+    giftStyle = "tecnología, herramientas o accesorios";
+  if (relationshipId === "ligue")
+    giftStyle = "detalle pequeño, coqueto pero no intenso";
 
   const budgetMap: Record<string, string> = {
     low: "económico / detalle pequeño",
@@ -205,11 +230,11 @@ export const buildGuardianPrompt = ({
           ? "Explica por qué esta reflexión es potente para un creador"
           : "Explica qué elemento nuevo usaste para no sonar repetitivo"
       })"${
-    shouldIncludeGifts
-      ? `,
+        shouldIncludeGifts
+          ? `,
       "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}", "image_url": "url_imagen_opcional" }]`
-      : ""
-  }
+          : ""
+      }
     }. ${
       shouldIncludeGifts
         ? `Máximo 2 regalos. PARA REGALOS: Selecciona TENDENCIAS populares. Basa la selección en: País (${country}), Género (${contactGender}), Estilo (${giftStyle}) y Presupuesto (${budgetDesc}). Ignora el contenido del mensaje.`

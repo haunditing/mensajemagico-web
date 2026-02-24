@@ -41,6 +41,61 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion/pareja</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion/ligue</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion/amigo</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion/ex</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion/madre</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion/padre</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion/jefe</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion/amor-secreto</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion/familia</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.mensajemagico.com/mensajes/felicitacion/otro</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://www.mensajemagico.com/mensajes/pensamiento-del-dia</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

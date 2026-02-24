@@ -66,3 +66,30 @@ export const recordGeneration = () => {
     }
   });
 };
+
+// --- Control de Visibilidad de Badges (Nuevo) ---
+export const markOccasionVisited = (occasionId: string) => {
+  if (typeof window === 'undefined') return;
+  const key = `visited_occasion_${occasionId}`;
+  if (localStorage.getItem(key) !== 'true') {
+    localStorage.setItem(key, 'true');
+  }
+};
+
+export const shouldShowBadge = (occasionId: string): boolean => {
+  if (typeof window === 'undefined') return true;
+  return localStorage.getItem(`visited_occasion_${occasionId}`) !== 'true';
+};
+
+export const markToneVisited = (toneId: string) => {
+  if (typeof window === 'undefined') return;
+  const key = `visited_tone_${toneId}`;
+  if (localStorage.getItem(key) !== 'true') {
+    localStorage.setItem(key, 'true');
+  }
+};
+
+export const shouldShowToneBadge = (toneId: string): boolean => {
+  if (typeof window === 'undefined') return true;
+  return localStorage.getItem(`visited_tone_${toneId}`) !== 'true';
+};

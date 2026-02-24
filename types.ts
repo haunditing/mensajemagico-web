@@ -11,6 +11,8 @@ export enum Tone {
   SARCASTIC = "sarcástico",
   LIGHT_DESPERATION = "desesperado-light",
   BELATED = "atrasado",
+  PROUD = "orgulloso",
+  ENTHUSIASTIC = "entusiasta",
 }
 
 export type CountryCode =
@@ -53,6 +55,7 @@ export interface Occasion {
   metaDesc: string;
   allowedPlatforms?: SharePlatform[];
   fixedRelation?: string;
+  badge?: string;
 }
 
 export interface LocalizedContent {

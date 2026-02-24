@@ -28,6 +28,7 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
     "dia-de-la-madre": "text-pink-500 dark:text-pink-400",
     "dia-del-padre": "text-blue-500 dark:text-blue-400",
     navidad: "text-red-500 dark:text-red-400",
+    felicitacion: "text-yellow-500 dark:text-yellow-400",
   };
 
   const iconColorClass = isActive
@@ -267,6 +268,30 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
         <path d="M10 8L14 8" stroke="currentColor" strokeWidth="2" />
       </>
     ),
+    felicitacion: (
+      <>
+        <path
+          d="M12 15C15.866 15 19 11.866 19 8.5C19 5.13401 15.866 2 12 2C8.13401 2 5 5.13401 5 8.5C5 11.866 8.13401 15 12 15Z"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+        <path
+          d="M8.21 13.89L7 23L12 20L17 23L15.79 13.88"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M12 6L13 8H15L13.5 9.5L14 11.5L12 10.5L10 11.5L10.5 9.5L9 8H11L12 6Z"
+          fill="currentColor"
+          className="text-yellow-500 dark:text-yellow-300"
+        />
+      </>
+    ),
     navidad: (
       <>
         <g className="snow-particles">
@@ -306,6 +331,7 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
     const isChristmas = slug === "navidad";
     const isFathersDay = slug === "dia-del-padre";
     const isMothersDay = slug === "dia-de-la-madre";
+    const isFelicitacion = slug === "felicitacion";
 
     return (
       <>
@@ -479,10 +505,23 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
           `}
           </style>
         )}
+        {isFelicitacion && (
+          <style>
+            {`
+            @keyframes bounce-medal {
+              0%, 100% { transform: translateY(0); }
+              50% { transform: translateY(-3px); }
+            }
+            .group:hover .animate-bounce-medal {
+              animation: bounce-medal 1s ease-in-out infinite;
+            }
+          `}
+          </style>
+        )}
         <svg
           viewBox="0 0 24 24"
           fill="none"
-          className={`${sizeClass} ${iconColorClass} ${className} ${isGreeting ? "animate-wave-hand" : ""} ${isLove ? "animate-heartbeat" : ""} ${isResponder ? "animate-ring" : ""} ${isPerdoname ? "animate-rock" : ""} ${isChristmas ? "animate-snow" : ""} ${isFathersDay ? "animate-adjust-tie" : ""} ${isMothersDay ? "animate-bloom" : ""}`}
+          className={`${sizeClass} ${iconColorClass} ${className} ${isGreeting ? "animate-wave-hand" : ""} ${isLove ? "animate-heartbeat" : ""} ${isResponder ? "animate-ring" : ""} ${isPerdoname ? "animate-rock" : ""} ${isChristmas ? "animate-snow" : ""} ${isFathersDay ? "animate-adjust-tie" : ""} ${isMothersDay ? "animate-bloom" : ""} ${isFelicitacion ? "animate-bounce-medal" : ""}`}
           xmlns="http://www.w3.org/2000/svg"
         >
           {icons[slug]}

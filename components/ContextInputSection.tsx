@@ -41,6 +41,7 @@ const SUGGESTIONS_BY_OCCASION: Record<string, string[]> = {
   fathers_day: ["Orgullo", "Enseñanzas", "Fuerza", "Gracias", "Héroe", "Ejemplo", "Papá"],
   christmas: ["Paz", "Familia", "Unión", "Regalos", "Cena", "Próspero año", "Luces", "Magia"],
   visto: ["Humor", "Dignidad", "Misterio", "Hola", "¿Todo bien?", "Señal de vida", "Fantasma"],
+  felicitacion: ["Grado", "Ascenso", "Casa nueva", "Bebé", "Matrimonio", "Logro", "Negocio propio", "Orgullo"],
 };
 
 const SUGGESTIONS_BY_TONE: Record<string, string[]> = {
@@ -56,6 +57,8 @@ const SUGGESTIONS_BY_TONE: Record<string, string[]> = {
   formal: ["Respeto", "Cordialidad", "Atención", "Estimado", "Saludos"],
   light_desperation: ["Por favor", "Ayuda", "Necesito", "Urgente", "Espera"],
   belated: ["Tarde", "Perdón", "Olvido", "Tiempo", "Ayer"],
+  orgulloso: ["Logro", "Esfuerzo", "Merecido", "Grande", "Admiración"],
+  entusiasta: ["Increíble", "Genial", "Bravo", "Fiesta", "Tope"],
 
   // Emotional States
   tranquilo: ["Paz", "Calma", "Respiro", "Silencio", "Naturaleza"],

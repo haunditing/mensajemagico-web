@@ -23,6 +23,7 @@ import ReceivedMessageInput from "./ReceivedMessageInput";
 import GenerateButton from "./GenerateButton";
 import { useOnboarding } from "../context/OnboardingContext";
 import OnboardingTooltip, { TooltipColor } from "./OnboardingTooltip";
+import { markOccasionVisited } from "../services/usageControlService";
 
 interface GeneratorProps {
   occasion: Occasion;
@@ -44,6 +45,7 @@ const Generator: React.FC<GeneratorProps> = ({
   const isResponder = occasion.id === "responder";
   const isGreeting = occasion.id === "saludo";
   const isPerdoname = occasion.id === "perdoname";
+  const isFelicitation = occasion.id === "felicitacion";
   const MAX_CHARS = 400;
 
   const {
@@ -145,6 +147,11 @@ const Generator: React.FC<GeneratorProps> = ({
   // Resetear paso al cambiar de ocasión y sincronizar tour
   const prevOccasionId = React.useRef(occasion.id);
   React.useEffect(() => {
+    // Marcar ocasión como visitada para ocultar el badge "Nuevo" en el futuro
+    if (occasion.badge) {
+      markOccasionVisited(occasion.id);
+    }
+
     if (prevOccasionId.current !== occasion.id) {
       setCurrentStep(1);
       // Si el tour está activo, reiniciar al paso 1 para sincronizar con la nueva ocasión
@@ -153,7 +160,7 @@ const Generator: React.FC<GeneratorProps> = ({
       }
       prevOccasionId.current = occasion.id;
     }
-  }, [occasion.id, activeTour, goToStep]);
+  }, [occasion.id, occasion.badge, activeTour, goToStep]);
   
   // Iniciar el tour si no está activo (y no se ha completado previamente)
   React.useEffect(() => {
@@ -598,6 +605,7 @@ const Generator: React.FC<GeneratorProps> = ({
                 <ToneSelector
                   isPensamiento={isPensamiento}
                   isGreeting={isGreeting}
+                  isFelicitation={isFelicitation}
                   tone={tone}
                   setTone={setTone}
                   availableTones={availableTones}

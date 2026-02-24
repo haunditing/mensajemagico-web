@@ -1,11 +1,13 @@
 import React, { useState, useRef } from "react";
-import { EMOTIONAL_STATES, GREETING_TONES } from "../constants";
+import { EMOTIONAL_STATES, GREETING_TONES, FELICITATION_TONES } from "../constants";
 import FeatureGuard from "./FeatureGuard";
 import { Tone } from "../types";
+import { markToneVisited, shouldShowToneBadge } from "../services/usageControlService";
 
 interface ToneSelectorProps {
   isPensamiento: boolean;
   isGreeting: boolean;
+  isFelicitation?: boolean;
   tone: Tone | string;
   setTone: (tone: any) => void;
   availableTones: { value: Tone; label: string; badge?: string }[];
@@ -21,6 +23,7 @@ const EMOTIONAL_GROUPS = {
 const ToneSelector: React.FC<ToneSelectorProps> = ({
   isPensamiento,
   isGreeting,
+  isFelicitation,
   tone,
   setTone,
   availableTones,
@@ -124,6 +127,7 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
           {isGreeting
             ? GREETING_TONES.map((t) => {
                 const isSelected = tone === (t.id as any);
+                const showBadge = (t as any).badge && shouldShowToneBadge(t.id);
                 return (
                   <div
                     key={t.id}
@@ -133,7 +137,10 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                       <button
                         type="button"
                         aria-pressed={isSelected}
-                        onClick={() => setTone(t.id as any)}
+                        onClick={() => {
+                          setTone(t.id as any);
+                          if ((t as any).badge) markToneVisited(t.id);
+                        }}
                         className={`relative px-4 py-2.5 rounded-xl text-sm font-bold transition-all border whitespace-nowrap w-full md:w-auto ${
                           isSelected
                             ? "bg-blue-600 dark:bg-blue-500 text-white border-blue-600 dark:border-blue-500 shadow-md scale-105"
@@ -141,7 +148,7 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                         }`}
                       >
                         {t.label}
-                        {(t as any).badge && (
+                        {showBadge && (
                           <span
                             className={`absolute -top-2 -right-1 ${getBadgeColor((t as any).badge)} text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-pulse z-10`}
                           >
@@ -153,8 +160,9 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                   </div>
                 );
               })
-            : availableTones.map((t) => {
+            : (isFelicitation ? FELICITATION_TONES : availableTones).map((t) => {
                 const isSelected = tone === t.value;
+                const showBadge = t.badge && shouldShowToneBadge(t.value);
                 return (
                   <div
                     key={t.value}
@@ -164,7 +172,33 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                       <button
                         type="button"
                         aria-pressed={isSelected}
-                        onClick={() => setTone(t.value)}
+                        onClick={(e) => {
+                          setTone(t.value);
+                          if (t.badge) markToneVisited(t.value);
+
+                          // Efecto de confeti para el tono "Orgulloso"
+                          if (t.value === Tone.PROUD) {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            import("canvas-confetti").then((module) => {
+                              const confetti = module.default;
+                              const x = (rect.left + rect.width / 2) / window.innerWidth;
+                              const y = (rect.top + rect.height / 2) / window.innerHeight;
+                              
+                              // Optimización para móviles: Reducir carga gráfica
+                              const isMobile = window.innerWidth < 768;
+                              
+                              confetti({
+                                particleCount: isMobile ? 25 : 40,
+                                spread: isMobile ? 40 : 50,
+                                origin: { x, y },
+                                colors: ['#FFD700', '#F59E0B', '#FFFFFF'], // Dorados
+                                scalar: isMobile ? 0.5 : 0.6,
+                                disableForReducedMotion: true,
+                                zIndex: 100
+                              });
+                            });
+                          }
+                        }}
                         className={`relative px-4 py-2.5 rounded-xl text-sm font-bold transition-all border whitespace-nowrap w-full md:w-auto ${
                           isSelected
                             ? "bg-blue-600 dark:bg-blue-500 text-white border-blue-600 dark:border-blue-500 shadow-md scale-105"
@@ -172,7 +206,7 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                         }`}
                       >
                         {t.label}
-                        {t.badge && (
+                        {showBadge && (
                           <span
                             className={`absolute -top-2 -right-1 ${getBadgeColor(t.badge)} text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-pulse z-10`}
                           >

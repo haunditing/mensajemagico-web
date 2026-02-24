@@ -74,6 +74,14 @@ export const GREETING_TONES = [
   { id: "directo", label: "Directo", badge: "Nuevo" },
 ];
 
+export const FELICITATION_TONES = [
+  { value: Tone.PROUD, label: "Orgulloso", badge: "Nuevo" },
+  { value: Tone.ENTHUSIASTIC, label: "Entusiasta" },
+  { value: Tone.FORMAL, label: "Formal" },
+  { value: Tone.SINCERE, label: "Sincero" },
+  { value: Tone.FUNNY, label: "Divertido" },
+];
+
 export const APOLOGY_REASONS = [
   { id: "olvido", label: "Olvidé una fecha importante" },
   { id: "tarde", label: "Llegué tarde / No fui" },
@@ -85,6 +93,24 @@ export const APOLOGY_REASONS = [
 // ------------------------------------------
 
 export const OCCASIONS: Occasion[] = [
+  {
+    id: "felicitacion",
+    name: "Felicitación",
+    slug: "felicitacion",
+    icon: "🏆",
+    description:
+      "Celebra logros, grados, ascensos y buenas noticias con palabras que emocionan.",
+    h1: "Mensajes de Felicitación por Logros y Éxitos",
+    metaTitle: "Frases de Felicitación: Mensajes para Graduaciones y Ascensos",
+    metaDesc:
+      "Genera mensajes de felicitación originales para celebrar logros profesionales, académicos y personales.",
+    allowedPlatforms: [
+      SharePlatform.WHATSAPP,
+      SharePlatform.FACEBOOK,
+      SharePlatform.COPY,
+    ],
+    badge: "Nuevo",
+  },
   {
     id: "pensamiento",
     name: "Y ahora un pensamiento",
@@ -353,6 +379,8 @@ export const PSYCHOLOGICAL_MATRIX: Record<string, string> = {
   fresco: "inquiry",
   sobrio: "resolutive",
   alegre: "low_effort",
+  [Tone.PROUD]: "low_effort",
+  [Tone.ENTHUSIASTIC]: "low_effort",
   // Estados Emocionales (Pensamiento)
   tranquilo: "low_effort",
   reflexivo: "inquiry",
