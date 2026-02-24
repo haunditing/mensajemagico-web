@@ -140,28 +140,40 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
     ),
     cumpleanos: (
       <>
-        <g className="confetti-particles">
-          <circle cx="4" cy="4" r="1" className="text-blue-400 dark:text-blue-300" fill="currentColor" />
-          <circle cx="20" cy="4" r="1" className="text-green-400 dark:text-green-300" fill="currentColor" />
-          <circle cx="2" cy="12" r="1" className="text-yellow-400 dark:text-yellow-300" fill="currentColor" />
-          <circle cx="22" cy="12" r="1" className="text-purple-400 dark:text-purple-300" fill="currentColor" />
-          <circle cx="4" cy="20" r="1" className="text-red-400 dark:text-red-300" fill="currentColor" />
-          <circle cx="20" cy="20" r="1" className="text-pink-400 dark:text-pink-300" fill="currentColor" />
-        </g>
         <path
-          d="M20 12V22H4V12M18 12V7C18 4.79086 16.2091 3 14 3H10C7.79086 3 6 4.79086 6 7V12"
+          d="M12 7V3"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
-          d="M12 15V19M8 15V17M16 15V17"
+          d="M12 3C12 3 11 1 12 0C13 1 12 3 12 3Z"
+          fill="currentColor"
+          className="text-yellow-400 dark:text-yellow-300"
+        />
+        <path
+          d="M20 21H4"
           stroke="currentColor"
           strokeWidth="2"
           strokeLinecap="round"
+          strokeLinejoin="round"
         />
-        <path d="M12 3C12 3 11 1 12 0C13 1 12 3 12 3Z" fill="currentColor" />
+        <path
+          d="M18 21V12C18 10.8954 17.1046 10 16 10H8C6.89543 10 6 10.8954 6 12V21"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M6 15H18"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className="opacity-50"
+        />
       </>
     ),
     anniversary: (
@@ -384,30 +396,6 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
           `}
           </style>
         )}
-        {isBirthday && (
-          <style>
-            {`
-            @keyframes pop-confetti {
-              0% { transform: scale(0); opacity: 0; }
-              40% { opacity: 1; }
-              100% { transform: scale(2); opacity: 0; }
-            }
-            .confetti-particles circle {
-              opacity: 0;
-              transform-origin: center;
-            }
-            .group:hover .confetti-particles circle {
-              animation: pop-confetti 1.2s ease-out infinite;
-            }
-            .group:hover .confetti-particles circle:nth-child(1) { animation-delay: 0s; }
-            .group:hover .confetti-particles circle:nth-child(2) { animation-delay: 0.2s; }
-            .group:hover .confetti-particles circle:nth-child(3) { animation-delay: 0.4s; }
-            .group:hover .confetti-particles circle:nth-child(4) { animation-delay: 0.1s; }
-            .group:hover .confetti-particles circle:nth-child(5) { animation-delay: 0.3s; }
-            .group:hover .confetti-particles circle:nth-child(6) { animation-delay: 0.5s; }
-          `}
-          </style>
-        )}
         {isAnniversary && (
           <style>
             {`
@@ -494,7 +482,7 @@ const OccasionIcon: React.FC<OccasionIconProps> = ({
         <svg
           viewBox="0 0 24 24"
           fill="none"
-          className={`${sizeClass} ${iconColorClass} ${className} ${isGreeting ? "animate-wave-hand" : ""} ${isLove ? "animate-heartbeat" : ""} ${isResponder ? "animate-ring" : ""} ${isPerdoname ? "animate-rock" : ""} ${isBirthday ? "animate-pop-confetti" : ""} ${isChristmas ? "animate-snow" : ""} ${isFathersDay ? "animate-adjust-tie" : ""} ${isMothersDay ? "animate-bloom" : ""}`}
+          className={`${sizeClass} ${iconColorClass} ${className} ${isGreeting ? "animate-wave-hand" : ""} ${isLove ? "animate-heartbeat" : ""} ${isResponder ? "animate-ring" : ""} ${isPerdoname ? "animate-rock" : ""} ${isChristmas ? "animate-snow" : ""} ${isFathersDay ? "animate-adjust-tie" : ""} ${isMothersDay ? "animate-bloom" : ""}`}
           xmlns="http://www.w3.org/2000/svg"
         >
           {icons[slug]}
