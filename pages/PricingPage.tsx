@@ -204,12 +204,18 @@ const PricingPage: React.FC = () => {
   // Optimización: Memorizar el formateador para evitar recrear Intl.NumberFormat
   const formatPrice = React.useCallback(
     (amount: number) => {
-      return new Intl.NumberFormat(priceConfig.locale, {
+      const formatted = new Intl.NumberFormat(priceConfig.locale, {
         style: "currency",
         currency: priceConfig.currency,
         minimumFractionDigits: priceConfig.currency === "COP" ? 0 : 2,
         maximumFractionDigits: priceConfig.currency === "COP" ? 0 : 2,
       }).format(amount);
+
+      return (
+        <>
+          {formatted} <span className="text-sm">{priceConfig.currency}</span>
+        </>
+      );
     },
     [priceConfig],
   );
