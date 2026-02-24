@@ -121,8 +121,57 @@ const CompactGiftCard: React.FC<{ gift: GiftSuggestion; country: string }> = ({ 
 };
 
 const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, country, isLoading = false }) => {
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const [isScrollable, setIsScrollable] = React.useState(false);
+
   // Filtrar regalos inválidos (sin título o término de búsqueda) para evitar errores de renderizado
-  const validGifts = gifts?.filter(g => g && g.title && g.search_term);
+  const validGifts = React.useMemo(() => gifts?.filter(g => g && g.title && g.search_term) || [], [gifts]);
+
+  const handleScroll = () => {
+    if (scrollRef.current) {
+      const { scrollLeft } = scrollRef.current;
+      const firstItem = scrollRef.current.children[0] as HTMLElement;
+      if (!firstItem) return;
+      
+      const itemWidth = firstItem.offsetWidth;
+      const gap = 16; // gap-4
+      const index = Math.round(scrollLeft / (itemWidth + gap));
+      setActiveIndex(index);
+    }
+  };
+
+  const scrollToItem = (index: number) => {
+    if (scrollRef.current) {
+      const firstItem = scrollRef.current.children[0] as HTMLElement;
+      if (!firstItem) return;
+      
+      const itemWidth = firstItem.offsetWidth;
+      const gap = 16;
+      const position = index * (itemWidth + gap);
+      scrollRef.current.scrollTo({ left: position, behavior: 'smooth' });
+    }
+  };
+
+  // Resetear índice al cambiar los regalos para evitar estados inconsistentes
+  React.useEffect(() => {
+    setActiveIndex(0);
+  }, [validGifts]);
+
+  React.useEffect(() => {
+    const checkScrollable = () => {
+      if (scrollRef.current) {
+        const { scrollWidth, clientWidth } = scrollRef.current;
+        setIsScrollable(scrollWidth > clientWidth);
+      }
+    };
+
+    checkScrollable();
+    window.addEventListener("resize", checkScrollable);
+    return () => window.removeEventListener("resize", checkScrollable);
+  }, [validGifts, isLoading]);
+
+  const showPagination = !isLoading && validGifts.length > 1 && isScrollable;
 
   // Si no estamos cargando y no hay regalos válidos, no renderizamos nada.
   if (!isLoading && (!validGifts || validGifts.length === 0)) {
@@ -165,12 +214,34 @@ const GiftRecommendations: React.FC<GiftRecommendationsProps> = ({ gifts, countr
           ))}
         </div>
       ) : (
-        <div className="flex overflow-x-auto gap-4 pb-4 snap-x no-scrollbar">
+        <div 
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex overflow-x-auto gap-4 pb-4 snap-x no-scrollbar"
+        >
           {validGifts.map((gift, idx) => (
             <div key={idx} className="min-w-[260px] w-[80%] sm:w-[300px] snap-center shrink-0">
               <div className="block md:hidden h-full"><CompactGiftCard gift={gift} country={country} /></div>
               <div className="hidden md:block h-full"><GiftCard gift={gift} country={country} /></div>
             </div>
+          ))}
+        </div>
+      )}
+      
+      {/* Indicadores de Paginación (Dots) */}
+      {showPagination && (
+        <div className="flex justify-center gap-2 mt-2">
+          {validGifts.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => scrollToItem(idx)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${
+                idx === activeIndex
+                  ? "bg-slate-800 dark:bg-slate-200 w-4"
+                  : "bg-slate-300 dark:bg-slate-700 w-1.5 hover:bg-slate-400 dark:hover:bg-slate-600"
+              }`}
+              aria-label={`Ir al regalo ${idx + 1}`}
+            />
           ))}
         </div>
       )}
