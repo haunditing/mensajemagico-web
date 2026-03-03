@@ -15,6 +15,35 @@ import { useConfirm } from "../context/ConfirmContext";
 import Cropper from "react-easy-crop";
 import UserAvatar, { AVATAR_COLORS } from "../components/UserAvatar";
 
+// Helper para interpretar la esencia de forma narrativa
+const getEssenceDescription = (profile: any) => {
+  if (!profile) return "";
+  const styleMap: Record<string, string> = {
+    direct: "Directo y Transparente",
+    indirect: "Sutil y Diplomático",
+    romantic: "Cálido y Romántico",
+    firm: "Firme y Seguro",
+  };
+
+  const intensityMap: Record<string, string> = {
+    soft: "suave",
+    balanced: "equilibrada",
+    intense: "vibrante",
+  };
+
+  const expressivenessMap: Record<string, string> = {
+    low: "reservada",
+    medium: "natural",
+    high: "efusiva",
+  };
+
+  const s = styleMap[profile.style] || "Definido";
+  const i = intensityMap[profile.intensity] || "media";
+  const e = expressivenessMap[profile.expressiveness] || "media";
+
+  return `${s}, con energía ${i} y expresión ${e}.`;
+};
+
 const ProfilePage: React.FC = () => {
   const { user, logout, refreshUser } = useAuth();
   const { showToast } = useToast();
@@ -496,6 +525,27 @@ const ProfilePage: React.FC = () => {
               >
                 <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${neutralMode ? 'translate-x-6' : 'translate-x-1'}`} />
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Sección de Esencia (Premium) */}
+        {user.planLevel === 'premium' && (
+          <div className="border-t border-slate-100 dark:border-slate-800 py-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white">Tu Esencia</h3>
+                {(user as any).essenceCompleted && (user as any).essenceProfile ? (
+                  <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium mt-1">
+                    {getEssenceDescription((user as any).essenceProfile)}
+                  </p>
+                ) : (
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Define tu personalidad para que la IA escriba como tú.</p>
+                )}
+              </div>
+              <Link to="/esencia" className="text-blue-600 dark:text-blue-400 text-sm font-bold hover:underline">
+                {(user as any).essenceCompleted ? "Editar" : "Configurar"}
+              </Link>
             </div>
           </div>
         )}

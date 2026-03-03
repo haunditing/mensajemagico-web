@@ -210,6 +210,12 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
                           <span>Este mensaje incluye tu toque personal</span>
                         </div>
                       )}
+                      {msg.config?.applyEssence && (
+                        <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-fuchsia-600 dark:text-fuchsia-400 bg-fuchsia-50 dark:bg-fuchsia-900/30 px-2.5 py-1 rounded-full border border-fuchsia-100 dark:border-fuchsia-800 animate-fade-in select-none">
+                          <span className="text-xs">💎</span>
+                          <span>Esencia Aplicada</span>
+                        </div>
+                      )}
                       {msg.isUsed && (
                         <div className="inline-flex items-center gap-1.5 text-[10px] font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2.5 py-1 rounded-full border border-green-100 dark:border-green-800 animate-fade-in select-none">
                           <span className="text-xs">✓</span>

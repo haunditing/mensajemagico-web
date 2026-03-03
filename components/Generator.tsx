@@ -24,6 +24,7 @@ import GenerateButton from "./GenerateButton";
 import { useOnboarding } from "../context/OnboardingContext";
 import OnboardingTooltip, { TooltipColor } from "./OnboardingTooltip";
 import { markOccasionVisited } from "../services/usageControlService";
+import EssenceToggle from "./EssenceToggle";
 
 interface GeneratorProps {
   occasion: Occasion;
@@ -103,6 +104,10 @@ const Generator: React.FC<GeneratorProps> = ({
     isContextLocked,
     MAX_CONTEXT,
     isOccasionLocked,
+    essenceProfile,
+    essenceCompleted,
+    applyEssence,
+    setApplyEssence,
     handleRelChange,
     addContextWord,
     removeContextWord,
@@ -140,9 +145,17 @@ const Generator: React.FC<GeneratorProps> = ({
   const totalSteps = steps.length;
   const isLastStep = currentStep === totalSteps;
 
-  const [showGuardianOnboarding, setShowGuardianOnboarding] = React.useState(false);
+  const [showGuardianOnboarding, setShowGuardianOnboarding] =
+    React.useState(false);
   // --- ONBOARDING: Lógica del Tour Completo ---
-  const { activeTour, currentStepIndex, nextStep, skipTour, goToStep, startTour } = useOnboarding();
+  const {
+    activeTour,
+    currentStepIndex,
+    nextStep,
+    skipTour,
+    goToStep,
+    startTour,
+  } = useOnboarding();
 
   // Resetear paso al cambiar de ocasión y sincronizar tour
   const prevOccasionId = React.useRef(occasion.id);
@@ -155,28 +168,28 @@ const Generator: React.FC<GeneratorProps> = ({
     if (prevOccasionId.current !== occasion.id) {
       setCurrentStep(1);
       // Si el tour está activo, reiniciar al paso 1 para sincronizar con la nueva ocasión
-      if (activeTour === 'onboarding_tour' && goToStep) {
+      if (activeTour === "onboarding_tour" && goToStep) {
         goToStep(1);
       }
       prevOccasionId.current = occasion.id;
     }
   }, [occasion.id, occasion.badge, activeTour, goToStep]);
-  
+
   // Iniciar el tour si no está activo (y no se ha completado previamente)
   React.useEffect(() => {
     if (!activeTour) {
-      startTour('onboarding_tour');
+      startTour("onboarding_tour");
     }
   }, [activeTour, startTour]);
-  
+
   React.useEffect(() => {
-    if (activeTour === 'onboarding_tour') {
+    if (activeTour === "onboarding_tour") {
       // Si viene de la Home (Paso 0), avanzar automáticamente al Paso 1
       if (currentStepIndex === 0) {
         const timer = setTimeout(() => nextStep(0), 100);
         return () => clearTimeout(timer);
       }
-      
+
       // Sincronizar UI del Generador con el paso del Tour
       // Ahora ambos flujos tienen 3 pasos, la lógica es uniforme
       if (currentStepIndex === 1 && currentStep !== 1) setCurrentStep(1);
@@ -204,26 +217,39 @@ const Generator: React.FC<GeneratorProps> = ({
 
       // Feedback específico
       if (safetyError) {
-        showToast("Hay una advertencia de seguridad pendiente. Por favor revísala.", "error");
-      } else if (!isPensamiento && currentStep === 2 && isResponder && !receivedText.trim()) {
-        showToast("Por favor, escribe el mensaje que recibiste para continuar.", "error");
+        showToast(
+          "Hay una advertencia de seguridad pendiente. Por favor revísala.",
+          "error",
+        );
+      } else if (
+        !isPensamiento &&
+        currentStep === 2 &&
+        isResponder &&
+        !receivedText.trim()
+      ) {
+        showToast(
+          "Por favor, escribe el mensaje que recibiste para continuar.",
+          "error",
+        );
       }
       return;
     }
-    
+
     // Sincronizar avance manual con el tour si está activo
-    if (activeTour === 'onboarding_tour') {
+    if (activeTour === "onboarding_tour") {
       nextStep();
     }
 
     setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
     // Scroll suave al inicio del contenedor para mantener el foco
-    document.getElementById("generator-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document
+      .getElementById("generator-card")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleBack = () => {
     const prevStep = Math.max(currentStep - 1, 1);
-    if (activeTour === 'onboarding_tour' && goToStep) {
+    if (activeTour === "onboarding_tour" && goToStep) {
       goToStep(prevStep);
     }
     setCurrentStep(prevStep);
@@ -233,7 +259,7 @@ const Generator: React.FC<GeneratorProps> = ({
     const success = await handleGenerate();
     if (success) {
       // Si el usuario completa la acción principal, damos por terminado el tour
-      if (activeTour === 'onboarding_tour') {
+      if (activeTour === "onboarding_tour") {
         skipTour();
       }
       setCurrentStep(1);
@@ -287,22 +313,29 @@ const Generator: React.FC<GeneratorProps> = ({
 
   // Textos dinámicos para el tour según la ocasión
   const getStep1Text = () => {
-    if (isPensamiento) return "Define el formato y el tema central de tu reflexión.";
-    if (isResponder) return "¿Quién te escribió? El Guardián analizará su relación.";
+    if (isPensamiento)
+      return "Define el formato y el tema central de tu reflexión.";
+    if (isResponder)
+      return "¿Quién te escribió? El Guardián analizará su relación.";
     if (isGreeting) return "¿A quién quieres saludar hoy?";
     return "Primero, dinos a quién le escribes. El Guardián adaptará el mensaje a su relación.";
   };
 
   const getStep2Text = () => {
-    if (isPensamiento) return "Añade detalles o palabras clave para enriquecer tu reflexión.";
-    if (isResponder) return "Pega aquí el mensaje que recibiste. La IA lo analizará para responderte.";
-    if (isGreeting) return "Añade contexto si quieres (ej: 'hace tiempo no hablamos').";
+    if (isPensamiento)
+      return "Añade detalles o palabras clave para enriquecer tu reflexión.";
+    if (isResponder)
+      return "Pega aquí el mensaje que recibiste. La IA lo analizará para responderte.";
+    if (isGreeting)
+      return "Añade contexto si quieres (ej: 'hace tiempo no hablamos').";
     return "Danos contexto. Escribe palabras clave (ej: 'cena', 'ayer') o usa las sugerencias.";
   };
 
   const getStep3Text = () => {
-    if (isPensamiento) return "Elige la emoción que quieres transmitir en tu reflexión.";
-    if (isResponder) return "Elige la intención de tu respuesta (ej. Cortante, Amable).";
+    if (isPensamiento)
+      return "Elige la emoción que quieres transmitir en tu reflexión.";
+    if (isResponder)
+      return "Elige la intención de tu respuesta (ej. Cortante, Amable).";
     if (isGreeting) return "Elige el estilo de tu saludo (ej. Dulce, Formal).";
     return "Elige el tono emocional perfecto. El Guardián adaptará el mensaje a tu elección.";
   };
@@ -399,26 +432,41 @@ const Generator: React.FC<GeneratorProps> = ({
         {/* --- STEPPER INDICATOR (Móvil First) --- */}
         <nav aria-label="Progreso" className="relative mb-8 px-2">
           {/* Línea de progreso de fondo */}
-          <div className="absolute top-4 left-4 right-4 h-0.5 bg-slate-200 dark:bg-slate-700 -z-10" aria-hidden="true" />
-          
+          <div
+            className="absolute top-4 left-4 right-4 h-0.5 bg-slate-200 dark:bg-slate-700 -z-10"
+            aria-hidden="true"
+          />
+
           <ol className="flex items-center justify-between w-full">
             {steps.map((step) => {
               const isActive = step.id === currentStep;
               const isCompleted = step.id < currentStep;
-              
+
               return (
-                <li key={step.id} className="flex flex-col items-center z-10" aria-current={isActive ? "step" : undefined}>
-                  <div 
+                <li
+                  key={step.id}
+                  className="flex flex-col items-center z-10"
+                  aria-current={isActive ? "step" : undefined}
+                >
+                  <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 border-2 
-                    ${isActive 
-                      ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20 scale-110" 
-                      : isCompleted 
-                        ? "bg-green-600 border-green-600 text-white" 
-                        : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400"}`}
+                    ${
+                      isActive
+                        ? "bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20 scale-110"
+                        : isCompleted
+                          ? "bg-green-600 border-green-600 text-white"
+                          : "bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-400"
+                    }`}
                   >
-                    {isCompleted ? <span aria-label="Completado">✓</span> : step.id}
+                    {isCompleted ? (
+                      <span aria-label="Completado">✓</span>
+                    ) : (
+                      step.id
+                    )}
                   </div>
-                  <span className={`text-[10px] font-bold uppercase tracking-wider mt-2 transition-colors ${isActive ? "text-blue-700 dark:text-blue-400" : "text-slate-600 dark:text-slate-400"}`}>
+                  <span
+                    className={`text-[10px] font-bold uppercase tracking-wider mt-2 transition-colors ${isActive ? "text-blue-700 dark:text-blue-400" : "text-slate-600 dark:text-slate-400"}`}
+                  >
                     {step.label}
                   </span>
                 </li>
@@ -453,8 +501,18 @@ const Generator: React.FC<GeneratorProps> = ({
                           className="absolute right-2 bottom-2 md:bottom-3 p-1.5 text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 transition-all rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 md:opacity-0 md:group-hover:opacity-100"
                           title="Editar nombre del contacto"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          <svg
+                            className="w-4 h-4"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                            />
                           </svg>
                         </button>
                       )}
@@ -595,6 +653,14 @@ const Generator: React.FC<GeneratorProps> = ({
           {/* --- PASO 3: ESTILO Y GENERACIÓN --- */}
           {currentStep === 3 && (
             <div className="space-y-6 animate-fade-in">
+              {user && (
+                <EssenceToggle
+                  essenceProfile={essenceProfile}
+                  essenceCompleted={essenceCompleted}
+                  applyEssence={applyEssence}
+                  setApplyEssence={setApplyEssence}
+                />
+              )}
               <OnboardingTooltip
                 tourId="onboarding_tour"
                 stepIndex={3}
@@ -658,16 +724,24 @@ const Generator: React.FC<GeneratorProps> = ({
 
             {showGifts && (
               <div className="flex items-center gap-2 animate-fade-in pl-8 sm:pl-0">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Presupuesto:</span>
+                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Presupuesto:
+                </span>
                 <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                  {(['low', 'medium', 'high'] as const).map((b) => (
+                  {(["low", "medium", "high"] as const).map((b) => (
                     <button
                       key={b}
                       onClick={() => setGiftBudget(b)}
-                      className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${giftBudget === b ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-                      title={b === 'low' ? 'Económico' : b === 'medium' ? 'Estándar' : 'Lujo'}
+                      className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${giftBudget === b ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}
+                      title={
+                        b === "low"
+                          ? "Económico"
+                          : b === "medium"
+                            ? "Estándar"
+                            : "Lujo"
+                      }
                     >
-                      {b === 'low' ? '$' : b === 'medium' ? '$$' : '$$$'}
+                      {b === "low" ? "$" : b === "medium" ? "$$" : "$$$"}
                     </button>
                   ))}
                 </div>
@@ -710,13 +784,23 @@ const Generator: React.FC<GeneratorProps> = ({
               className="flex-none w-14 h-14 md:w-auto md:h-auto md:px-6 md:py-3 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center border border-slate-200 dark:border-slate-700 md:border-0"
               aria-label="Volver al paso anterior"
             >
-              <svg className="w-5 h-5 md:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <svg
+                className="w-5 h-5 md:hidden"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
               <span className="hidden md:inline">Atrás</span>
             </button>
           )}
-          
+
           {isLastStep ? (
             <div className="flex-1">
               <OnboardingTooltip
@@ -749,8 +833,18 @@ const Generator: React.FC<GeneratorProps> = ({
               } ${isShaking ? "animate-shake" : ""}`}
             >
               <span>Siguiente</span>
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              <svg
+                className="w-5 h-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 5l7 7-7 7"
+                />
               </svg>
             </button>
           )}
@@ -857,5 +951,4 @@ const Generator: React.FC<GeneratorProps> = ({
     </div>
   );
 };
-
 export default Generator;

@@ -6,6 +6,7 @@ import {
   Tone,
   GeneratedMessage,
   SharePlatform,
+  EssenceProfile,
 } from "../types";
 import {
   RELATIONSHIPS,
@@ -94,6 +95,11 @@ export const useGenerator = (
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [showHandAnimation, setShowHandAnimation] = useState(false);
   const [guardianWarning, setGuardianWarning] = useState<string | null>(null);
+
+  const [essenceProfile, setEssenceProfile] = useState<EssenceProfile | null>(null);
+  const [essenceCompleted, setEssenceCompleted] = useState<boolean>(false);
+  const [applyEssence, setApplyEssence] = useState<boolean>(true);
+
 
   const selectedContact = contacts.find((c) => c._id === selectedContactId);
 
@@ -220,8 +226,13 @@ export const useGenerator = (
 
   // Effects
   useEffect(() => {
-    if (user && (user as any).location) setUserLocation((user as any).location);
-    else getUserLocation().then((loc) => loc && setUserLocation(loc));
+    if (user) {
+      setUserLocation((user as any).location);
+      setEssenceProfile((user as any).essenceProfile || null);
+      setEssenceCompleted((user as any).essenceCompleted || false);
+    } else {
+      getUserLocation().then((loc) => loc && setUserLocation(loc));
+    }
   }, [user]);
 
   useEffect(() => {
@@ -470,6 +481,7 @@ export const useGenerator = (
           grammaticalGender: (user as any)?.preferences?.grammaticalGender,
           greetingMoment: isGreeting ? effectiveGreetingMoment : undefined,
           apologyReason: isPerdoname ? effectiveApologyReason : undefined,
+          applyEssence: applyEssence && planLevel === 'premium',
         },
         (token) => {
           rawStream += token;
@@ -711,7 +723,7 @@ export const useGenerator = (
     setReceivedMessageType,
     receivedText,
     setReceivedText,
-    contextWords,
+contextWords,
     setContextWords,
     currentWord,
     setCurrentWord,
@@ -746,6 +758,10 @@ export const useGenerator = (
     isContextLocked,
     MAX_CONTEXT,
     isOccasionLocked,
+    essenceProfile,
+    essenceCompleted,
+    applyEssence,
+    setApplyEssence,
     handleRelChange,
     addContextWord,
     removeContextWord: (w: string) =>

@@ -26,6 +26,7 @@ import RemindersPage from "./pages/RemindersPage";
 import SettingsPage from "./pages/SettingsPage";
 import ContactsPage from "./pages/ContactsPage";
 import FaqPage from "./pages/FaqPage";
+import EssencePage from "./pages/EssencePage";
 import PaymentErrorPage from "./pages/PaymentErrorPage";
 
 const { BrowserRouter: Router, Routes, Route } = ReactRouterDOM;
@@ -70,6 +71,7 @@ const App: React.FC = () => {
                   <Route path="/configuracion" element={<SettingsPage />} />
                   <Route path="/contactos" element={<ContactsPage />} />
                   <Route path="/faq" element={<FaqPage />} />
+                  <Route path="/esencia" element={<EssencePage />} />
                   <Route path="*" element={<HomePage />} />
                 </Routes>
               </Layout>

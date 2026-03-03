@@ -95,3 +95,10 @@ export interface GeneratedMessage {
   content: string;
   timestamp: number;
 }
+
+export interface EssenceProfile {
+  expressiveness: "low" | "medium" | "high";
+  intensity: "soft" | "balanced" | "intense";
+  pride: "low" | "medium" | "high";
+  style: "direct" | "indirect" | "romantic" | "firm";
+}
