@@ -89,15 +89,7 @@ const TrialBanner: React.FC = () => {
     }
   }, [navigate, trackEvent, trialInfo?.daysRemaining]);
 
-  const canShow = shouldShowTrialBanner({
-    user,
-    pathname: location.pathname,
-    isLoading,
-    trialBannerDismissed: Boolean(isDismissed),
-  });
-
-  if (!canShow) return null;
-
+  // ===== TODOS LOS HOOKS ANTES DEL EARLY RETURN =====
   const daysRemaining = trialInfo?.daysRemaining || 0;
 
   const message = useMemo(() => {
@@ -109,6 +101,16 @@ const TrialBanner: React.FC = () => {
       return <>Te quedan <strong>{daysRemaining} días</strong> de acceso Premium Lite con 20 mensajes diarios.</>;
     }
   }, [daysRemaining]);
+
+  // ===== EARLY RETURN DESPUÉS DE TODOS LOS HOOKS =====
+  const canShow = shouldShowTrialBanner({
+    user,
+    pathname: location.pathname,
+    isLoading,
+    trialBannerDismissed: Boolean(isDismissed),
+  });
+
+  if (!canShow) return null;
 
   // Usar BannerBase pero con navegación mejorada
   return (

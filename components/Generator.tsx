@@ -47,6 +47,7 @@ const Generator: React.FC<GeneratorProps> = ({
   const isPerdoname = occasion.id === "perdoname";
   const isFelicitation = occasion.id === "felicitacion";
   const MAX_CHARS = 400;
+  const STYLE_SAMPLE_MAX = 240;
 
   const {
     relationshipId,
@@ -73,6 +74,8 @@ const Generator: React.FC<GeneratorProps> = ({
     setReceivedMessageType,
     receivedText,
     setReceivedText,
+    styleSample,
+    setStyleSample,
     contextWords,
     setContextWords,
     currentWord,
@@ -189,13 +192,15 @@ const Generator: React.FC<GeneratorProps> = ({
         return () => clearTimeout(timer);
       }
 
-      // Sincronizar UI del Generador con el paso del Tour
-      // Ahora ambos flujos tienen 3 pasos, la lógica es uniforme
-      if (currentStepIndex === 1 && currentStep !== 1) setCurrentStep(1);
-      if (currentStepIndex === 2 && currentStep !== 2) setCurrentStep(2);
-      if (currentStepIndex === 3 && currentStep !== 3) setCurrentStep(3);
+      // NO sincronizar UI del Generador durante el streaming para no interrumpir la generación
+      // Solo sincronizar si NO estamos cargando (isLoading = false)
+      if (!isLoading) {
+        if (currentStepIndex === 1 && currentStep !== 1) setCurrentStep(1);
+        if (currentStepIndex === 2 && currentStep !== 2) setCurrentStep(2);
+        if (currentStepIndex === 3 && currentStep !== 3) setCurrentStep(3);
+      }
     }
-  }, [activeTour, currentStepIndex, isPensamiento, nextStep, currentStep]);
+  }, [activeTour, currentStepIndex, currentStep, nextStep, isLoading]);
 
   const canAdvance = React.useMemo(() => {
     if (safetyError) return false;
@@ -627,6 +632,35 @@ const Generator: React.FC<GeneratorProps> = ({
                   applyEssence={applyEssence}
                   setApplyEssence={setApplyEssence}
                 />
+              )}
+
+              {planLevel === "premium" && (
+                <div className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 md:p-5">
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-200">
+                      Editor Mágico (opcional)
+                    </label>
+                    <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full border border-indigo-200 dark:border-indigo-800">
+                      PRO
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    Pega un mensaje que hayas escrito antes para que aprenda tu chispa.
+                  </p>
+                  <div className="relative mt-3">
+                    <textarea
+                      value={styleSample}
+                      onChange={(e) =>
+                        setStyleSample(e.target.value.slice(0, STYLE_SAMPLE_MAX))
+                      }
+                      className="w-full min-h-[96px] p-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 dark:text-slate-200 leading-relaxed text-sm bg-white dark:bg-slate-900"
+                      placeholder="Ej: ey, me acordé de ti... ¿todo bien? jaja"
+                    />
+                    <div className={`absolute bottom-2 right-3 text-[10px] font-bold ${styleSample.length >= STYLE_SAMPLE_MAX ? "text-red-500" : "text-slate-400"}`}>
+                      {styleSample.length} / {STYLE_SAMPLE_MAX}
+                    </div>
+                  </div>
+                </div>
               )}
               <ToneSelector
                 isPensamiento={isPensamiento}

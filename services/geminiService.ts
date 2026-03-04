@@ -32,7 +32,7 @@ export const generateMessage = async (
 ): Promise<GenerationResponse> => {
   // 1. Generar Llave de Caché para optimización
   const cacheKey =
-    `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}-${styleInstructions || ""}-${creativityLevel || ""}-${avoidTopics || ""}`
+    `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}-${config.styleSample || ""}-${styleInstructions || ""}-${creativityLevel || ""}-${avoidTopics || ""}`
       .toLowerCase()
       .replace(/\s+/g, "-");
 
@@ -58,6 +58,7 @@ export const generateMessage = async (
       receivedText: config.receivedText, // Para respuestas
       contextWords: config.contextWords || [],
       formatInstruction: config.formatInstruction,
+      styleSample: config.styleSample,
       userLocation, // Enviamos la ubicación detectada al backend
       contactId, // Enviamos el ID del contacto para el Guardián
       styleInstructions, // Instrucciones de estilo dinámicas (Anti-cliché)
@@ -114,7 +115,7 @@ export const generateMessageStream = async (
   avoidTopics?: string,
 ): Promise<GenerationResponse> => {
   const cacheKey =
-    `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}-${styleInstructions || ""}-${creativityLevel || ""}-${avoidTopics || ""}`
+    `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}-${config.styleSample || ""}-${styleInstructions || ""}-${creativityLevel || ""}-${avoidTopics || ""}`
       .toLowerCase()
       .replace(/\s+/g, "-");
 
@@ -153,6 +154,7 @@ export const generateMessageStream = async (
         receivedText: config.receivedText,
         contextWords: config.contextWords || [],
         formatInstruction: config.formatInstruction,
+        styleSample: config.styleSample,
         userLocation,
         contactId,
         styleInstructions,

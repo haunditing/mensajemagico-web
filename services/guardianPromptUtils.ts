@@ -46,14 +46,9 @@ export const buildGuardianPrompt = ({
     creativityLevel = "low"; // Más preciso (0.5)
   }
 
-  // 2. Variación Gramatical (Trigger de Apertura Aleatorio)
-  const openingTriggers = [
-    "Opción A: Empezar con una pregunta para generar curiosidad.",
-    "Opción B: Empezar con una exclamación o una afirmación emotiva.",
-    "Opción C: Empezar con una observación sobre el presente inmediato (el ahora).",
-  ];
+  // 2. Apertura flexible (sin imponer plantillas fijas)
   const selectedTrigger =
-    openingTriggers[Math.floor(Math.random() * openingTriggers.length)];
+    "Apertura sugerida: empieza de forma natural según el contexto y la voz del usuario.";
 
   // 3. Análisis de Historial y Construcción del Prompt del Guardián
   const hasRealHistory =
@@ -129,10 +124,10 @@ export const buildGuardianPrompt = ({
         selectedContact?.relationship || "Pareja"
       }).
       
-      Historial Reciente (PARA EVITAR REPETICIÓN):
+      Historial Reciente (para evitar repetición excesiva):
       En los últimos mensajes ya se mencionaron: '${uniqueKeywords}'.
       
-      Misión: > Genera un nuevo mensaje en tono ${tone} pero PROHIBIDO usar las palabras del historial reciente. Busca un nuevo ángulo: quizás una emoción específica o un detalle del entorno sin usar clichés.
+      Misión: > Genera un nuevo mensaje en tono ${tone}. Evita repetir literalmente frases recientes y busca un ángulo fresco, manteniendo la voz del usuario.
       
       Instrucción de Apertura: ${selectedTrigger}${fewShotInstruction}]`;
   } else {
@@ -142,20 +137,20 @@ export const buildGuardianPrompt = ({
     } else if (tone === "orgulloso") {
       styleInstructions += `[Contexto: No se especificó nombre. OBLIGATORIO: Usa un vocativo genérico de admiración como "Campeón/a", "Crack" o "Genio/a".] `;
     }
-    styleInstructions += `[ESTILO: Sé espontáneo pero HONESTO. Evita saludos robóticos. ${selectedTrigger}
-    IMPORTANTE: No tienes historial con esta persona. PROHIBIDO inventar recuerdos, decir "ayer", "la otra vez" o "me acordé". Habla solo del presente.]`;
+    styleInstructions += `[ESTILO: Sé espontáneo y honesto. Evita saludos robóticos. ${selectedTrigger}
+    IMPORTANTE: No tienes historial con esta persona. No inventes recuerdos ni referencias de pasado no verificadas. Habla desde el presente.]`;
   }
 
   // --- NUEVA LÓGICA PARA PENSAMIENTO (DEEP TALK / CONTENT) ---
   if (isPensamiento) {
     // 1. Filtro de Profundidad y Stop-List
     styleInstructions += ` [MODO PENSAMIENTO: DEEP TALK]
-      PROHIBIDO: No uses clichés de clima ("sol radiante", "brisa"), ni invitaciones físicas ("vamos por un helado", "caminemos"), ni gastronomía ("raspao", "café").
-      OBJETIVO: Generar valor, reflexión o conexión profunda. Estilo: "Internal Monologue / Storytelling".`;
+      Evita clichés de clima, invitaciones físicas o relleno gastronómico si no aportan valor.
+      OBJETIVO: Generar reflexión útil y conexión profunda.`;
 
     // 2. Estructura Hook -> Story -> Lesson
     styleInstructions += `
-      ESTRUCTURA OBLIGATORIA:
+      ESTRUCTURA SUGERIDA:
       1. Hook (Gancho): Empieza con una verdad incómoda o una observación aguda.
       2. Observación (Análisis): Analiza el concepto de forma abstracta o filosófica. NO inventes historias personales ni anécdotas que no ocurrieron.
       3. Lesson (Cierre): Termina con una conclusión potente.${hasRealHistory ? " Si los ejemplos del usuario tienen preguntas, úsalas. Si no, EVITA las preguntas." : " EVITA terminar con preguntas directas."}`;
@@ -173,9 +168,9 @@ export const buildGuardianPrompt = ({
 
     // 4. Formato (Chat vs Post)
     if (isForPost) {
-      styleInstructions += ` FORMATO: Redes Sociales (Post). NO incluyas saludos personales ni nombres. Escribe para una audiencia general. OBLIGATORIO: Termina con una frase que invite a la interacción (Call to Action). PROHIBIDO incluir el texto "Para Redes Sociales" en la respuesta.`;
+      styleInstructions += ` FORMATO: Redes Sociales (Post). Evita saludos personales y nombres. Escribe para audiencia general. Incluye un cierre que invite a interacción si encaja de forma natural.`;
     } else {
-      styleInstructions += ` FORMATO: Chat Privado. Mantén la intimidad de una conversación uno a uno. PROHIBIDO incluir el texto "Para Chat Privado" en la respuesta.`;
+      styleInstructions += ` FORMATO: Chat Privado. Mantén intimidad de conversación uno a uno y evita meta-texto.`;
     }
   }
 
@@ -222,7 +217,7 @@ export const buildGuardianPrompt = ({
   };
   const budgetDesc = budgetMap[giftBudget] || "precio medio";
 
-  const formatInstruction = `[SYSTEM: IMPORTANTE: Tu respuesta DEBE ser un JSON válido y MINIFICADO (sin espacios extra) con esta estructura: {
+  const formatInstruction = `[SYSTEM: Devuelve JSON válido con esta estructura: {
       "selected_strategy": "string",
       "generated_messages": [{ "tone": "string", "content": "string", "locked": boolean }],
       "guardian_insight": "string (${
@@ -237,7 +232,7 @@ export const buildGuardianPrompt = ({
       }
     }. ${
       shouldIncludeGifts
-        ? `Máximo 2 regalos. PARA REGALOS: Selecciona TENDENCIAS populares. Basa la selección en: País (${country}), Género (${contactGender}), Estilo (${giftStyle}) y Presupuesto (${budgetDesc}). Ignora el contenido del mensaje.`
+        ? `Máximo 2 regalos. Para regalos, considera País (${country}), Género (${contactGender}), Estilo (${giftStyle}) y Presupuesto (${budgetDesc}) sin romper la coherencia del mensaje.`
         : "NO incluyas regalos."
     } Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
 

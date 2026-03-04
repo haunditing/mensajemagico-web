@@ -171,6 +171,7 @@ export const useGenerator = (
     RECEIVED_MESSAGE_TYPES[0].label,
   );
   const [receivedText, setReceivedText] = useState("");
+  const [styleSample, setStyleSample] = useState("");
   const [contextWords, setContextWords] = useState<string[]>([]);
   const [currentWord, setCurrentWord] = useState("");
   const [intention, setIntention] = useState<string>("low_effort");
@@ -458,6 +459,7 @@ export const useGenerator = (
       apologyReason: effectiveApologyReason,
       contextWords: finalContextWords,
       giftBudget: effectiveGiftBudget,
+      styleSample,
     };
 
     setMessages((prev) => [
@@ -518,6 +520,7 @@ export const useGenerator = (
           greetingMoment: isGreeting ? effectiveGreetingMoment : undefined,
           apologyReason: isPerdoname ? effectiveApologyReason : undefined,
           applyEssence: applyEssence && planLevel === 'premium',
+          styleSample: styleSample.trim() || undefined,
         },
         (token) => {
           rawStream += token;
@@ -728,6 +731,7 @@ export const useGenerator = (
     if (msg.config.greetingMoment) setGreetingMoment(msg.config.greetingMoment);
     if (msg.config.apologyReason) setApologyReason(msg.config.apologyReason);
     if (msg.config.giftBudget) setGiftBudget(msg.config.giftBudget);
+    if (msg.config.styleSample !== undefined) setStyleSample(msg.config.styleSample);
 
     handleGenerate(msg.config);
   };
@@ -759,7 +763,9 @@ export const useGenerator = (
     setReceivedMessageType,
     receivedText,
     setReceivedText,
-contextWords,
+    styleSample,
+    setStyleSample,
+    contextWords,
     setContextWords,
     currentWord,
     setCurrentWord,

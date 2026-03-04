@@ -88,6 +88,7 @@ export interface MessageConfig {
   grammaticalGender?: string;
   greetingMoment?: string;
   apologyReason?: string;
+  styleSample?: string;
 }
 
 export interface GeneratedMessage {
