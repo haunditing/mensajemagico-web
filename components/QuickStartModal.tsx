@@ -56,21 +56,74 @@ const TONE_ID_TO_ENUM: Record<string, Tone> = {
   'divertido': Tone.FUNNY,
 };
 
-const getCleanContent = (content: string) => {
-  if (!content) return "";
-  try {
-    const cleanText = content.replace(/```json/g, "").replace(/```/g, "").trim();
-    if (cleanText.startsWith("{")) {
-      const parsed = JSON.parse(cleanText);
-      if (parsed.generated_messages && Array.isArray(parsed.generated_messages)) {
-        return parsed.generated_messages[0]?.content || cleanText;
-      }
-      if (parsed.message) return parsed.message;
-    }
-    return cleanText;
-  } catch (e) {
-    return content;
+const getDisplayContentFromStream = (rawStream: string) => {
+  const effectiveStream = rawStream.trimStart();
+  let displayContent = '';
+
+  const contentMatch = effectiveStream.match(
+    /"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/,
+  );
+
+  if (contentMatch && contentMatch[1]) {
+    displayContent = contentMatch[1]
+      .replace(/\\n/g, '\n')
+      .replace(/\\"/g, '"')
+      .replace(/\\t/g, '\t');
+  } else if (
+    effectiveStream.includes('{') ||
+    effectiveStream.includes('[') ||
+    effectiveStream.includes('generated_messages') ||
+    effectiveStream.includes('```') ||
+    effectiveStream.includes('guardian_insight')
+  ) {
+    displayContent = 'Escribiendo...';
+  } else {
+    displayContent = effectiveStream;
   }
+
+  return displayContent;
+};
+
+const getFinalContentFromResponse = (content: string) => {
+  let finalContent = content;
+
+  try {
+    const cleanJson = finalContent.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleanJson);
+
+    if (parsed.generated_messages && Array.isArray(parsed.generated_messages)) {
+      const standardMsg =
+        parsed.generated_messages.find((m: any) =>
+          m?.tone?.toLowerCase?.().includes('estándar'),
+        ) || parsed.generated_messages[0];
+
+      finalContent = standardMsg?.content || standardMsg?.message || finalContent;
+    } else if (parsed.message) {
+      finalContent = parsed.message;
+    } else if (parsed.content) {
+      finalContent = parsed.content;
+    }
+  } catch {
+    const lastResort = finalContent.match(
+      /"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/,
+    );
+
+    if (lastResort) {
+      finalContent = lastResort[1]
+        .replace(/\\n/g, '\n')
+        .replace(/\\"/g, '"')
+        .replace(/\\t/g, '\t');
+    } else if (
+      finalContent.trim().startsWith('{') ||
+      finalContent.includes('generated_messages') ||
+      finalContent.includes('```')
+    ) {
+      finalContent =
+        'Lo siento, hubo un pequeño error técnico al procesar el mensaje. Por favor intenta de nuevo.';
+    }
+  }
+
+  return finalContent;
 };
 
 const QuickStartModal: React.FC<QuickStartModalProps> = ({ isOpen, onClose, onComplete }) => {
@@ -154,17 +207,21 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ isOpen, onClose, onCo
         relationship: finalConfig.relationship,
         tone: toneEnum,
         contextWords: [],
+        formatInstruction: 'Devuelve únicamente el mensaje final para enviar, sin explicaciones ni metacomentarios.',
       };
 
       // Usar streaming para mejor UX (mismo generador que Generator principal)
+      let rawStreamContent = '';
+
       const { content } = await generateMessageStream(
         messageConfig,
         (token) => {
-          setGeneratedMessage((prev) => prev + token);
+          rawStreamContent += token;
+          setGeneratedMessage(getDisplayContentFromStream(rawStreamContent));
         }
       );
 
-      setGeneratedMessage(getCleanContent(content));
+      setGeneratedMessage(getFinalContentFromResponse(content || rawStreamContent));
 
       // Track generation success
       if (typeof window !== 'undefined' && (window as any).gtag) {
