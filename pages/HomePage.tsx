@@ -12,7 +12,7 @@ import { useLocalization } from "../context/LocalizationContext";
 import { isOccasionActive } from "../services/holidayService.ts";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useOnboarding } from "../context/OnboardingContext";
-import OnboardingTooltip from "../components/OnboardingTooltip";
+import QuickStartModal, { QuickStartConfig } from "../components/QuickStartModal";
 
 const FallingParticles = React.lazy(() => import("../components/FallingParticles"));
 const ValentineCountdown = React.lazy(() => import("../components/ValentineCountdown"));
@@ -78,12 +78,33 @@ const HomePage: React.FC = () => {
   const { triggerUpsell } = useUpsell();
   const { country } = useLocalization();
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const { startTour } = useOnboarding();
+  const { startTour, shouldShowQuickStart, completeQuickStart } = useOnboarding();
 
-  // Iniciar tour general al cargar la home
+  // PRIORIDAD 1: QuickStartModal aparece primero para usuarios nuevos
+  // PRIORIDAD 2: TrialOnboardingModal aparece después de completar/cerrar QuickStart
+  const showQuickStartModal = shouldShowQuickStart;
+
+  const handleQuickStartComplete = (config: QuickStartConfig) => {
+    completeQuickStart();
+    // Señalar que QuickStart fue completado → activar TrialOnboarding
+    sessionStorage.setItem('show_trial_after_quickstart', 'true');
+    // Config is stored in sessionStorage by QuickStartModal
+    // Generator will pick it up automatically
+  };
+
+  const handleQuickStartClose = () => {
+    sessionStorage.setItem('quickstart_dismissed', 'true');
+    // También señalar para mostrar Trial después de cerrar QuickStart
+    sessionStorage.setItem('show_trial_after_quickstart', 'true');
+    completeQuickStart();
+  };
+
+  // Iniciar tour general al cargar la home (solo si no mostramos quickstart)
   useEffect(() => {
-    startTour("onboarding_tour");
-  }, []);
+    if (!showQuickStartModal) {
+      startTour("onboarding_tour");
+    }
+  }, [showQuickStartModal, startTour]);
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
@@ -92,6 +113,13 @@ const HomePage: React.FC = () => {
 
   return (
     <main className="animate-fade-in-up">
+      {/* Quick Start Modal - PRIORIDAD 1: Primera experiencia del usuario */}
+      <QuickStartModal
+        isOpen={showQuickStartModal}
+        onComplete={handleQuickStartComplete}
+        onClose={handleQuickStartClose}
+      />
+
       {/* Hero Section */}
       <section className="text-center mb-16 md:mb-24 relative">
         {(isValentine || isChristmas || isHalloween || isBlackFriday) && (
@@ -286,19 +314,6 @@ const HomePage: React.FC = () => {
                 </Link>
               );
 
-              if (index === 0) {
-                return (
-                  <OnboardingTooltip
-                    key={occasion.id}
-                    tourId="onboarding_tour"
-                    stepIndex={0}
-                    content="¡Bienvenido! Empieza por elegir la ocasión perfecta para tu mensaje."
-                    position="top"
-                  >
-                    {cardContent}
-                  </OnboardingTooltip>
-                );
-              }
               return cardContent;
             },
           )}

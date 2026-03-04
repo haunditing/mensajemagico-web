@@ -22,7 +22,6 @@ import GuardianObjectiveSelector from "./GuardianObjectiveSelector";
 import ReceivedMessageInput from "./ReceivedMessageInput";
 import GenerateButton from "./GenerateButton";
 import { useOnboarding } from "../context/OnboardingContext";
-import OnboardingTooltip, { TooltipColor } from "./OnboardingTooltip";
 import { markOccasionVisited } from "../services/usageControlService";
 import EssenceToggle from "./EssenceToggle";
 
@@ -481,76 +480,60 @@ const Generator: React.FC<GeneratorProps> = ({
             <div className="animate-fade-in space-y-6">
               {!isPensamiento ? (
                 !occasion.fixedRelation && (
-                  <OnboardingTooltip
-                    tourId="onboarding_tour"
-                    stepIndex={1}
-                    content={getStep1Text()}
-                    position="bottom"
-                    color={tooltipColor}
-                  >
-                    <div className="relative group">
-                      <RelationshipSelector
-                        relationshipId={relationshipId}
-                        onRelationshipChange={handleRelChange}
-                        contacts={contacts}
-                        selectedContact={selectedContact}
-                      />
-                      {selectedContact && (
-                        <button
-                          onClick={handleEditContact}
-                          className="absolute right-2 bottom-2 md:bottom-3 p-1.5 text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 transition-all rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 md:opacity-0 md:group-hover:opacity-100"
-                          title="Editar nombre del contacto"
+                  <div className="relative group">
+                    <RelationshipSelector
+                      relationshipId={relationshipId}
+                      onRelationshipChange={handleRelChange}
+                      contacts={contacts}
+                      selectedContact={selectedContact}
+                    />
+                    {selectedContact && (
+                      <button
+                        onClick={handleEditContact}
+                        className="absolute right-2 bottom-2 md:bottom-3 p-1.5 text-slate-400 hover:text-blue-600 dark:text-slate-500 dark:hover:text-blue-400 transition-all rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 md:opacity-0 md:group-hover:opacity-100"
+                        title="Editar nombre del contacto"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
                         >
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                            />
-                          </svg>
-                        </button>
-                      )}
-                    </div>
-                  </OnboardingTooltip>
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                          />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 )
               ) : (
-                <OnboardingTooltip
-                  tourId="onboarding_tour"
-                  stepIndex={1}
-                  content={getStep1Text()}
-                  position="bottom"
-                  color={tooltipColor}
-                >
-                  <div className="space-y-6">
-                    <FormatSelector
-                      isForPost={isForPost}
-                      setIsForPost={setIsForPost}
-                    />
+                <div className="space-y-6">
+                  <FormatSelector
+                    isForPost={isForPost}
+                    setIsForPost={setIsForPost}
+                  />
 
-                    <div className="animate-fade-in">
-                      <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
-                        Tema Central
-                      </label>
-                      <select
-                        value={relationshipId}
-                        onChange={handleRelChange}
-                        className="w-full h-12 md:h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
-                      >
-                        {PENSAMIENTO_THEMES.map((theme) => (
-                          <option key={theme.id} value={theme.id}>
-                            {theme.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="animate-fade-in">
+                    <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">
+                      Tema Central
+                    </label>
+                    <select
+                      value={relationshipId}
+                      onChange={handleRelChange}
+                      className="w-full h-12 md:h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
+                    >
+                      {PENSAMIENTO_THEMES.map((theme) => (
+                        <option key={theme.id} value={theme.id}>
+                          {theme.label}
+                        </option>
+                      ))}
+                    </select>
                   </div>
-                </OnboardingTooltip>
+                </div>
               )}
             </div>
           )}
@@ -587,21 +570,13 @@ const Generator: React.FC<GeneratorProps> = ({
               )}
 
               {isResponder && (
-                <OnboardingTooltip
-                  tourId="onboarding_tour"
-                  stepIndex={2}
-                  content={getStep2Text()}
-                  position="top"
-                  color={tooltipColor}
-                >
-                  <ReceivedMessageInput
-                    receivedText={receivedText}
-                    setReceivedText={setReceivedText}
-                    maxChars={MAX_CHARS}
-                    safetyError={safetyError}
-                    disabled={isLoading}
-                  />
-                </OnboardingTooltip>
+                <ReceivedMessageInput
+                  receivedText={receivedText}
+                  setReceivedText={setReceivedText}
+                  maxChars={MAX_CHARS}
+                  safetyError={safetyError}
+                  disabled={isLoading}
+                />
               )}
 
               {isResponder ? (
@@ -622,30 +597,22 @@ const Generator: React.FC<GeneratorProps> = ({
                   onTriggerUpsell={triggerUpsell}
                 />
               ) : (
-                <OnboardingTooltip
-                  tourId="onboarding_tour"
-                  stepIndex={2}
-                  content={getStep2Text()}
-                  position="top"
-                  color={tooltipColor}
-                >
-                  <ContextInputSection
-                    isPensamiento={isPensamiento}
-                    occasionId={occasion.id}
-                    tone={tone as string}
-                    isContextLocked={isContextLocked}
-                    maxContext={MAX_CONTEXT}
-                    currentWord={currentWord}
-                    onCurrentWordChange={setCurrentWord}
-                    onKeyDown={handleKeyDown}
-                    contextWords={contextWords}
-                    onAddWord={addContextWord}
-                    onRemoveWord={removeContextWord}
-                    onTrendingTopicClick={handleTrendingTopicClick}
-                    showHandAnimation={showHandAnimation}
-                    onTriggerUpsell={triggerUpsell}
-                  />
-                </OnboardingTooltip>
+                <ContextInputSection
+                  isPensamiento={isPensamiento}
+                  occasionId={occasion.id}
+                  tone={tone as string}
+                  isContextLocked={isContextLocked}
+                  maxContext={MAX_CONTEXT}
+                  currentWord={currentWord}
+                  onCurrentWordChange={setCurrentWord}
+                  onKeyDown={handleKeyDown}
+                  contextWords={contextWords}
+                  onAddWord={addContextWord}
+                  onRemoveWord={removeContextWord}
+                  onTrendingTopicClick={handleTrendingTopicClick}
+                  showHandAnimation={showHandAnimation}
+                  onTriggerUpsell={triggerUpsell}
+                />
               )}
             </div>
           )}
@@ -661,23 +628,15 @@ const Generator: React.FC<GeneratorProps> = ({
                   setApplyEssence={setApplyEssence}
                 />
               )}
-              <OnboardingTooltip
-                tourId="onboarding_tour"
-                stepIndex={3}
-                content={getStep3Text()}
-                position="top"
-                color={tooltipColor}
-              >
-                <ToneSelector
-                  isPensamiento={isPensamiento}
-                  isGreeting={isGreeting}
-                  isFelicitation={isFelicitation}
-                  tone={tone}
-                  setTone={setTone}
-                  availableTones={availableTones}
-                  guardianWarning={guardianWarning}
-                />
-              </OnboardingTooltip>
+              <ToneSelector
+                isPensamiento={isPensamiento}
+                isGreeting={isGreeting}
+                isFelicitation={isFelicitation}
+                tone={tone}
+                setTone={setTone}
+                availableTones={availableTones}
+                guardianWarning={guardianWarning}
+              />
 
               <GuardianObjectiveSelector
                 intention={intention}
@@ -803,25 +762,16 @@ const Generator: React.FC<GeneratorProps> = ({
 
           {isLastStep ? (
             <div className="flex-1">
-              <OnboardingTooltip
-                tourId="onboarding_tour"
-                stepIndex={4}
-                content={getStep4Text()}
-                position="top"
-                color={tooltipColor}
-                isLast
-              >
-                <GenerateButton
-                  onClick={handleGenerateAndReset}
-                  isLoading={isLoading}
-                  safetyError={safetyError}
-                  user={user}
-                  remainingCredits={remainingCredits}
-                  isOccasionLocked={isOccasionLocked}
-                  isPensamiento={isPensamiento}
-                  isGreeting={isGreeting}
-                />
-              </OnboardingTooltip>
+              <GenerateButton
+                onClick={handleGenerateAndReset}
+                isLoading={isLoading}
+                safetyError={safetyError}
+                user={user}
+                remainingCredits={remainingCredits}
+                isOccasionLocked={isOccasionLocked}
+                isPensamiento={isPensamiento}
+                isGreeting={isGreeting}
+              />
             </div>
           ) : (
             <button

@@ -72,7 +72,7 @@ const PrivacyPage: React.FC = () => {
             Utilizamos cookies para mantener tu sesión y preferencias. Además:
             <ul className="list-disc pl-5 mt-2 space-y-1">
               <li><strong>Google AdSense:</strong> Muestra publicidad basada en tus intereses (solo en planes gratuitos).</li>
-              <li><strong>Procesadores de Pago:</strong> MercadoPago y Stripe procesan tus transacciones de forma segura; nosotros no almacenamos tus datos financieros completos.</li>
+              <li><strong>Procesadores de Pago:</strong> MercadoPago y Wompi procesan tus transacciones de forma segura; nosotros no almacenamos tus datos financieros completos.</li>
             </ul>
           </p>
         </section>

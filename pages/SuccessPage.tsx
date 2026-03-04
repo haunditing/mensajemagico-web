@@ -8,9 +8,6 @@ const SuccessPage: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   
-  // Stripe
-  const sessionId = searchParams.get("session_id");
-  
   // Mercado Pago
   const paymentId = searchParams.get("payment_id");
   const statusMP = searchParams.get("status") || searchParams.get("collection_status");
@@ -23,16 +20,13 @@ const SuccessPage: React.FC = () => {
   );
 
   useEffect(() => {
-    if (!sessionId && !paymentId && !wompiId) {
+    if (!paymentId && !wompiId) {
       navigate("/");
       return;
     }
 
     const verifyPayment = async () => {
       try {
-        // Esperamos un momento breve para dar tiempo al Webhook de Stripe de procesar el evento en el backend
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
         // Forzamos la actualización del usuario para obtener el nuevo planLevel (Premium)
         await refreshUser();
 

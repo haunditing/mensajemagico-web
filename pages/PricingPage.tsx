@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { handleUpgrade } from "../services/paymentService"; // Stripe habilitado
 import { useNavigate, Link, useLocation } from "react-router-dom";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { ENABLE_UPGRADES, CONFIG } from "../config";
@@ -26,9 +25,10 @@ const PricingPage: React.FC = () => {
     return state?.interval === "yearly" ? "yearly" : "monthly";
   });
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<"premium" | "free">("premium");
+  const [activeTab, setActiveTab] = useState<"free" | "premium_lite" | "premium">("premium_lite");
   const [showAllBenefits, setShowAllBenefits] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<"premium_lite" | "premium">("premium_lite");
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
@@ -77,6 +77,7 @@ const PricingPage: React.FC = () => {
 
   // Movemos la lógica de hooks ANTES del return condicional para evitar error de React
   const freeConfig = availablePlans?.freemium || {};
+  const premiumLiteConfig = availablePlans?.premium_lite || {};
   const premiumConfig = availablePlans?.premium || {};
 
   // --- Lógica de Precios Localizados ---
@@ -123,36 +124,36 @@ const PricingPage: React.FC = () => {
     return { isOfferActive: true, displayDate: rawOfferDate };
   }, [rawOfferDate, rawOfferDuration]);
 
-  // Optimización: Memorizar la configuración de precios para evitar recálculos en cada render
-  const priceConfig = React.useMemo(() => {
+  // Helper: Crear objeto de configuración de precios para cualquier plan
+  const generatePriceConfig = (config: any, isColombia: boolean, isOfferActive: boolean, displayDate: string | null) => {
     const parsePrice = (val: any) => {
       const num = Number(val);
       return !isNaN(num) && num > 0 ? num : undefined;
     };
 
     const monthlyUSD =
-      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_monthly_usd) ||
-      parsePrice(premiumConfig.pricing?.monthly) || 4.99;
+      parsePrice(config.pricing_hooks?.mercadopago_price_monthly_usd) ||
+      parsePrice(config.pricing?.monthly) || 2.99;
     const yearlyUSD =
-      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_yearly_usd) ||
-      parsePrice(premiumConfig.pricing?.yearly) || 47.9;
+      parsePrice(config.pricing_hooks?.mercadopago_price_yearly_usd) ||
+      parsePrice(config.pricing?.yearly) || 29.99;
 
     const monthlyUSDOriginal =
-      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_monthly_usd_original);
+      parsePrice(config.pricing_hooks?.mercadopago_price_monthly_usd_original);
     const yearlyUSDOriginal =
-      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_yearly_usd_original);
+      parsePrice(config.pricing_hooks?.mercadopago_price_yearly_usd_original);
 
     const monthlyCOP =
-      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_monthly) || 19000;
+      parsePrice(config.pricing_hooks?.mercadopago_price_monthly) || 12990;
     const yearlyCOP =
-      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_yearly) || 190000;
+      parsePrice(config.pricing_hooks?.mercadopago_price_yearly) || 129900;
     const monthlyCOPOriginal =
-      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_monthly_original);
+      parsePrice(config.pricing_hooks?.mercadopago_price_monthly_original);
     const yearlyCOPOriginal =
-      parsePrice(premiumConfig.pricing_hooks?.mercadopago_price_yearly_original);
+      parsePrice(config.pricing_hooks?.mercadopago_price_yearly_original);
 
     const offerDuration =
-      Number(premiumConfig.pricing_hooks?.offer_duration_months) || 0;
+      Number(config.pricing_hooks?.offer_duration_months) || 0;
 
     // Helper para resolver el precio activo (Oferta vs Original)
     const resolvePrice = (active: number, original: number | undefined) => {
@@ -199,7 +200,16 @@ const PricingPage: React.FC = () => {
       discountPercentage: discountPercentage > 0 ? discountPercentage : 0,
       yearlySavings: yearlySavings > 0 ? yearlySavings : 0,
     };
+  };
+
+  // Optimización: Memorizar la configuración de precios para ambos planes
+  const priceConfig = React.useMemo(() => {
+    return generatePriceConfig(premiumConfig, isColombia, isOfferActive, displayDate);
   }, [isColombia, isOfferActive, displayDate, premiumConfig]);
+
+  const priceConfigLite = React.useMemo(() => {
+    return generatePriceConfig(premiumLiteConfig, isColombia, isOfferActive, displayDate);
+  }, [isColombia, isOfferActive, displayDate, premiumLiteConfig]);
 
   // Optimización: Memorizar el formateador para evitar recrear Intl.NumberFormat
   const formatPrice = React.useCallback(
@@ -233,10 +243,12 @@ const PricingPage: React.FC = () => {
 
     setIsPaymentLoading(true);
     try {
+      // Determinar el plan basado en selectedPlan
+      const planType = selectedPlan === "premium_lite" ? "premium_lite" : "premium";
+      
       // --- 1. Mercado Pago ---
       if (gateway === "mercadopago") {
-        const planId =
-          billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+        const planId = billingInterval === "monthly" ? `${planType}_monthly` : `${planType}_yearly`;
 
         // Obtener Device ID generado por el script de MP (si existe)
         const deviceId = (window as any).MP_DEVICE_SESSION_ID;
@@ -271,27 +283,25 @@ const PricingPage: React.FC = () => {
         }
       }
 
-      // --- 2. Stripe ---
-      if (gateway === "stripe") {
-        await handleUpgrade(user._id, billingInterval);
-        return; // handleUpgrade maneja la redirección
-      }
-
-      // --- 3. Wompi ---
+      // --- 2. Wompi ---
       if (gateway === "wompi") {
         await loadWompiScript();
 
-        const planId =
-          billingInterval === "monthly" ? "premium_monthly" : "premium_yearly";
+        const planId = billingInterval === "monthly" ? `${planType}_monthly` : `${planType}_yearly`;
 
         // Enviar el monto calculado (con oferta si aplica)
-        const amount = billingInterval === "monthly" ? priceConfig.monthly : priceConfig.yearly;
+        const selectedConfig = planType === "premium_lite" ? premiumLiteConfig : premiumConfig;
+        const priceHooks = selectedConfig.pricing_hooks;
+        
+        const amount = billingInterval === "monthly" 
+          ? (priceHooks?.mercadopago_price_monthly || 9180) / 100
+          : (priceHooks?.mercadopago_price_yearly || 91800) / 100;
 
         // 1. Obtener datos de firma del backend
         const response = await api.post("/api/checkout", {
           userId: user._id,
           planId,
-          amount, // Enviamos el monto explícito para que el backend use el precio de oferta
+          amount,
         });
 
         const data = response.data || response;
@@ -306,7 +316,7 @@ const PricingPage: React.FC = () => {
           redirectUrl: data.redirectUrl,
           customerData: {
             email: user.email,
-            fullName: user.email.split("@")[0], // Fallback simple
+            fullName: user.email.split("@")[0],
           },
         });
 
@@ -411,25 +421,144 @@ const PricingPage: React.FC = () => {
       </div>
 
       {/* Plan Tabs (Toggle) */}
-      <div className="flex justify-center mb-8">
-        <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex w-full max-w-md">
-          <button
-            onClick={() => setActiveTab("premium")}
-            className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === "premium" ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
-          >
-            Premium ✨
-          </button>
+      <div className="flex justify-center mb-12">
+        <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl flex w-full max-w-2xl gap-1">
           <button
             onClick={() => setActiveTab("free")}
-            className={`flex-1 py-3 rounded-lg text-sm font-bold transition-all ${activeTab === "free" ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
+            className={`flex-1 py-3 px-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${activeTab === "free" ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
           >
             Gratis
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("premium_lite");
+              setSelectedPlan("premium_lite");
+            }}
+            className={`flex-1 py-3 px-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${activeTab === "premium_lite" ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
+          >
+            Premium Lite 💡
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("premium");
+              setSelectedPlan("premium");
+            }}
+            className={`flex-1 py-3 px-2 rounded-lg text-xs sm:text-sm font-bold transition-all ${activeTab === "premium" ? "bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"}`}
+          >
+            Premium Pro ✨
           </button>
         </div>
       </div>
 
       <div className="max-w-md mx-auto pb-24 md:pb-12">
-        {/* Premium Plan */}
+        {/* Premium Lite Plan */}
+        {activeTab === "premium_lite" && (
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 rounded-[2.5rem] p-6 md:p-8 border-2 border-amber-300 dark:border-amber-600 shadow-lg shadow-amber-500/20 flex flex-col relative animate-fade-in">
+          <div className="absolute top-0 inset-x-0 flex justify-center -mt-3 z-20">
+            <span
+              className={`bg-gradient-to-r ${isOfferActive ? "from-amber-500 to-orange-500" : "from-amber-500 to-orange-500"} text-white text-[10px] font-bold px-4 py-1 rounded-full shadow-lg uppercase tracking-widest border border-amber-700`}
+            >
+              {isOfferActive ? "⭐ OFERTA ESPECIAL" : "⭐ Mejor Relación Precio-Valor"}
+            </span>
+          </div>
+
+          <div className="mb-8 relative z-10 mt-2">
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Premium Lite</h3>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-md uppercase tracking-wide inline-flex items-center gap-1.5">
+                🎁 Prueba GRATIS 7 Días
+              </span>
+              <span className="text-purple-600 dark:text-purple-400 text-xs font-semibold">
+                Al registrarte
+              </span>
+            </div>
+            <p className="text-slate-600 dark:text-slate-400 text-sm mb-6">
+              Ideal para usuarios dedicados.
+            </p>
+
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
+                {formatPrice(billingInterval === "monthly" ? priceConfigLite.monthly : priceConfigLite.yearly_monthly_equivalent)}
+              </span>
+              <span className="text-slate-600 dark:text-slate-400 font-medium">/mes</span>
+            </div>
+
+            {priceConfigLite.monthlyOriginal && isOfferActive && (
+              <div className="flex flex-col items-start gap-1 mt-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-slate-500 line-through text-sm font-medium">
+                    {formatPrice(priceConfigLite.monthlyOriginal)}
+                  </span>
+                  <span className="text-amber-600 dark:text-amber-400 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/30">
+                    {priceConfigLite.offerDuration > 0
+                      ? `OFERTA POR ${priceConfigLite.offerDuration} MESES`
+                      : "OFERTA LIMITADA"}
+                  </span>
+                </div>
+                {isOfferActive && priceConfigLite.offerEndDate && (
+                  <p className="text-[10px] text-amber-700 dark:text-amber-300 font-bold flex items-center gap-1 bg-amber-100 dark:bg-amber-950/30 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700/50">
+                    <span>⏳</span> Válido hasta el {priceConfigLite.offerEndDate}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {billingInterval === "yearly" && (
+              <div className="mt-6 bg-amber-100 dark:bg-amber-950/30 rounded-xl p-3 border border-amber-300 dark:border-amber-700/50">
+                <p className="text-sm text-amber-900 dark:text-amber-200 font-medium">
+                  Facturado <span className="text-amber-700 dark:text-amber-300 font-bold">{formatPrice(priceConfigLite.yearly)}</span> al año
+                </p>
+                {priceConfigLite.yearlySavings > 0 && (
+                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 font-bold">
+                    ¡Te ahorras {formatPrice(priceConfigLite.yearlySavings)} en total!
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+
+          <div className="hidden md:block mb-8 relative z-10">
+            <button
+              onClick={() => setIsPaymentModalOpen(true)}
+              className="w-full py-4 rounded-2xl font-bold text-lg text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-lg hover:shadow-amber-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            >
+              <span>💡</span> Suscribirse Ahora
+            </button>
+          </div>
+
+          <ul className="space-y-4 mb-8 flex-1 relative z-10 text-slate-700 dark:text-slate-300">
+            <li className="flex items-center gap-3">
+              <span className="text-green-500 text-xl font-bold">✓</span>
+              <span className="font-medium">20 mensajes/día</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <span className="text-green-500 text-xl font-bold">✓</span>
+              <span className="font-medium">Contexto personalizado</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <span className="text-green-500 text-xl font-bold">✓</span>
+              <span className="font-medium">Mayoría de tonos</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <span className="text-green-500 text-xl font-bold">✓</span>
+              <span className="font-medium">Sin anuncios</span>
+            </li>
+            <li className="flex items-center gap-3">
+              <span className="text-slate-400 text-xl">-</span>
+              <span className="text-slate-500 dark:text-slate-400">Guardián completo</span>
+            </li>
+          </ul>
+
+          <button
+            onClick={() => setIsPaymentModalOpen(true)}
+            className="md:hidden w-full py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500"
+          >
+            Suscribirse Ahora
+          </button>
+        </div>
+        )}
+
+        {/* Premium Pro Plan */}
         {activeTab === "premium" && (
         <div className="bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none flex flex-col relative animate-fade-in">
           <div className="absolute top-0 inset-x-0 flex justify-center -mt-3 z-20">
@@ -441,7 +570,7 @@ const PricingPage: React.FC = () => {
           </div>
 
           <div className="mb-8 relative z-10 mt-2">
-            <h3 className="text-2xl font-bold text-white mb-1">Premium</h3>
+            <h3 className="text-2xl font-bold text-white mb-1">Premium Pro</h3>
             <p className="text-slate-400 text-sm mb-6">
               Para creadores de contenido y románticos.
             </p>

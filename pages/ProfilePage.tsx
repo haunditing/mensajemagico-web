@@ -1,9 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useLocalization } from "../context/LocalizationContext";
 import {
   cancelSubscription,
   getSubscriptionStatus,
   reactivateSubscription,
+  getRenewalStatus,
 } from "../services/paymentService";
 import { useToast } from "../context/ToastContext";
 import LoadingSpinner from "../components/LoadingSpinner";
@@ -46,11 +48,14 @@ const getEssenceDescription = (profile: any) => {
 
 const ProfilePage: React.FC = () => {
   const { user, logout, refreshUser } = useAuth();
+  const { country } = useLocalization();
   const { showToast } = useToast();
   const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [reactivating, setReactivating] = useState(false);
+  const [renewalStatus, setRenewalStatus] = useState<any>(null);
+  const [trialInfo, setTrialInfo] = useState<any>(null);
   const { confirm } = useConfirm();
 
   // Estado para Nombre y Foto
@@ -92,6 +97,14 @@ const ProfilePage: React.FC = () => {
       if ((user as any).location) setLocationInput((user as any).location);
       if ((user as any).name) setNameInput((user as any).name);
 
+      // Cargar información del trial si existe
+      if ((user as any).trial) {
+        console.log('🎁 Trial info found:', (user as any).trial);
+        setTrialInfo((user as any).trial);
+      } else {
+        console.log('❌ No trial info in user object. User:', (user as any));
+      }
+
       // Cargar color o derivar del género si no existe
       if ((user as any).preferences?.avatarColor) {
         setAvatarColor((user as any).preferences.avatarColor);
@@ -118,6 +131,10 @@ const ProfilePage: React.FC = () => {
     try {
       const data = await getSubscriptionStatus(user._id);
       setSubscription(data.subscription);
+      
+      // Cargar también el estado de renovación (para Wompi)
+      const renewal = await getRenewalStatus(user._id);
+      setRenewalStatus(renewal);
     } catch (error) {
       console.error(error);
     } finally {
@@ -155,7 +172,7 @@ const ProfilePage: React.FC = () => {
     setReactivating(true);
     try {
       await reactivateSubscription(user._id);
-      showToast("¡Qué alegría tenerte de vuelta! Tu suscripción está activa.", "success");
+      showToast("¡Suscripción reactivada! Volveremos a cobrarte en tu próximo ciclo.", "success");
       loadSubscription(); // Recargar estado
     } catch (error: any) {
       showToast(error.message || "Error al reactivar", "error");
@@ -667,6 +684,7 @@ const ProfilePage: React.FC = () => {
             </div>
           ) : subscription ? (
             <div className="space-y-4 bg-slate-50 dark:bg-slate-800 p-5 rounded-xl border border-slate-100 dark:border-slate-700">
+              
               <div className="flex justify-between items-center">
                 <span className="text-slate-600 dark:text-slate-400 font-medium">Estado</span>
                 <span
@@ -687,6 +705,39 @@ const ProfilePage: React.FC = () => {
                     <p className="text-indigo-700 dark:text-indigo-300 text-xs mt-0.5">
                       Tu precio especial es válido hasta el <strong>{new Date((user as any).promoEndsAt).toLocaleDateString()}</strong>.
                     </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Banner de Renovación Próxima (Wompi) */}
+              {renewalStatus && renewalStatus.needsRenewal && !subscription.cancelAtPeriodEnd && (
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-900/20 dark:to-amber-900/20 p-4 rounded-lg border border-orange-200 dark:border-orange-800/30 animate-pulse">
+                  <div className="flex items-start gap-3">
+                    <span className="text-2xl">⏰</span>
+                    <div className="flex-1">
+                      <p className="text-orange-900 dark:text-orange-200 font-bold text-sm mb-1">
+                        ¡Tu plan vence pronto!
+                      </p>
+                      <p className="text-orange-800 dark:text-orange-300 text-xs mb-3">
+                        {renewalStatus.daysUntilExpiration <= 0 ? (
+                          <>Tu plan ha expirado. Renueva ahora para seguir disfrutando de Premium.</>
+                        ) : renewalStatus.daysUntilExpiration === 1 ? (
+                          <>Te queda <strong>1 día</strong> de acceso Premium. Renueva para no perder tus beneficios.</>
+                        ) : (
+                          <>Te quedan <strong>{renewalStatus.daysUntilExpiration} días</strong> antes de que venza tu acceso Premium.</>
+                        )}
+                      </p>
+                      <Link
+                        to="/pricing"
+                        state={{ 
+                          interval: renewalStatus.planInterval === "year" ? "yearly" : "monthly",
+                          plan: renewalStatus.planLevel 
+                        }}
+                        className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white text-sm font-bold px-4 py-2 rounded-lg transition-all shadow-sm hover:shadow-md"
+                      >
+                        <span>🔄</span> Renovar Mi Plan
+                      </Link>
+                    </div>
                   </div>
                 </div>
               )}
@@ -757,7 +808,7 @@ const ProfilePage: React.FC = () => {
                 </span>
               </p>
             </div>
-          ) : (
+          ) : !(trialInfo && trialInfo.active) ? (
             <div className="text-center py-6">
               <p className="text-slate-500 dark:text-slate-400 mb-4">
                 No tienes una suscripción activa.
@@ -771,7 +822,7 @@ const ProfilePage: React.FC = () => {
                 </Link>
               )}
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Sección de Zona de Peligro (Eliminar Cuenta) */}

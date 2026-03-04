@@ -19,11 +19,6 @@ const Icons = {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
     </svg>
   ),
-  Stripe: () => (
-    <svg className="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-    </svg>
-  )
 };
 
 // Helper para obtener variables de entorno de forma segura (Vite o CRA)
@@ -58,14 +53,6 @@ const PaymentGateways: React.FC<PaymentGatewaysProps> = ({ onSelectGateway, isLo
       isEnabled: getEnv('VITE_ENABLE_WOMPI') !== 'false' && getEnv('REACT_APP_ENABLE_WOMPI') !== 'false',
       isAvailable: country === 'CO', // Wompi específico para Colombia
       badge: "Colombia"
-    },
-    {
-      id: "stripe",
-      name: "Tarjeta de Crédito",
-      description: "Pago internacional seguro",
-      icon: <Icons.Stripe />,
-      isEnabled: getEnv('VITE_ENABLE_STRIPE') !== 'false' && getEnv('REACT_APP_ENABLE_STRIPE') !== 'false',
-      isAvailable: true, // Stripe suele ser global
     }
   ];
 

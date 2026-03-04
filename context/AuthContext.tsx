@@ -41,6 +41,11 @@ export interface User {
   usage: {
     generationsCount: number;
   };
+  trial?: {
+    active: boolean;
+    daysRemaining: number;
+    endDate: string | Date;
+  };
 }
 
 interface AuthContextType {
@@ -92,7 +97,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     try {
       // api.get ya incluye el token de localStorage automáticamente
       const data = await api.get("/api/auth/me");
-      setUser(data.user);
+      setUser({
+        ...data.user,
+        trial: data.trial // Guardar información del trial
+      });
       setRemainingCredits(data.remainingCredits);
       setPlanConfig(data.plan);
 

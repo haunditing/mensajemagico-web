@@ -219,6 +219,42 @@ export const useGenerator = (
       (!allowedOccasions.includes("all") &&
         !allowedOccasions.includes(occasion.id)));
 
+  // Quick Start: Auto-configurar desde el modal si existe
+  useEffect(() => {
+    try {
+      const quickStartConfig = sessionStorage.getItem('quickstart_config');
+      if (quickStartConfig) {
+        const config = JSON.parse(quickStartConfig);
+        
+        // Configurar relationship si coincide con la ocasión actual
+        if (config.relationship && !isPensamiento) {
+          setRelationshipId(config.relationship);
+        }
+        
+        // Configurar tone
+        if (config.tone) {
+          setTone(config.tone as Tone);
+        }
+        
+        // Limpiar config después de usarla
+        sessionStorage.removeItem('quickstart_config');
+        
+        // Mostrar feedback al usuario
+        showToast('¡Perfecto! Ahora solo haz clic en "Generar" 🎉', 'success');
+        
+        // Track que el usuario llegó desde quickstart
+        if (typeof window !== 'undefined' && (window as any).gtag) {
+          (window as any).gtag('event', 'quickstart_config_applied', {
+            event_category: 'onboarding',
+            occasion: occasion.id
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error applying quickstart config:', error);
+    }
+  }, []); // Solo ejecutar una vez al montar
+
   // Persistencia de sesión: Guardar cambios automáticamente
   useEffect(() => {
     sessionStorage.setItem(storageKey, JSON.stringify(messages));

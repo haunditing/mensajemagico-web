@@ -12,6 +12,9 @@ import OccasionIcon from "./OccasionIcon";
 import UserMenu from "./UserMenu";
 import NotificationManager from "./NotificationManager";
 import OfferBanner from "./OfferBanner";
+import TrialBanner from "./TrialBanner";
+import TrialWelcomeBanner from "./TrialWelcomeBanner";
+import TrialOnboardingModal from "./TrialOnboardingModal";
 import { isOccasionActive } from "../services/holidayService";
 import InstallPWA from "./InstallPWA";
 
@@ -364,9 +367,12 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div
-      className={`min-h-screen supports-[min-height:100dvh]:min-h-[100dvh] flex flex-col ${selectionClass} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300`}
+      className={`min-h-screen supports-[min-block-size:100dvh]:min-h-[100dvh] flex flex-col ${selectionClass} bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-300`}
     >
       <NotificationManager />
+      <TrialOnboardingModal />
+      <TrialWelcomeBanner />
+      <TrialBanner />
       <OfferBanner />
       <InstallPWA />
       {/* Header Principal */}
