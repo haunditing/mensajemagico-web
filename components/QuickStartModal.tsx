@@ -56,6 +56,23 @@ const TONE_ID_TO_ENUM: Record<string, Tone> = {
   'divertido': Tone.FUNNY,
 };
 
+const getCleanContent = (content: string) => {
+  if (!content) return "";
+  try {
+    const cleanText = content.replace(/```json/g, "").replace(/```/g, "").trim();
+    if (cleanText.startsWith("{")) {
+      const parsed = JSON.parse(cleanText);
+      if (parsed.generated_messages && Array.isArray(parsed.generated_messages)) {
+        return parsed.generated_messages[0]?.content || cleanText;
+      }
+      if (parsed.message) return parsed.message;
+    }
+    return cleanText;
+  } catch (e) {
+    return content;
+  }
+};
+
 const QuickStartModal: React.FC<QuickStartModalProps> = ({ isOpen, onClose, onComplete }) => {
   const [step, setStep] = useState(1);
   const [config, setConfig] = useState<Partial<QuickStartConfig>>({});
@@ -140,12 +157,14 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ isOpen, onClose, onCo
       };
 
       // Usar streaming para mejor UX (mismo generador que Generator principal)
-      await generateMessageStream(
+      const { content } = await generateMessageStream(
         messageConfig,
         (token) => {
           setGeneratedMessage((prev) => prev + token);
         }
       );
+
+      setGeneratedMessage(getCleanContent(content));
 
       // Track generation success
       if (typeof window !== 'undefined' && (window as any).gtag) {
