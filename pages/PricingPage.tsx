@@ -6,6 +6,7 @@ import { ENABLE_UPGRADES, CONFIG } from "../config";
 import { useLocalization } from "../context/LocalizationContext";
 import { api } from "../context/api";
 import PaymentGateways from "../components/PaymentGateways";
+import PlanCard from "../components/PlanCard";
 import { useToast } from "../context/ToastContext";
 
 declare global {
@@ -26,7 +27,6 @@ const PricingPage: React.FC = () => {
   });
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<"free" | "premium_lite" | "premium">("premium_lite");
-  const [showAllBenefits, setShowAllBenefits] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<"premium_lite" | "premium">("premium_lite");
 
@@ -458,228 +458,104 @@ const PricingPage: React.FC = () => {
       <div className="max-w-md mx-auto pb-24 md:pb-12">
         {/* Premium Lite Plan */}
         {activeTab === "premium_lite" && (
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 rounded-[2.5rem] p-6 md:p-8 border-2 border-amber-300 dark:border-amber-600 shadow-lg shadow-amber-500/20 flex flex-col relative animate-fade-in">
-          <div className="absolute top-0 inset-x-0 flex justify-center -mt-3 z-20">
-            <span
-              className={`bg-gradient-to-r ${isOfferActive ? "from-amber-500 to-orange-500" : "from-amber-500 to-orange-500"} text-white text-[10px] font-bold px-4 py-1 rounded-full shadow-lg uppercase tracking-widest border border-amber-700`}
-            >
-              {isOfferActive ? "⭐ OFERTA ESPECIAL" : "⭐ Mejor Relación Precio-Valor"}
-            </span>
-          </div>
-
-          <div className="mb-8 relative z-10 mt-2">
-            <h3 className="text-2xl font-bold text-slate-900 dark:text-white mb-1">Premium Lite</h3>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-md uppercase tracking-wide inline-flex items-center gap-1.5">
-                🎁 Prueba GRATIS 7 Días
-              </span>
-              <span className="text-purple-600 dark:text-purple-400 text-xs font-semibold">
-                Al registrarte
-              </span>
-            </div>
-            <p className="text-slate-600 dark:text-slate-400 text-sm mb-6">
-              Ideal para usuarios dedicados.
-            </p>
-
-            <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
-                {formatPrice(billingInterval === "monthly" ? priceConfigLite.monthly : priceConfigLite.yearly_monthly_equivalent)}
-              </span>
-              <span className="text-slate-600 dark:text-slate-400 font-medium">/mes</span>
-            </div>
-
-            {priceConfigLite.monthlyOriginal && isOfferActive && (
-              <div className="flex flex-col items-start gap-1 mt-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-500 line-through text-sm font-medium">
-                    {formatPrice(priceConfigLite.monthlyOriginal)}
-                  </span>
-                  <span className="text-amber-600 dark:text-amber-400 text-xs font-bold px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/30">
-                    {priceConfigLite.offerDuration > 0
-                      ? `OFERTA POR ${priceConfigLite.offerDuration} MESES`
-                      : "OFERTA LIMITADA"}
-                  </span>
-                </div>
-                {isOfferActive && priceConfigLite.offerEndDate && (
-                  <p className="text-[10px] text-amber-700 dark:text-amber-300 font-bold flex items-center gap-1 bg-amber-100 dark:bg-amber-950/30 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-700/50">
-                    <span>⏳</span> Válido hasta el {priceConfigLite.offerEndDate}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {billingInterval === "yearly" && (
-              <div className="mt-6 bg-amber-100 dark:bg-amber-950/30 rounded-xl p-3 border border-amber-300 dark:border-amber-700/50">
-                <p className="text-sm text-amber-900 dark:text-amber-200 font-medium">
-                  Facturado <span className="text-amber-700 dark:text-amber-300 font-bold">{formatPrice(priceConfigLite.yearly)}</span> al año
-                </p>
-                {priceConfigLite.yearlySavings > 0 && (
-                  <p className="text-xs text-amber-700 dark:text-amber-400 mt-1 font-bold">
-                    ¡Te ahorras {formatPrice(priceConfigLite.yearlySavings)} en total!
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-
-          <div className="hidden md:block mb-8 relative z-10">
-            <button
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="w-full py-4 rounded-2xl font-bold text-lg text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-lg hover:shadow-amber-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <span>💡</span> Suscribirse Ahora
-            </button>
-          </div>
-
-          <ul className="space-y-4 mb-8 flex-1 relative z-10 text-slate-700 dark:text-slate-300">
-            <li className="flex items-center gap-3">
-              <span className="text-green-500 text-xl font-bold">✓</span>
-              <span className="font-medium">20 mensajes/día</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-green-500 text-xl font-bold">✓</span>
-              <span className="font-medium">Contexto personalizado</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-green-500 text-xl font-bold">✓</span>
-              <span className="font-medium">Mayoría de tonos</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-green-500 text-xl font-bold">✓</span>
-              <span className="font-medium">Sin anuncios</span>
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="text-slate-400 text-xl">-</span>
-              <span className="text-slate-500 dark:text-slate-400">Guardián completo</span>
-            </li>
-          </ul>
-
-          <button
-            onClick={() => setIsPaymentModalOpen(true)}
-            className="md:hidden w-full py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-amber-500 to-orange-500"
-          >
-            Suscribirse Ahora
-          </button>
-        </div>
+          <PlanCard
+            title="Premium Lite"
+            description="Ideal para usuarios dedicados."
+            tag={{
+              text: isOfferActive ? "⭐ OFERTA ESPECIAL" : "⭐ Mejor Relación Precio-Valor",
+              gradientClasses: "from-amber-500 to-orange-500",
+            }}
+            priceDisplay={
+              <>
+                <span className="text-5xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
+                  {formatPrice(
+                    billingInterval === "monthly"
+                      ? priceConfigLite.monthly
+                      : priceConfigLite.yearly_monthly_equivalent,
+                  )}
+                </span>
+                <span className="text-slate-600 dark:text-slate-400 font-medium">/mes</span>
+              </>
+            }
+            offer={
+              priceConfigLite.monthlyOriginal && isOfferActive
+                ? {
+                    originalPrice: priceConfigLite.monthlyOriginal,
+                    label:
+                      priceConfigLite.offerDuration > 0
+                        ? `OFERTA POR ${priceConfigLite.offerDuration} MESES`
+                        : "OFERTA LIMITADA",
+                    endDate: priceConfigLite.offerEndDate,
+                  }
+                : undefined
+            }
+            yearlyInfo={
+              billingInterval === "yearly"
+                ? {
+                    price: priceConfigLite.yearly,
+                    savings: priceConfigLite.yearlySavings,
+                  }
+                : undefined
+            }
+            benefits={
+              [
+                { icon: "💬", title: "20 mensajes/día" },
+                { icon: "🧠", title: "Contexto personalizado" },
+                { icon: "🎨", title: "Mayoría de tonos" },
+                { icon: "🚫", title: "Sin anuncios" },
+              ]
+            }
+            onSubscribe={() => setIsPaymentModalOpen(true)}
+            ctaClasses="bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-lg hover:shadow-amber-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            containerClasses="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 rounded-[2.5rem] border-2 border-amber-300 dark:border-amber-600"
+            tagColorClasses="border-amber-700"
+          />
         )}
 
         {/* Premium Pro Plan */}
         {activeTab === "premium" && (
-        <div className="bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] p-6 md:p-8 border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none flex flex-col relative animate-fade-in">
-          <div className="absolute top-0 inset-x-0 flex justify-center -mt-3 z-20">
-            <span
-              className={`bg-gradient-to-r ${isOfferActive ? "from-rose-600 to-orange-600" : "from-blue-600 to-purple-600"} text-white text-[10px] font-bold px-4 py-1 rounded-full shadow-lg uppercase tracking-widest border border-slate-800`}
-            >
-              {isOfferActive ? "🔥 Oferta Especial" : "Recomendado"}
-            </span>
-          </div>
-
-          <div className="mb-8 relative z-10 mt-2">
-            <h3 className="text-2xl font-bold text-white mb-1">Premium Pro</h3>
-            <p className="text-slate-400 text-sm mb-6">
-              Para creadores de contenido y románticos.
-            </p>
-
-            <div className="flex items-baseline gap-2">
-              <span className="text-5xl font-black text-white tracking-tight">
-                {formatPrice(currentDisplayPrice)}
-              </span>
-              <span className="text-slate-500 font-medium">/mes</span>
-            </div>
-
-            {currentOriginalPrice && (
-              <div className="flex flex-col items-start gap-1 mt-2">
-                <div className="flex items-center gap-2">
-                  <span className="text-slate-600 line-through text-sm font-medium">
-                    {formatPrice(currentOriginalPrice)}
-                  </span>
-                  <span
-                    className={`${isOfferActive ? "text-rose-400 bg-rose-500/10" : "text-green-400 bg-green-500/10"} text-xs font-bold px-2 py-0.5 rounded-full`}
-                  >
-                    {isOfferActive
+          <PlanCard
+            title="Premium Pro"
+            subtitle="Para creadores de contenido y románticos."
+            tag={{
+              text: isOfferActive ? "🔥 Oferta Especial" : "Recomendado",
+              gradientClasses: isOfferActive ? "from-rose-600 to-orange-600" : "from-blue-600 to-purple-600",
+              extraClasses: "border-slate-800",
+            }}
+            priceDisplay={
+              <>
+                <span className="text-5xl font-black text-white tracking-tight">
+                  {formatPrice(currentDisplayPrice)}
+                </span>
+                <span className="text-slate-500 font-medium">/mes</span>
+              </>
+            }
+            offer={
+              currentOriginalPrice
+                ? {
+                    originalPrice: currentOriginalPrice,
+                    label: isOfferActive
                       ? billingInterval === "yearly"
                         ? "OFERTA PRIMER AÑO"
                         : priceConfig.offerDuration > 0
                           ? `OFERTA POR ${priceConfig.offerDuration} MESES`
                           : "OFERTA LIMITADA"
-                      : `AHORRAS ${priceConfig.discountPercentage}%`}
-                  </span>
-                </div>
-                {isOfferActive && priceConfig.offerEndDate && (
-                  <p className="text-[10px] text-rose-300 font-bold flex items-center gap-1 bg-rose-500/10 px-2 py-0.5 rounded border border-rose-500/20">
-                    <span>⏳</span> Válido hasta el {priceConfig.offerEndDate}
-                  </p>
-                )}
-              </div>
-            )}
-
-            {billingInterval === "yearly" && (
-              <div className="mt-6 bg-slate-800/50 rounded-xl p-3 border border-slate-700/50">
-                <p className="text-sm text-blue-200 font-medium">
-                  Facturado{" "}
-                  <span className="text-white font-bold">
-                    {formatPrice(priceConfig.yearly)}
-                  </span>{" "}
-                  al año
-                </p>
-                {priceConfig.yearlySavings > 0 && (
-                  <p className="text-xs text-green-400 mt-1 font-bold">
-                    ¡Te ahorras {formatPrice(priceConfig.yearlySavings)} en
-                    total!
-                  </p>
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Desktop CTA Button (Oculto en móvil) */}
-          <div className="hidden md:block mb-8 relative z-10">
-            <button
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="w-full py-4 rounded-2xl font-bold text-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <span>✨</span> Suscribirse Ahora
-            </button>
-          </div>
-
-          <ul className="space-y-5 mb-8 flex-1 relative z-10">
-            {(showAllBenefits ? premiumBenefitsList : premiumBenefitsList.slice(0, 4)).map((benefit, idx) => (
-              <li key={idx} className="flex items-start gap-3 text-white animate-fade-in">
-                <span className="text-xl shrink-0">{benefit.icon}</span>
-                <div>
-                  <strong className="block text-sm">{benefit.title}</strong>
-                  <span className="text-slate-400 text-xs block font-normal leading-relaxed">
-                    {benefit.desc}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {!showAllBenefits && (
-            <button
-              onClick={() => setShowAllBenefits(true)}
-              className="w-full py-2 text-xs font-bold text-slate-400 hover:text-white transition-colors mb-4 border border-slate-800 rounded-xl hover:bg-slate-800"
-            >
-              Ver todos los beneficios ↓
-            </button>
-          )}
-
-          <div className="mt-6 text-center relative z-10">
-            <Link
-              to="/contacto"
-              className="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-white transition-colors bg-slate-800/50 px-4 py-2 rounded-full hover:bg-slate-800"
-            >
-              <span>👋</span> ¿Necesitas ayuda con el pago?
-            </Link>
-          </div>
-
-          {/* Background decoration */}
-          <div className="absolute inset-0 overflow-hidden rounded-[2.5rem] pointer-events-none">
-            <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-blue-600/20 rounded-full blur-3xl"></div>
-            <div className="absolute -top-20 -left-20 w-64 h-64 bg-purple-600/10 rounded-full blur-3xl"></div>
-          </div>
-        </div>
+                      : `AHORRAS ${priceConfig.discountPercentage}%`,
+                    endDate: isOfferActive ? priceConfig.offerEndDate : undefined,
+                  }
+                : undefined
+            }
+            yearlyInfo={
+              billingInterval === "yearly"
+                ? { price: priceConfig.yearly, savings: priceConfig.yearlySavings }
+                : undefined
+            }
+            benefits={premiumBenefitsList}
+            onSubscribe={() => setIsPaymentModalOpen(true)}
+            ctaClasses="bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+            containerClasses="bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none"
+            benefitTextClasses="text-white"
+          />
         )}
 
         {/* Free Plan */}
