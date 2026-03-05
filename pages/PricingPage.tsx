@@ -297,18 +297,26 @@ const PricingPage: React.FC = () => {
 
         const planId = billingInterval === "monthly" ? `${planType}_monthly` : `${planType}_yearly`;
 
-        // Enviar el monto calculado (con oferta si aplica)
-        // Usar precios de Wompi (en centavos), no de MercadoPago
-        const selectedConfig = planType === "premium_lite" ? premiumLiteConfig : premiumConfig;
-        const priceHooks = selectedConfig.pricing_hooks;
-        
-        // Fallbacks según el tipo de plan: premium_lite (12990/129900) o premium (sin fallback configurado)
-        const defaultMonthlyWompi = planType === "premium_lite" ? 12990 : 0;
-        const defaultYearlyWompi = planType === "premium_lite" ? 129900 : 0;
-        
-        const amount = billingInterval === "monthly" 
-          ? (priceHooks?.wompi_price_in_cents_monthly || defaultMonthlyWompi) / 100
-          : (priceHooks?.wompi_price_in_cents_yearly || defaultYearlyWompi) / 100;
+        // CORRECCIÓN: Usar el precio visualizado (priceConfig) para asegurar consistencia.
+        // Si estamos en Colombia, usamos el precio calculado (con ofertas).
+        let amount;
+        if (isColombia) {
+          const configToUse = planType === "premium_lite" ? priceConfigLite : priceConfig;
+          const displayedAmount = billingInterval === "monthly" ? configToUse.monthly : configToUse.yearly;
+          // Enviamos el monto en unidades (COP). El backend se encarga de convertir a centavos.
+          amount = displayedAmount;
+        } else {
+          // Fallback para internacional (aunque Wompi suele ser solo CO)
+          const selectedConfig = planType === "premium_lite" ? premiumLiteConfig : premiumConfig;
+          const priceHooks = selectedConfig.pricing_hooks;
+          const defaultMonthlyWompi = planType === "premium_lite" ? 12990 : 15960;
+          const defaultYearlyWompi = planType === "premium_lite" ? 129900 : 159600;
+          
+          const rawVal = billingInterval === "monthly" 
+            ? (priceHooks?.wompi_price_in_cents_monthly || defaultMonthlyWompi)
+            : (priceHooks?.wompi_price_in_cents_yearly || defaultYearlyWompi);
+          amount = rawVal / 100;
+        }
 
         // 1. Obtener datos de firma del backend
         const response = await api.post("/api/checkout", {
@@ -463,7 +471,7 @@ const PricingPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-md mx-auto pb-24 md:pb-12">
+      <div className="max-w-md mx-auto pb-12">
         {/* Premium Lite Plan */}
         {activeTab === "premium_lite" && (
           <PlanCard
@@ -618,20 +626,6 @@ const PricingPage: React.FC = () => {
         </div>
         )}
       </div>
-
-      {/* Sticky Call to Action (Solo Premium - Solo Móvil) */}
-      {activeTab === "premium" && planLevel !== "premium" && (
-        <div className="fixed bottom-0 left-0 right-0 p-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 z-40 animate-slide-up-mobile md:hidden">
-          <div className="max-w-md mx-auto">
-            <button
-              onClick={() => setIsPaymentModalOpen(true)}
-              className="w-full py-4 rounded-2xl font-bold text-lg text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            >
-              <span>✨</span> Suscribirse Ahora
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Payment Modal */}
       {isPaymentModalOpen && (
