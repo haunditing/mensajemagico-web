@@ -119,8 +119,8 @@ const PlanCard: React.FC<PlanCardProps> = ({
         )}
       </div>
 
-      {/* Desktop CTA */}
-      <div className="hidden md:block mb-8 relative z-10">
+      {/* CTA */}
+      <div className="mb-8 relative z-10">
         <button
           onClick={onSubscribe}
           className={`w-full py-4 rounded-2xl font-bold text-lg text-white ${ctaClasses}`}
