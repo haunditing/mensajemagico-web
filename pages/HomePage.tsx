@@ -78,7 +78,7 @@ const HomePage: React.FC = () => {
   const { triggerUpsell } = useUpsell();
   const { country } = useLocalization();
   const [isContactModalOpen, setIsContactModalOpen] = useState(false);
-  const { startTour, shouldShowQuickStart, completeQuickStart } = useOnboarding();
+  const { shouldShowQuickStart, completeQuickStart } = useOnboarding();
 
   // PRIORIDAD 1: QuickStartModal aparece primero para usuarios nuevos
   // PRIORIDAD 2: TrialOnboardingModal aparece después de completar/cerrar QuickStart
@@ -99,12 +99,6 @@ const HomePage: React.FC = () => {
     completeQuickStart();
   };
 
-  // Iniciar tour general al cargar la home (solo si no mostramos quickstart)
-  useEffect(() => {
-    if (!showQuickStartModal) {
-      startTour("onboarding_tour");
-    }
-  }, [showQuickStartModal, startTour]);
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
@@ -264,7 +258,6 @@ const HomePage: React.FC = () => {
               const isResponder = occasion.slug === "responder-un-mensaje";
               const isGreeting = occasion.slug === "un-saludo";
 
-              // Envolvemos el primer elemento para el tour
               const cardContent = (
                 <Link
                   key={occasion.id}

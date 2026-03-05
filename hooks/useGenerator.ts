@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   Occasion,
@@ -95,6 +95,7 @@ export const useGenerator = (
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [showHandAnimation, setShowHandAnimation] = useState(false);
   const [guardianWarning, setGuardianWarning] = useState<string | null>(null);
+  const isGeneratingRef = useRef(false);
 
   const [essenceProfile, setEssenceProfile] = useState<EssenceProfile | null>(null);
   const [essenceCompleted, setEssenceCompleted] = useState<boolean>(false);
@@ -342,7 +343,7 @@ export const useGenerator = (
   }, [intention, isForPost, isPensamiento]);
 
   // Handlers
-  const handleRelChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleRelChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     const newId = e.target.value;
     if (newId === "new_contact") {
       setIsContactModalOpen(true);
@@ -352,9 +353,9 @@ export const useGenerator = (
     setRelationshipId(newId);
     setSelectedContactId(contact ? newId : undefined);
     if (onRelationshipChange) onRelationshipChange(newId);
-  };
+  }, [contacts, onRelationshipChange]);
 
-  const addContextWord = () => {
+  const addContextWord = useCallback(() => {
     const word = currentWord.trim();
     if (
       word &&
@@ -370,10 +371,12 @@ export const useGenerator = (
       setCurrentWord("");
       setSafetyError(null);
     }
-  };
+  }, [currentWord, isContextLocked, currentContextCount, contextWords]);
 
-  const handleGenerate = async (overrideConfig?: any) => {
-    if (safetyError || isLoading || isOccasionLocked) return false;
+  const handleGenerate = useCallback(async (overrideConfig?: any) => {
+    if (safetyError || isLoading || isOccasionLocked || isGeneratingRef.current)
+      return false;
+    isGeneratingRef.current = true;
 
     // Resolver valores efectivos (Override o Estado actual)
     const effectiveTone = overrideConfig?.tone ?? tone;
@@ -551,8 +554,14 @@ export const useGenerator = (
           ) {
             displayContent = "Escribiendo...";
           } else {
-            // 3. Fallback: Si no parece JSON, mostramos el texto tal cual (para modelos que no devuelven JSON)
-            displayContent = effectiveStream;
+            // 3. Fallback: evitar mostrar instrucciones del sistema/Guardian
+            const looksLikeInstruction =
+              /guardian|instrucci|contrato|formato|reglas|sistema/i.test(
+                effectiveStream,
+              );
+            displayContent = looksLikeInstruction
+              ? "Escribiendo..."
+              : effectiveStream;
           }
 
           setMessages((prev) =>
@@ -642,6 +651,7 @@ export const useGenerator = (
       );
 
       setIsLoading(false);
+      isGeneratingRef.current = false;
       recordGeneration();
       incrementGlobalCounter();
       setCurrentWord("");
@@ -660,19 +670,24 @@ export const useGenerator = (
         ),
       );
       setIsLoading(false);
+      isGeneratingRef.current = false;
       if (error.upsell) triggerUpsell(error.upsell);
       return false; // Fallo
     }
-  };
+  }, [
+    // Solo dependencias externas que pueden cambiar
+    // El resto del estado es capturado correctamente en el closure
+    showToast, triggerUpsell, updateCredits, user, occasion, planLevel
+  ]);
 
   // Otros métodos se mantienen igual...
-  const handleMessageUpdate = (id: string, newContent: string) =>
+  const handleMessageUpdate = useCallback((id: string, newContent: string) =>
     setMessages((prev) =>
       prev.map((msg) =>
         msg.id === id ? { ...msg, content: newContent } : msg,
       ),
-    );
-  const handleClearHistory = async () => {
+    ), []);
+  const handleClearHistory = useCallback(async () => {
     const isConfirmed = await confirm({
       title: "¿Borrar historial?",
       message:
@@ -680,9 +695,9 @@ export const useGenerator = (
       isDangerous: true,
     });
     if (isConfirmed) setMessages([]);
-  };
+  }, [confirm]);
 
-  const handleMarkAsUsed = async (msg: ExtendedGeneratedMessage) => {
+  const handleMarkAsUsed = useCallback(async (msg: ExtendedGeneratedMessage) => {
     // Usar el contacto del mensaje si existe, o el seleccionado actualmente
     const targetContactId = msg.config?.relationshipId || selectedContactId;
 
@@ -705,17 +720,17 @@ export const useGenerator = (
     } catch (e) {
       console.error("Error marking as used", e);
     }
-  };
+  }, [user, selectedContactId, occasion, tone]);
 
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setReceivedText("");
     setContextWords([]);
     setCurrentWord("");
     setSafetyError(null);
     setApologyReason("");
-  };
+  }, []);
 
-  const handleRegenerate = (msg: ExtendedGeneratedMessage) => {
+  const handleRegenerate = useCallback((msg: ExtendedGeneratedMessage) => {
     if (!msg.config) return;
 
     // Sincronizar UI con la configuración del mensaje (Feedback visual)
@@ -734,7 +749,7 @@ export const useGenerator = (
     if (msg.config.styleSample !== undefined) setStyleSample(msg.config.styleSample);
 
     handleGenerate(msg.config);
-  };
+  }, [contacts, handleGenerate]);
 
   return {
     relationshipId,

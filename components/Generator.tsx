@@ -21,7 +21,6 @@ import GreetingSelector from "./GreetingSelector";
 import GuardianObjectiveSelector from "./GuardianObjectiveSelector";
 import ReceivedMessageInput from "./ReceivedMessageInput";
 import GenerateButton from "./GenerateButton";
-import { useOnboarding } from "../context/OnboardingContext";
 import { markOccasionVisited } from "../services/usageControlService";
 import EssenceToggle from "./EssenceToggle";
 
@@ -149,17 +148,7 @@ const Generator: React.FC<GeneratorProps> = ({
 
   const [showGuardianOnboarding, setShowGuardianOnboarding] =
     React.useState(false);
-  // --- ONBOARDING: Lógica del Tour Completo ---
-  const {
-    activeTour,
-    currentStepIndex,
-    nextStep,
-    skipTour,
-    goToStep,
-    startTour,
-  } = useOnboarding();
-
-  // Resetear paso al cambiar de ocasión y sincronizar tour
+  // Resetear paso al cambiar de ocasión
   const prevOccasionId = React.useRef(occasion.id);
   React.useEffect(() => {
     // Marcar ocasión como visitada para ocultar el badge "Nuevo" en el futuro
@@ -169,38 +158,9 @@ const Generator: React.FC<GeneratorProps> = ({
 
     if (prevOccasionId.current !== occasion.id) {
       setCurrentStep(1);
-      // Si el tour está activo, reiniciar al paso 1 para sincronizar con la nueva ocasión
-      if (activeTour === "onboarding_tour" && goToStep) {
-        goToStep(1);
-      }
       prevOccasionId.current = occasion.id;
     }
-  }, [occasion.id, occasion.badge, activeTour, goToStep]);
-
-  // Iniciar el tour si no está activo (y no se ha completado previamente)
-  React.useEffect(() => {
-    if (!activeTour) {
-      startTour("onboarding_tour");
-    }
-  }, [activeTour, startTour]);
-
-  React.useEffect(() => {
-    if (activeTour === "onboarding_tour") {
-      // Si viene de la Home (Paso 0), avanzar automáticamente al Paso 1
-      if (currentStepIndex === 0) {
-        const timer = setTimeout(() => nextStep(0), 100);
-        return () => clearTimeout(timer);
-      }
-
-      // NO sincronizar UI del Generador durante el streaming para no interrumpir la generación
-      // Solo sincronizar si NO estamos cargando (isLoading = false)
-      if (!isLoading) {
-        if (currentStepIndex === 1 && currentStep !== 1) setCurrentStep(1);
-        if (currentStepIndex === 2 && currentStep !== 2) setCurrentStep(2);
-        if (currentStepIndex === 3 && currentStep !== 3) setCurrentStep(3);
-      }
-    }
-  }, [activeTour, currentStepIndex, currentStep, nextStep, isLoading]);
+  }, [occasion.id, occasion.badge]);
 
   const canAdvance = React.useMemo(() => {
     if (safetyError) return false;
@@ -239,11 +199,6 @@ const Generator: React.FC<GeneratorProps> = ({
       return;
     }
 
-    // Sincronizar avance manual con el tour si está activo
-    if (activeTour === "onboarding_tour") {
-      nextStep();
-    }
-
     setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
     // Scroll suave al inicio del contenedor para mantener el foco
     document
@@ -253,19 +208,12 @@ const Generator: React.FC<GeneratorProps> = ({
 
   const handleBack = () => {
     const prevStep = Math.max(currentStep - 1, 1);
-    if (activeTour === "onboarding_tour" && goToStep) {
-      goToStep(prevStep);
-    }
     setCurrentStep(prevStep);
   };
 
   const handleGenerateAndReset = async () => {
     const success = await handleGenerate();
     if (success) {
-      // Si el usuario completa la acción principal, damos por terminado el tour
-      if (activeTour === "onboarding_tour") {
-        skipTour();
-      }
       setCurrentStep(1);
       resetForm();
 
@@ -315,58 +263,6 @@ const Generator: React.FC<GeneratorProps> = ({
     }
   };
 
-  // Textos dinámicos para el tour según la ocasión
-  const getStep1Text = () => {
-    if (isPensamiento)
-      return "Define el formato y el tema central de tu reflexión.";
-    if (isResponder)
-      return "¿Quién te escribió? El Guardián analizará su relación.";
-    if (isGreeting) return "¿A quién quieres saludar hoy?";
-    return "Primero, dinos a quién le escribes. El Guardián adaptará el mensaje a su relación.";
-  };
-
-  const getStep2Text = () => {
-    if (isPensamiento)
-      return "Añade detalles o palabras clave para enriquecer tu reflexión.";
-    if (isResponder)
-      return "Pega aquí el mensaje que recibiste. La IA lo analizará para responderte.";
-    if (isGreeting)
-      return "Añade contexto si quieres (ej: 'hace tiempo no hablamos').";
-    return "Danos contexto. Escribe palabras clave (ej: 'cena', 'ayer') o usa las sugerencias.";
-  };
-
-  const getStep3Text = () => {
-    if (isPensamiento)
-      return "Elige la emoción que quieres transmitir en tu reflexión.";
-    if (isResponder)
-      return "Elige la intención de tu respuesta (ej. Cortante, Amable).";
-    if (isGreeting) return "Elige el estilo de tu saludo (ej. Dulce, Formal).";
-    return "Elige el tono emocional perfecto. El Guardián adaptará el mensaje a tu elección.";
-  };
-
-  const getStep4Text = () => {
-    if (isPensamiento) return "¡Listo! Crea tu reflexión mágica.";
-    if (isResponder) return "¡Listo! Generar respuesta inteligente.";
-    return "¡Listo! Pulsa aquí para que la IA cree tu mensaje mágico.";
-  };
-
-  // Determinar color del tooltip según la ocasión
-  const getTooltipColor = (): TooltipColor => {
-    if (isPensamiento) return "indigo";
-    if (isResponder) return "sky";
-    if (isGreeting) return "orange";
-    if (isPerdoname) return "amber";
-    if (occasion.id === "amor") return "rose";
-    if (occasion.id === "birthday") return "orange";
-    if (occasion.id === "anniversary") return "cyan";
-    if (occasion.id === "mothers_day") return "pink";
-    if (occasion.id === "fathers_day") return "blue";
-    if (occasion.id === "christmas") return "red";
-    if (occasion.id === "visto") return "emerald";
-    return "indigo";
-  };
-
-  const tooltipColor = getTooltipColor();
 
   return (
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>

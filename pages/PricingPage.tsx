@@ -290,12 +290,17 @@ const PricingPage: React.FC = () => {
         const planId = billingInterval === "monthly" ? `${planType}_monthly` : `${planType}_yearly`;
 
         // Enviar el monto calculado (con oferta si aplica)
+        // Usar precios de Wompi (en centavos), no de MercadoPago
         const selectedConfig = planType === "premium_lite" ? premiumLiteConfig : premiumConfig;
         const priceHooks = selectedConfig.pricing_hooks;
         
+        // Fallbacks según el tipo de plan: premium_lite (12990/129900) o premium (sin fallback configurado)
+        const defaultMonthlyWompi = planType === "premium_lite" ? 12990 : 0;
+        const defaultYearlyWompi = planType === "premium_lite" ? 129900 : 0;
+        
         const amount = billingInterval === "monthly" 
-          ? (priceHooks?.mercadopago_price_monthly || 9180) / 100
-          : (priceHooks?.mercadopago_price_yearly || 91800) / 100;
+          ? (priceHooks?.wompi_price_in_cents_monthly || defaultMonthlyWompi) / 100
+          : (priceHooks?.wompi_price_in_cents_yearly || defaultYearlyWompi) / 100;
 
         // 1. Obtener datos de firma del backend
         const response = await api.post("/api/checkout", {

@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useLocalization } from "../context/LocalizationContext";
 
-// Mapeo de códigos de país a nombres (Open-Meteo usa nombres en español con language=es)
+// Mapeo de codigos de pais a nombres (Open-Meteo usa nombres en espanol con language=es)
 const COUNTRY_MAP: Record<string, string> = {
   CO: "Colombia",
-  MX: "México",
+  MX: "Mexico",
   AR: "Argentina",
   CL: "Chile",
-  PE: "Perú",
+  PE: "Peru",
   VE: "Venezuela",
 };
 
@@ -31,29 +31,26 @@ const CitySelector: React.FC<CitySelectorProps> = ({
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<any>(null);
+  const debounceRef = useRef<number | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        wrapperRef.current &&
-        !wrapperRef.current.contains(event.target as Node)
-      ) {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setShowSuggestions(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      if (debounceRef.current) clearTimeout(debounceRef.current);
+      if (debounceRef.current) window.clearTimeout(debounceRef.current);
     };
   }, []);
 
   const fetchCities = async (query: string) => {
     if (!query || query.length < 3) return;
 
-    // Cancelar petición anterior si existe para evitar condiciones de carrera
+    // Cancelar peticion anterior si existe para evitar condiciones de carrera
     let controller: AbortController | null = null;
     if (typeof AbortController !== "undefined") {
       if (abortControllerRef.current) {
@@ -80,11 +77,9 @@ const CitySelector: React.FC<CitySelectorProps> = ({
       if (data.results) {
         let results = data.results;
 
-        // Determinar restricción: prop explícita o automática por contexto
+        // Determinar restriccion: prop explicita o automatica por contexto
         const targetCountry =
-          restrictCountry !== undefined
-            ? restrictCountry
-            : COUNTRY_MAP[country];
+          restrictCountry !== undefined ? restrictCountry : COUNTRY_MAP[country];
 
         if (targetCountry) {
           results = results.filter(
@@ -94,16 +89,14 @@ const CitySelector: React.FC<CitySelectorProps> = ({
           );
         }
 
-        // Extraemos el nombre completo (Ciudad, Región, País)
+        // Extraemos el nombre completo (Ciudad, Region, Pais)
         cities = results
           .map((item: any) => {
-            const parts = [item.name, item.admin1, item.country].filter(
-              Boolean,
-            );
+            const parts = [item.name, item.admin1, item.country].filter(Boolean);
             // Usamos Set para evitar duplicados (ej: Mexico, Mexico)
             return [...new Set(parts)].join(", ");
           })
-          .slice(0, 5); // Limitamos a 5 resultados
+          .slice(0, 5);
       }
 
       setSuggestions(cities);
@@ -124,11 +117,11 @@ const CitySelector: React.FC<CitySelectorProps> = ({
     const newValue = e.target.value;
     onChange(newValue);
 
-    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
 
     if (newValue.length >= 3) {
-      // Esperar 500ms después de que el usuario deje de escribir
-      debounceRef.current = setTimeout(() => {
+      // Esperar 500ms despues de que el usuario deje de escribir
+      debounceRef.current = window.setTimeout(() => {
         fetchCities(newValue);
       }, 500);
     } else {
@@ -150,9 +143,7 @@ const CitySelector: React.FC<CitySelectorProps> = ({
           value={value}
           onChange={handleInputChange}
           onFocus={() =>
-            value.length >= 3 &&
-            suggestions.length > 0 &&
-            setShowSuggestions(true)
+            value.length >= 3 && suggestions.length > 0 && setShowSuggestions(true)
           }
           placeholder={placeholder}
           className="w-full px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all pr-10"
