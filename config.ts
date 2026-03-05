@@ -84,6 +84,7 @@ const getActiveSeason = () => {
 
 export const CONFIG = {
   // --- CONFIGURACIÓN DE IA ---
+  APP_NAME: getEnv("APP_NAME", "MensajeMágico"),
   AI: {
     MODEL: getEnv("AI_MODEL", "gemini-2.5-flash"),
     TEMPERATURE: Number(getEnv("AI_TEMP", 0.7)),

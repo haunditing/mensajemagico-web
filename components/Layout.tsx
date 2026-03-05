@@ -1,177 +1,20 @@
-import React, { useState, useRef, useEffect } from "react";
-import { createPortal } from "react-dom";
+import React, { useRef, useEffect } from "react";
 import { Link, useLocation, useNavigationType } from "react-router-dom";
-import { OCCASIONS } from "../constants";
-import { getLocalizedOccasion } from "../services/localizationService";
-import { CountryCode } from "../types";
 import { useLocalization } from "../context/LocalizationContext";
 import { CONFIG } from "../config";
 import MetricsDisplay from "./MetricsDisplay";
 import CookieBanner from "./CookieBanner";
-import OccasionIcon from "./OccasionIcon";
-import UserMenu from "./UserMenu";
 import NotificationManager from "./NotificationManager";
 import OfferBanner from "./OfferBanner";
 import TrialBanner from "./TrialBanner";
 import TrialWelcomeBanner from "./TrialWelcomeBanner";
 import TrialOnboardingModal from "./TrialOnboardingModal";
-import { isOccasionActive } from "../services/holidayService";
 import InstallPWA from "./InstallPWA";
+import Header from "./Header";
+import CountrySelector from "./Header/CountrySelector";
+import { OCCASIONS } from "../constants";
+import { getLocalizedOccasion } from "../services/localizationService";
 
-const CountrySelector = () => {
-  const { country: currentCountry, setCountry } = useLocalization();
-  const [isOpen, setIsOpen] = useState(false);
-  const selectorRef = useRef<HTMLDivElement>(null);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
-  const [isMobile, setIsMobile] = useState(() =>
-    typeof window !== "undefined" ? window.innerWidth < 768 : false,
-  );
-
-  // Detectar cambio de tamaño de ventana para renderizado condicional
-  useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  const countries: { code: CountryCode; label: string; flag: string }[] = [
-    { code: "MX", label: "México", flag: "🇲🇽" },
-    { code: "CO", label: "Colombia", flag: "🇨🇴" },
-    { code: "AR", label: "Argentina", flag: "🇦🇷" },
-    { code: "CL", label: "Chile", flag: "🇨🇱" },
-    { code: "PE", label: "Perú", flag: "🇵🇪" },
-    { code: "VE", label: "Venezuela", flag: "🇻🇪" },
-    { code: "GENERIC", label: "LATAM", flag: "🌎" },
-  ];
-
-  const selected =
-    countries.find((c) => c.code === currentCountry) ||
-    countries[countries.length - 1];
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      const isInsideMain =
-        selectorRef.current && selectorRef.current.contains(target);
-      const isInsideMobile =
-        mobileMenuRef.current && mobileMenuRef.current.contains(target);
-      if (!isInsideMain && !isInsideMobile) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  return (
-    <div className="relative" ref={selectorRef}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center justify-between w-full gap-3 bg-white dark:bg-slate-800 border rounded-xl px-4 py-3 text-xs font-bold transition-all duration-200 group shadow-sm
-          ${isOpen ? "border-blue-500 ring-2 ring-blue-100 dark:ring-blue-900" : "border-slate-200 dark:border-slate-700 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md"}
-        `}
-      >
-        <div className="flex items-center gap-3">
-          <span className="text-lg leading-none">{selected.flag}</span>
-          <span className="text-slate-700 dark:text-slate-200 group-hover:text-slate-900 dark:group-hover:text-white">
-            {selected.label}
-          </span>
-        </div>
-        <svg
-          className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180 text-blue-500" : "group-hover:text-blue-400"}`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
-            d="M19 9l-7 7-7-7"
-          />
-        </svg>
-      </button>
-
-      {isOpen &&
-        (() => {
-          const MenuContent = (
-            <div
-              ref={isMobile ? mobileMenuRef : null}
-              className={`
-                bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 overflow-hidden z-50
-                ${
-                  isMobile
-                    ? "fixed bottom-0 left-0 right-0 w-full rounded-t-[2.5rem] border-t shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.3)] max-h-[85vh] flex flex-col animate-slide-up-mobile pb-8"
-                    : "absolute bottom-full left-0 mb-2 w-full min-w-[200px] rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border animate-fade-in-up origin-bottom"
-                }
-              `}
-            >
-              {isMobile && (
-                <style>{`
-                  @keyframes slide-up-mobile {
-                    0% { transform: translateY(100%); }
-                    100% { transform: translateY(0); }
-                  }
-                  .animate-slide-up-mobile {
-                    animation: slide-up-mobile 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-                  }
-                `}</style>
-              )}
-
-              {isMobile && (
-                <div className="w-12 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full mx-auto my-4 shrink-0" />
-              )}
-
-              <div
-                className={`p-1.5 overflow-y-auto custom-scrollbar ${isMobile ? "px-6 pb-4 max-h-[60vh]" : "max-h-[300px]"}`}
-              >
-                {isMobile && (
-                  <h3 className="text-sm font-bold text-slate-900 dark:text-white mb-4 px-2">
-                    Selecciona tu región
-                  </h3>
-                )}
-                {countries.map((c) => (
-                  <button
-                    key={c.code}
-                    onClick={() => {
-                      setCountry(c.code);
-                      setIsOpen(false);
-                    }}
-                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-left mb-0.5 last:mb-0
-                      ${
-                        currentCountry === c.code
-                          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300"
-                          : "text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white"
-                      }
-                    `}
-                  >
-                    <span className="text-lg leading-none">{c.flag}</span>
-                    <span className="flex-1">{c.label}</span>
-                    {currentCountry === c.code && (
-                      <span className="text-blue-600">✓</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          );
-
-          return isMobile
-            ? createPortal(
-                <div className="relative z-[100]">
-                  <div
-                    className="fixed inset-0 bg-black/60 backdrop-blur-[2px] animate-fade-in"
-                    onClick={() => setIsOpen(false)}
-                  />
-                  {MenuContent}
-                </div>,
-                document.body,
-              )
-            : MenuContent;
-        })()}
-    </div>
-  );
-};
 
 const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const location = useLocation();
@@ -185,62 +28,6 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Verificar si es el día exacto de San Valentín (14 de Febrero)
   const isValentineDay =
     new Date().getMonth() === 1 && new Date().getDate() === 14;
-
-  // --- EASTER EGG LOGIC ---
-  const [logoClicks, setLogoClicks] = useState(0);
-  const clickTimeoutRef = useRef<any>(null);
-
-  const handleLogoClick = (e: React.MouseEvent) => {
-    // Si el usuario está haciendo clics rápidos, prevenimos la navegación para que no recargue
-    if (logoClicks > 0) {
-      e.preventDefault();
-    }
-
-    if (clickTimeoutRef.current) {
-      clearTimeout(clickTimeoutRef.current);
-    }
-
-    setLogoClicks((prev) => {
-      const newCount = prev + 1;
-      if (newCount === 5) {
-        triggerEasterEgg();
-        return 0;
-      }
-      return newCount;
-    });
-
-    clickTimeoutRef.current = setTimeout(() => {
-      setLogoClicks(0);
-    }, 500);
-  };
-
-  const triggerEasterEgg = async () => {
-    const confetti = (await import("canvas-confetti")).default;
-    const duration = 2 * 1000;
-    const end = Date.now() + duration;
-
-    (function frame() {
-      confetti({
-        particleCount: 5,
-        angle: 60,
-        spread: 55,
-        origin: { x: 0 },
-        colors: ["#2563eb", "#9333ea"],
-      });
-      confetti({
-        particleCount: 5,
-        angle: 120,
-        spread: 55,
-        origin: { x: 1 },
-        colors: ["#db2777", "#e11d48"],
-      });
-
-      if (Date.now() < end) {
-        requestAnimationFrame(frame);
-      }
-    })();
-  };
-  // ------------------------
 
   // Cambiar favicon dinámicamente según la festividad
   useEffect(() => {
@@ -375,118 +162,11 @@ const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       <TrialBanner />
       <OfferBanner />
       <InstallPWA />
-      {/* Header Principal */}
-      <header className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-100 dark:border-slate-800 sticky top-0 z-50 shadow-sm transition-all duration-300">
-        <div className="max-w-screen-2xl mx-auto">
-          {/* Fila Superior: Logo y Controles */}
-          <div className="px-4 sm:px-6 lg:px-8 flex h-16 md:h-20 items-center justify-between">
-            <Link
-              to="/"
-              onClick={handleLogoClick}
-              className="flex items-center gap-2.5 shrink-0 focus-visible:outline-none group"
-              aria-label={`Ir al inicio de ${siteName}`}
-            >
-              <div
-                className={`w-10 h-10 md:w-11 md:h-11 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 group-hover:scale-105 text-white
-                ${
-                  isValentine
-                    ? "bg-gradient-to-tr from-rose-500 to-pink-600 shadow-rose-500/20"
-                    : isChristmas
-                      ? "bg-gradient-to-tr from-emerald-500 to-green-600 shadow-green-500/20"
-                      : "bg-gradient-to-tr from-blue-600 to-indigo-600 shadow-blue-500/20"
-                }
-              `}
-              >
-                <img
-                  src="/favicon-32x32.png"
-                  alt="MensajeMágico Logo"
-                  width="32"
-                  height="32"
-                  fetchPriority="high"
-                  className="w-6 h-6 md:w-7 md:h-7 object-contain transition-all duration-300 group-hover:drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
-                />
-              </div>
-              <div className="hidden md:flex flex-col">
-                <span className="font-extrabold text-lg md:text-xl tracking-tight text-slate-900 dark:text-white leading-none">
-                  {siteName}
-                </span>
-                {isValentine && isValentineDay && (
-                  <span className="text-[10px] font-bold text-rose-500 uppercase tracking-widest animate-pulse">
-                    ¡Feliz San Valentín!
-                  </span>
-                )}
-              </div>
-            </Link>
-
-            <div className="flex items-center gap-4">
-              <nav className="hidden lg:flex items-center gap-1.5">
-                {OCCASIONS.filter((o) => isOccasionActive(o.id, currentCountry))
-                  .slice(0, 6)
-                  .map((o) => {
-                    const localized = getLocalizedOccasion(o, currentCountry);
-                    const isActive = location.pathname.startsWith(
-                      `/mensajes/${o.slug}`,
-                    );
-                    return (
-                      <Link
-                        key={o.id}
-                        to={`/mensajes/${o.slug}`}
-                        className={`px-2 py-2 rounded-full text-sm font-semibold transition-all duration-300 flex items-center gap-2 group
-                        ${
-                          isActive
-                            ? "bg-blue-600 text-white shadow-lg shadow-blue-600/20"
-                            : "text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white"
-                        }`}
-                      >
-                        <OccasionIcon
-                          slug={o.slug}
-                          className="w-4 h-4"
-                          isActive={isActive}
-                        />
-                        {localized.name}
-                      </Link>
-                    );
-                  })}
-              </nav>
-              <UserMenu />
-            </div>
-          </div>
-
-          {/* Navegación Móvil Horizontal */}
-          <div className="lg:hidden border-t border-slate-50 dark:border-slate-800 nav-mask">
-            <nav className="flex gap-4 overflow-x-auto no-scrollbar py-4 px-4 snap-x items-center justify-start">
-              {OCCASIONS.filter((o) =>
-                isOccasionActive(o.id, currentCountry),
-              ).map((o) => {
-                const localized = getLocalizedOccasion(o, currentCountry);
-                const isActive = location.pathname.startsWith(
-                  `/mensajes/${o.slug}`,
-                );
-
-                return (
-                  <Link
-                    key={o.id}
-                    to={`/mensajes/${o.slug}`}
-                    aria-label={localized.name}
-                    className={`shrink-0 p-3.5 rounded-2xl border transition-all duration-300 snap-center flex items-center justify-center group
-                      ${
-                        isActive
-                          ? "bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-600/30 scale-105"
-                          : "bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
-                      }`}
-                  >
-                    <OccasionIcon
-                      slug={o.slug}
-                      className="w-6 h-6"
-                      isActive={isActive}
-                    />
-                  </Link>
-                );
-              })}
-            </nav>
-          </div>
-        </div>
-      </header>
+      <Header
+        isValentine={isValentine}
+        isChristmas={isChristmas}
+        isValentineDay={isValentineDay}
+      />
 
       <main className="flex-grow">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12 min-w-0">
