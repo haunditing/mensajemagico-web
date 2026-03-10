@@ -677,7 +677,32 @@ export const useGenerator = (
   }, [
     // Solo dependencias externas que pueden cambiar
     // El resto del estado es capturado correctamente en el closure
-    showToast, triggerUpsell, updateCredits, user, occasion, planLevel
+    showToast,
+    triggerUpsell,
+    updateCredits,
+    user,
+    occasion,
+    planLevel,
+    // Dependencias de estado necesarias para evitar stale closures
+    receivedText,
+    tone,
+    intention,
+    relationshipId,
+    greetingMoment,
+    apologyReason,
+    giftBudget,
+    contextWords,
+    currentWord,
+    contacts,
+    styleSample,
+    receivedMessageType,
+    applyEssence,
+    country,
+    isForPost,
+    showGifts,
+    safetyError,
+    isLoading,
+    isOccasionLocked,
   ]);
 
   // Otros métodos se mantienen igual...

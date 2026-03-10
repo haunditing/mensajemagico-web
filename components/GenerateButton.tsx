@@ -12,6 +12,7 @@ interface GenerateButtonProps {
   isGreeting: boolean;
   disabled?: boolean;
   disabledLabel?: string;
+  isPremium?: boolean;
 }
 
 const MAGIC_TEXTS = [
@@ -40,14 +41,17 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
   isGreeting,
   disabled = false,
   disabledLabel,
+  isPremium = false,
 }) => {
   const buttonLabel = useMemo(() => {
     const options = isPensamiento ? THOUGHT_TEXTS : MAGIC_TEXTS;
     return options[Math.floor(Math.random() * options.length)];
   }, [isPensamiento]);
 
+  const hasCredits = isPremium || !user || remainingCredits > 0;
+
   // Bloqueo "duro": El botón no hace nada (loading, sin créditos, etc.)
-  const isDomDisabled = isLoading || !!safetyError || (!!user && remainingCredits <= 0) || isOccasionLocked;
+  const isDomDisabled = isLoading || !!safetyError || !hasCredits || isOccasionLocked;
   
   // Bloqueo "visual": Incluye el estado 'disabled' (falta texto) para mostrarlo gris.
   const isVisuallyDisabled = isDomDisabled || disabled;
@@ -85,7 +89,7 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
             ? "Contenido bloqueado"
             : isOccasionLocked
               ? "Ocasión Premium 🔒"
-              : !!user && remainingCredits <= 0
+              : !hasCredits
                 ? "Sin créditos hoy"
                 : disabled && disabledLabel
                   ? disabledLabel

@@ -146,6 +146,9 @@ const Generator: React.FC<GeneratorProps> = ({
   const totalSteps = steps.length;
   const isLastStep = currentStep === totalSteps;
 
+  // Lógica para deshabilitar el botón de generación si faltan datos clave
+  const isGenerationDisabled = isResponder && receivedText.trim().length === 0;
+
   const [showGuardianOnboarding, setShowGuardianOnboarding] =
     React.useState(false);
   // Resetear paso al cambiar de ocasión
@@ -480,41 +483,22 @@ const Generator: React.FC<GeneratorProps> = ({
                 />
               )}
 
-              {isResponder ? (
-                <ContextInputSection
-                  isPensamiento={isPensamiento}
-                  occasionId={occasion.id}
-                  tone={tone as string}
-                  isContextLocked={isContextLocked}
-                  maxContext={MAX_CONTEXT}
-                  currentWord={currentWord}
-                  onCurrentWordChange={setCurrentWord}
-                  onKeyDown={handleKeyDown}
-                  contextWords={contextWords}
-                  onAddWord={addContextWord}
-                  onRemoveWord={removeContextWord}
-                  onTrendingTopicClick={handleTrendingTopicClick}
-                  showHandAnimation={showHandAnimation}
-                  onTriggerUpsell={triggerUpsell}
-                />
-              ) : (
-                <ContextInputSection
-                  isPensamiento={isPensamiento}
-                  occasionId={occasion.id}
-                  tone={tone as string}
-                  isContextLocked={isContextLocked}
-                  maxContext={MAX_CONTEXT}
-                  currentWord={currentWord}
-                  onCurrentWordChange={setCurrentWord}
-                  onKeyDown={handleKeyDown}
-                  contextWords={contextWords}
-                  onAddWord={addContextWord}
-                  onRemoveWord={removeContextWord}
-                  onTrendingTopicClick={handleTrendingTopicClick}
-                  showHandAnimation={showHandAnimation}
-                  onTriggerUpsell={triggerUpsell}
-                />
-              )}
+              <ContextInputSection
+                isPensamiento={isPensamiento}
+                occasionId={occasion.id}
+                tone={tone as string}
+                isContextLocked={isContextLocked}
+                maxContext={MAX_CONTEXT}
+                currentWord={currentWord}
+                onCurrentWordChange={setCurrentWord}
+                onKeyDown={handleKeyDown}
+                contextWords={contextWords}
+                onAddWord={addContextWord}
+                onRemoveWord={removeContextWord}
+                onTrendingTopicClick={handleTrendingTopicClick}
+                showHandAnimation={showHandAnimation}
+                onTriggerUpsell={triggerUpsell}
+              />
             </div>
           )}
 
@@ -701,6 +685,9 @@ const Generator: React.FC<GeneratorProps> = ({
                 isOccasionLocked={isOccasionLocked}
                 isPensamiento={isPensamiento}
                 isGreeting={isGreeting}
+                disabled={isGenerationDisabled}
+                disabledLabel="Falta el mensaje a responder"
+                isPremium={planLevel === "premium" || planLevel === "premium_lite"}
               />
             </div>
           ) : (
