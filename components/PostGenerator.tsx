@@ -118,17 +118,18 @@ const PlatformSelector = ({ value, onChange }: { value: SupportedPlatform, onCha
   return (
     <div>
       <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Plataforma objetivo</label>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      <div className="grid grid-cols-6 sm:grid-cols-2 gap-2 sm:gap-2.5">
         {platforms.map(p => (
           <button
             key={p.id}
             onClick={() => onChange(p.id)}
             type="button"
-            className={`w-full text-left px-3 py-3 rounded-xl border transition-all bg-white dark:bg-slate-900 ${value === p.id ? p.cardSelected : `${p.card} text-slate-700 dark:text-slate-300`}`}
+            className={`w-full flex items-center justify-center sm:justify-start sm:text-left px-1 py-3 sm:px-3 sm:py-3 rounded-xl border transition-all bg-white dark:bg-slate-900 ${value === p.id ? p.cardSelected : `${p.card} text-slate-700 dark:text-slate-300`}`}
+            title={p.label}
           >
-            <div className="flex items-start gap-2">
-              <span className="text-lg leading-none mt-0.5">{p.icon}</span>
-              <div>
+            <div className="flex items-center sm:items-start gap-2">
+              <span className="text-2xl sm:text-lg leading-none sm:mt-0.5">{p.icon}</span>
+              <div className="hidden sm:block">
                 <div className="text-sm font-bold">{p.label}</div>
                 <div className="text-xs opacity-80">{p.hint}</div>
               </div>
