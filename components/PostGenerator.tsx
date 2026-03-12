@@ -118,13 +118,13 @@ const PlatformSelector = ({ value, onChange }: { value: SupportedPlatform, onCha
   return (
     <div>
       <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Plataforma objetivo</label>
-      <div className="grid grid-cols-6 sm:grid-cols-2 gap-2 sm:gap-2.5">
+      <div className="grid grid-cols-6 sm:grid-cols-2 gap-1.5 sm:gap-2.5">
         {platforms.map(p => (
           <button
             key={p.id}
             onClick={() => onChange(p.id)}
             type="button"
-            className={`w-full flex items-center justify-center sm:justify-start sm:text-left px-1 py-3 sm:px-3 sm:py-3 rounded-xl border transition-all bg-white dark:bg-slate-900 ${value === p.id ? p.cardSelected : `${p.card} text-slate-700 dark:text-slate-300`}`}
+            className={`w-full flex items-center justify-center sm:justify-start sm:text-left p-1 sm:px-3 sm:py-3 rounded-xl border transition-all bg-white dark:bg-slate-900 ${value === p.id ? p.cardSelected : `${p.card} text-slate-700 dark:text-slate-300`}`}
             title={p.label}
           >
             <div className="flex items-center sm:items-start gap-2">
@@ -424,10 +424,10 @@ const PostGenerator: React.FC = () => {
   ]);
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-4">
-      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-sm">
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">Generador de Posts para Redes Sociales</h2>
+    <div className="w-full max-w-2xl mx-auto p-1 md:p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-xl md:rounded-2xl border border-slate-200 dark:border-slate-800 p-3 md:p-8 shadow-sm">
+        <form onSubmit={handleSubmit} className="space-y-3 md:space-y-6">
+          <h2 className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-100">Generador de Posts para Redes Sociales</h2>
           
           <PlatformSelector value={platform} onChange={setPlatform} />
           <p className="text-xs text-slate-500 dark:text-slate-400 -mt-2">
@@ -446,7 +446,7 @@ const PostGenerator: React.FC = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
             <div>
               <label htmlFor="tone" className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-2">Tono</label>
               <select
