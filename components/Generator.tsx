@@ -25,6 +25,7 @@ import GenerateButton from "./GenerateButton";
 import { markOccasionVisited } from "../services/usageControlService";
 import EssenceToggle from "./EssenceToggle";
 import PostGenerator from "./PostGenerator";
+// Elimina la integración del AdminCampaignGenerator para que no dependa ni se muestre en Generator
 
 interface GeneratorProps {
   occasion: Occasion;

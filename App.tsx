@@ -28,6 +28,7 @@ import ContactsPage from "./pages/ContactsPage";
 import FaqPage from "./pages/FaqPage";
 import EssencePage from "./pages/EssencePage";
 import PaymentErrorPage from "./pages/PaymentErrorPage";
+import AdminCampaignPage from "./pages/AdminCampaignPage";
 
 const { BrowserRouter: Router, Routes, Route } = ReactRouterDOM;
 
@@ -72,6 +73,7 @@ const App: React.FC = () => {
                   <Route path="/contactos" element={<ContactsPage />} />
                   <Route path="/faq" element={<FaqPage />} />
                   <Route path="/esencia" element={<EssencePage />} />
+                  <Route path="/admin/campaigns" element={<AdminCampaignPage />} />
                   <Route path="*" element={<HomePage />} />
                 </Routes>
               </Layout>

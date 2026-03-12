@@ -78,3 +78,5 @@ export const api = {
     return handleResponse<T>(response);
   },
 };
+
+console.log('TOKEN ACTUAL:', localStorage.getItem('token'));
