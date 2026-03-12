@@ -138,6 +138,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   useEffect(() => {
     if (!user && availablePlans?.guest) {
       setPlanConfig(availablePlans.guest);
+      setDailyLimit(availablePlans.guest?.access?.daily_limit || 1);
     }
   }, [user, availablePlans]);
 
@@ -152,7 +153,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     setUser(null);
     setPlanConfig(availablePlans?.guest || null);
     setRemainingCredits(0);
-    resetDailyLimit(); // Volver a límites de invitado
+    // Volver a límites de invitado usando config dinámica si ya existe
+    if (availablePlans?.guest?.access?.daily_limit) {
+      setDailyLimit(availablePlans.guest.access.daily_limit);
+    } else {
+      resetDailyLimit();
+    }
   };
 
   const updateCredits = (credits: number) => {

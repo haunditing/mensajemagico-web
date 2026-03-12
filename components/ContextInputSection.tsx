@@ -1,11 +1,12 @@
 import React, { useMemo } from "react";
 import { createPortal } from "react-dom";
-import PlanManager from "../services/PlanManager";
+import { getContextLockedLabel, getContextLockedPlaceholder, getContextUpsell } from "../services/accessCopy";
 
 interface ContextInputSectionProps {
   isPensamiento: boolean;
   occasionId: string;
   tone?: string;
+  isGuest?: boolean;
   isContextLocked: boolean;
   maxContext: number;
   currentWord: string;
@@ -84,6 +85,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
   isPensamiento,
   occasionId,
   tone,
+  isGuest = false,
   isContextLocked,
   maxContext,
   currentWord,
@@ -207,7 +209,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
           </button>
           {isContextLocked && (
             <span className="text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/30 px-2 py-0.5 rounded-full">
-              Premium 💎
+              {getContextLockedLabel(isGuest)}
             </span>
           )}
         </div>
@@ -235,7 +237,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
             onKeyDown={onKeyDown}
             placeholder={
               isContextLocked
-                ? "Desbloquea palabras clave con Premium 🔒"
+                ? getContextLockedPlaceholder(isGuest)
                 : isPensamiento
                   ? "Ej: La brevedad del tiempo o el valor de los silencios"
                   : "Ej: playa, pizza, 5 años..."
@@ -246,9 +248,7 @@ const ContextInputSection: React.FC<ContextInputSectionProps> = ({
           {isContextLocked && (
             <div
               className="absolute inset-0 z-10 cursor-pointer"
-              onClick={() =>
-                onTriggerUpsell(PlanManager.getUpsellMessage("on_context_limit"))
-              }
+              onClick={() => onTriggerUpsell(getContextUpsell(isGuest))}
             />
           )}
         </div>

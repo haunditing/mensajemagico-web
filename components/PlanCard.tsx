@@ -5,7 +5,7 @@ import { formatPrice, getCurrencyConfig } from '../services/priceService';
 
 export interface Benefit {
   icon: React.ReactNode;
-  title: string;
+  title: React.ReactNode;
   desc?: string;
 }
 
@@ -131,9 +131,9 @@ const PlanCard: React.FC<PlanCardProps> = ({
 
       <ul className={`space-y-4 mb-8 flex-1 relative z-10 ${benefitTextClasses}`}>
         {(allBenefits ? benefits : benefits.slice(0, 4)).map((b, idx) => (
-          <li key={idx} className="flex items-center gap-3">
+          <li key={idx} className="flex items-start gap-3">
             <span className="text-green-500 text-xl font-bold">✓</span>
-            <span className="font-medium">{b.title}</span>
+            <span className="font-medium leading-tight">{b.title}</span>
           </li>
         ))}
       </ul>

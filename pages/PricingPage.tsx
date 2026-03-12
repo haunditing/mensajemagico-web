@@ -385,8 +385,28 @@ const PricingPage: React.FC = () => {
         ? priceConfig.yearlyOriginal / 12
         : priceConfig.monthly;
 
+  const postInitiativeTitle = (
+    <span className="inline-flex items-center gap-2">
+      <span>Posts que convierten</span>
+      <span className="px-1.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wide bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
+        Nuevo
+      </span>
+    </span>
+  );
+
   const premiumBenefitsList = [
-    { icon: "💬", title: premiumConfig.access?.daily_limit > 100 ? "Inspiración Ilimitada" : `${premiumConfig.access?.daily_limit} mensajes diarios`, desc: "Nunca te quedes sin palabras." },
+    {
+      icon: "💬",
+      title:
+        (premiumConfig.access?.daily_limit ?? 0) >= 70
+          ? "Uso intensivo diario"
+          : `${premiumConfig.access?.daily_limit} mensajes diarios`,
+      desc:
+        (premiumConfig.access?.daily_limit ?? 0) >= 70
+          ? `${premiumConfig.access?.daily_limit} mensajes diarios (uso justo).`
+          : "Nunca te quedes sin palabras.",
+    },
+    { icon: "📣", title: postInitiativeTitle, desc: "Crea publicaciones adaptadas a cada plataforma con guía de publicación." },
     { icon: "✨", title: "Editor Mágico", desc: "La IA pule tus textos manteniendo tu esencia." },
     { icon: "🧠", title: "Guardián de Sentimientos", desc: "Inteligencia emocional para tus relaciones." },
     { icon: "🌎", title: "Acento Local", desc: "Conecta auténticamente con modismos." },
@@ -406,7 +426,7 @@ const PricingPage: React.FC = () => {
           </span>
         </h1>
         <p className="text-xl text-slate-500 dark:text-slate-400 max-w-2xl mx-auto">
-          Desbloquea todo el potencial de nuestra IA y crea mensajes ilimitados.
+          Desbloquea todo el potencial de nuestra IA y crea mensajes sin fricción.
         </p>
       </div>
 
@@ -474,104 +494,122 @@ const PricingPage: React.FC = () => {
       <div className="max-w-md mx-auto pb-12">
         {/* Premium Lite Plan */}
         {activeTab === "premium_lite" && (
-          <PlanCard
-            title="Premium Lite"
-            description="Ideal para usuarios dedicados."
-            tag={{
-              text: isOfferActive ? "⭐ OFERTA ESPECIAL" : "⭐ Mejor Relación Precio-Valor",
-              gradientClasses: "from-amber-500 to-orange-500",
-            }}
-            priceDisplay={
-              <>
-                <span className="text-5xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
-                  {formatPrice(
-                    billingInterval === "monthly"
-                      ? priceConfigLite.monthly
-                      : priceConfigLite.yearly_monthly_equivalent,
-                  )}
-                </span>
-                <span className="text-slate-600 dark:text-slate-400 font-medium">/mes</span>
-              </>
-            }
-            offer={
-              priceConfigLite.monthlyOriginal && isOfferActive
-                ? {
-                    originalPrice: priceConfigLite.monthlyOriginal,
-                    label:
-                      priceConfigLite.offerDuration > 0
-                        ? `OFERTA POR ${priceConfigLite.offerDuration} MESES`
-                        : "OFERTA LIMITADA",
-                    endDate: priceConfigLite.offerEndDate,
-                  }
-                : undefined
-            }
-            yearlyInfo={
-              billingInterval === "yearly"
-                ? {
-                    price: priceConfigLite.yearly,
-                    savings: priceConfigLite.yearlySavings,
-                  }
-                : undefined
-            }
-            benefits={
-              [
-                { icon: "💬", title: "20 mensajes/día" },
-                { icon: "🧠", title: "Contexto personalizado" },
-                { icon: "🎨", title: "Mayoría de tonos" },
-                { icon: "🚫", title: "Sin anuncios" },
-              ]
-            }
-            onSubscribe={() => setIsPaymentModalOpen(true)}
-            ctaClasses="bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-lg hover:shadow-amber-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            containerClasses="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 rounded-[2.5rem] border-2 border-amber-300 dark:border-amber-600"
-            tagColorClasses="border-amber-700"
-          />
+          <>
+            <PlanCard
+              title="Premium Lite"
+              description="Ideal para usuarios dedicados."
+              tag={{
+                text: isOfferActive ? "⭐ OFERTA ESPECIAL" : "⭐ Mejor Relación Precio-Valor",
+                gradientClasses: "from-amber-500 to-orange-500",
+              }}
+              priceDisplay={
+                <>
+                  <span className="text-5xl font-black text-amber-600 dark:text-amber-400 tracking-tight">
+                    {formatPrice(
+                      billingInterval === "monthly"
+                        ? priceConfigLite.monthly
+                        : priceConfigLite.yearly_monthly_equivalent,
+                    )}
+                  </span>
+                  <span className="text-slate-600 dark:text-slate-400 font-medium">/mes</span>
+                </>
+              }
+              offer={
+                priceConfigLite.monthlyOriginal && isOfferActive
+                  ? {
+                      originalPrice: priceConfigLite.monthlyOriginal,
+                      label:
+                        priceConfigLite.offerDuration > 0
+                          ? `OFERTA POR ${priceConfigLite.offerDuration} MESES`
+                          : "OFERTA LIMITADA",
+                      endDate: priceConfigLite.offerEndDate,
+                    }
+                  : undefined
+              }
+              yearlyInfo={
+                billingInterval === "yearly"
+                  ? {
+                      price: priceConfigLite.yearly,
+                      savings: priceConfigLite.yearlySavings,
+                    }
+                  : undefined
+              }
+              benefits={
+                [
+                  { icon: "💬", title: "20 mensajes/día" },
+                  { icon: "📣", title: postInitiativeTitle },
+                  { icon: "🧠", title: "Contexto personalizado" },
+                  { icon: "🎨", title: "Mayoría de tonos" },
+                  { icon: "🚫", title: "Sin anuncios" },
+                ]
+              }
+              onSubscribe={() => setIsPaymentModalOpen(true)}
+              ctaClasses="bg-gradient-to-r from-amber-500 to-orange-500 hover:shadow-lg hover:shadow-amber-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              containerClasses="bg-gradient-to-br from-amber-50 to-orange-50 dark:from-slate-800 dark:to-slate-900 rounded-[2.5rem] border-2 border-amber-300 dark:border-amber-600"
+              tagColorClasses="border-amber-700"
+            />
+            <p className="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
+              ⓘ Incluye generador para Instagram, WhatsApp, Facebook, X, LinkedIn y Telegram.
+            </p>
+          </>
         )}
 
         {/* Premium Pro Plan */}
         {activeTab === "premium" && (
-          <PlanCard
-            title="Premium Pro"
-            subtitle="Para creadores de contenido y románticos."
-            tag={{
-              text: isOfferActive ? "🔥 Oferta Especial" : "Recomendado",
-              gradientClasses: isOfferActive ? "from-rose-600 to-orange-600" : "from-blue-600 to-purple-600",
-              extraClasses: "border-slate-800",
-            }}
-            priceDisplay={
-              <>
-                <span className="text-5xl font-black text-white tracking-tight">
-                  {formatPrice(currentDisplayPrice)}
-                </span>
-                <span className="text-slate-500 font-medium">/mes</span>
-              </>
-            }
-            offer={
-              currentOriginalPrice
-                ? {
-                    originalPrice: currentOriginalPrice,
-                    label: isOfferActive
-                      ? billingInterval === "yearly"
-                        ? "OFERTA PRIMER AÑO"
-                        : priceConfig.offerDuration > 0
-                          ? `OFERTA POR ${priceConfig.offerDuration} MESES`
-                          : "OFERTA LIMITADA"
-                      : `AHORRAS ${priceConfig.discountPercentage}%`,
-                    endDate: isOfferActive ? priceConfig.offerEndDate : undefined,
-                  }
-                : undefined
-            }
-            yearlyInfo={
-              billingInterval === "yearly"
-                ? { price: priceConfig.yearly, savings: priceConfig.yearlySavings }
-                : undefined
-            }
-            benefits={premiumBenefitsList}
-            onSubscribe={() => setIsPaymentModalOpen(true)}
-            ctaClasses="bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
-            containerClasses="bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none"
-            benefitTextClasses="text-white"
-          />
+          <>
+            <PlanCard
+              title="Premium Pro"
+              subtitle="Para creadores de contenido y románticos."
+              tag={{
+                text: isOfferActive ? "🔥 Oferta Especial" : "Recomendado",
+                gradientClasses: isOfferActive ? "from-rose-600 to-orange-600" : "from-blue-600 to-purple-600",
+                extraClasses: "border-slate-800",
+              }}
+              priceDisplay={
+                <>
+                  <span className="text-5xl font-black text-white tracking-tight">
+                    {formatPrice(currentDisplayPrice)}
+                  </span>
+                  <span className="text-slate-500 font-medium">/mes</span>
+                </>
+              }
+              offer={
+                currentOriginalPrice
+                  ? {
+                      originalPrice: currentOriginalPrice,
+                      label: isOfferActive
+                        ? billingInterval === "yearly"
+                          ? "OFERTA PRIMER AÑO"
+                          : priceConfig.offerDuration > 0
+                            ? `OFERTA POR ${priceConfig.offerDuration} MESES`
+                            : "OFERTA LIMITADA"
+                        : `AHORRAS ${priceConfig.discountPercentage}%`,
+                      endDate: isOfferActive ? priceConfig.offerEndDate : undefined,
+                    }
+                  : undefined
+              }
+              yearlyInfo={
+                billingInterval === "yearly"
+                  ? { price: priceConfig.yearly, savings: priceConfig.yearlySavings }
+                  : undefined
+              }
+              benefits={premiumBenefitsList}
+              onSubscribe={() => setIsPaymentModalOpen(true)}
+              ctaClasses="bg-gradient-to-r from-blue-600 to-purple-600 hover:shadow-lg hover:shadow-blue-500/30 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+              containerClasses="bg-slate-900 dark:bg-slate-900 rounded-[2.5rem] border border-slate-800 dark:border-slate-700 shadow-2xl shadow-blue-900/20 dark:shadow-none"
+              benefitTextClasses="text-white"
+            />
+            <p className="mt-3 text-center text-xs text-slate-500 dark:text-slate-400">
+              Uso justo: hasta {premiumConfig.access?.daily_limit ?? 70} mensajes diarios para mantener la estabilidad del servicio.{' '}
+              <Link to="/terminos" className="font-semibold text-slate-700 dark:text-slate-300 hover:underline">
+                Ver términos
+              </Link>
+              .
+            </p>
+            <p className="mt-1 text-center text-xs text-slate-500 dark:text-slate-400">
+              ⓘ Incluye generador para Instagram, WhatsApp, Facebook, X, LinkedIn y Telegram.
+            </p>
+          </>
         )}
 
         {/* Free Plan */}
@@ -639,6 +677,15 @@ const PricingPage: React.FC = () => {
               isLoading={isPaymentLoading}
               planLevel={planLevel}
             />
+
+            <p className="mt-4 text-[11px] leading-relaxed text-slate-500 dark:text-slate-400 text-center">
+              Al suscribirte, aceptas nuestra política de uso justo. Límites de referencia: Premium Lite hasta {premiumLiteConfig.access?.daily_limit ?? 20} mensajes/día y Premium Pro hasta {premiumConfig.access?.daily_limit ?? 70} mensajes/día.
+            </p>
+            <p className="mt-1 text-[11px] text-center">
+              <Link to="/terminos" className="text-slate-700 dark:text-slate-300 font-semibold hover:underline">
+                Leer Términos y Condiciones
+              </Link>
+            </p>
             
             <button onClick={() => setIsPaymentModalOpen(false)} className="mt-4 w-full py-3 text-slate-500 dark:text-slate-400 font-bold hover:text-slate-800 dark:hover:text-slate-200 transition-colors">Cancelar</button>
           </div>

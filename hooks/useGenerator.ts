@@ -225,37 +225,35 @@ export const useGenerator = (
   useEffect(() => {
     try {
       const quickStartConfig = sessionStorage.getItem('quickstart_config');
-      if (quickStartConfig) {
-        const config = JSON.parse(quickStartConfig);
-        
-        // Configurar relationship si coincide con la ocasión actual
-        if (config.relationship && !isPensamiento) {
-          setRelationshipId(config.relationship);
-        }
-        
-        // Configurar tone
-        if (config.tone) {
-          setTone(config.tone as Tone);
-        }
-        
-        // Limpiar config después de usarla
-        sessionStorage.removeItem('quickstart_config');
-        
-        // Mostrar feedback al usuario
-        showToast('¡Perfecto! Ahora solo haz clic en "Generar" 🎉', 'success');
-        
-        // Track que el usuario llegó desde quickstart
-        if (typeof window !== 'undefined' && (window as any).gtag) {
-          (window as any).gtag('event', 'quickstart_config_applied', {
-            event_category: 'onboarding',
-            occasion: occasion.id
-          });
-        }
+      if (!quickStartConfig) return;
+
+      const config = JSON.parse(quickStartConfig);
+
+      // Solo aplicar cuando el usuario está en la ocasión elegida en Quick Start.
+      if (config.occasion !== occasion.id) return;
+
+      if (config.relationship && !isPensamiento) {
+        setRelationshipId(config.relationship);
+      }
+
+      if (config.tone) {
+        setTone(config.tone as Tone);
+      }
+
+      sessionStorage.removeItem('quickstart_config');
+
+      showToast('¡Perfecto! Ahora solo haz clic en "Generar" 🎉', 'success');
+
+      if (typeof window !== 'undefined' && (window as any).gtag) {
+        (window as any).gtag('event', 'quickstart_config_applied', {
+          event_category: 'onboarding',
+          occasion: occasion.id
+        });
       }
     } catch (error) {
       console.error('Error applying quickstart config:', error);
     }
-  }, []); // Solo ejecutar una vez al montar
+  }, [occasion.id, isPensamiento, showToast]);
 
   // Persistencia de sesión: Guardar cambios automáticamente
   useEffect(() => {
@@ -523,13 +521,12 @@ export const useGenerator = (
           greetingMoment: isGreeting ? effectiveGreetingMoment : undefined,
           apologyReason: isPerdoname ? effectiveApologyReason : undefined,
           applyEssence: applyEssence && planLevel === 'premium',
-          styleSample: styleSample.trim() || undefined,
-        },
-        (token) => {
-          rawStream += token;
-          // Ignorar padding inicial (espacios en blanco) que envía el backend para Safari
-          const effectiveStream = rawStream.trimStart();
-          let displayContent = "";
+                          styleSample: styleSample.trim() || undefined,
+                        },
+                        (token) => {
+                          rawStream += token;
+                          // Ignorar padding inicial (espacios en blanco) que envía el backend para Safari
+                          const effectiveStream = rawStream.trimStart();          let displayContent = "";
 
           // 1. Intentar extraer el contenido del mensaje (prioridad máxima)
           // Buscamos "content": "..." incluso si el JSON no está completo

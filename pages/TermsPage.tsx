@@ -11,7 +11,7 @@ const TermsPage: React.FC = () => {
         <h1 className="text-4xl md:text-6xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">
           Términos y <span className="text-gradient">Condiciones</span>
         </h1>
-        <p className="text-slate-500 dark:text-slate-400 font-medium italic">Última actualización: 10 de febrero de 2026</p>
+        <p className="text-slate-500 dark:text-slate-400 font-medium italic">Última actualización: 12 de marzo de 2026</p>
       </div>
 
       <div className="grid gap-6">
@@ -34,7 +34,7 @@ const TermsPage: React.FC = () => {
           {
             title: "4. Uso Justo y Cuotas (Fair Use)",
             icon: "⚖️",
-            text: "Los planes Premium con 'mensajes ilimitados' están sujetos a una política de uso justo para evitar abusos automatizados (bots). Nos reservamos el derecho de suspender cuentas que excedan patrones de uso humano razonable."
+            text: "Cada plan tiene cuotas diarias publicadas en la página de precios (por ejemplo, Premium Lite y Premium Pro). Estas cuotas aplican bajo política de uso justo para prevenir abuso automatizado (bots) y proteger la estabilidad del servicio. Podemos ajustar límites y controles antiabuso con previo aviso razonable."
           },
           {
             title: "5. Entrenamiento de IA y Privacidad",

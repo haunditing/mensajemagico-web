@@ -12,6 +12,7 @@ import CreateContactModal from "./CreateContactModal";
 import GuardianEditorModal from "./GuardianEditorModal";
 import { useGenerator } from "../hooks/useGenerator";
 import ContextInputSection from "./ContextInputSection";
+import { getRegionalModeHint, getRegionalModeUpsell } from "../services/accessCopy";
 import ToneSelector from "./ToneSelector";
 import GeneratedMessagesList from "./GeneratedMessagesList";
 import GuardianInfoModal from "./GuardianInfoModal";
@@ -23,6 +24,7 @@ import ReceivedMessageInput from "./ReceivedMessageInput";
 import GenerateButton from "./GenerateButton";
 import { markOccasionVisited } from "../services/usageControlService";
 import EssenceToggle from "./EssenceToggle";
+import PostGenerator from "./PostGenerator";
 
 interface GeneratorProps {
   occasion: Occasion;
@@ -35,6 +37,11 @@ const Generator: React.FC<GeneratorProps> = ({
   initialRelationship,
   onRelationshipChange,
 }) => {
+  // --- Integration Point for the new PostGenerator ---
+  if (occasion.id === 'pensamiento') {
+    return <PostGenerator />;
+  }
+
   const { user, remainingCredits, planLevel } = useAuth();
   const { triggerUpsell } = useUpsell();
   const { isFavorite } = useFavorites();
@@ -147,7 +154,8 @@ const Generator: React.FC<GeneratorProps> = ({
   const isLastStep = currentStep === totalSteps;
 
   // Lógica para deshabilitar el botón de generación si faltan datos clave
-  const isGenerationDisabled = isResponder && receivedText.trim().length === 0;
+  const isGenerationDisabled =
+    isOccasionLocked || (isResponder && receivedText.trim().length === 0);
 
   const [showGuardianOnboarding, setShowGuardianOnboarding] =
     React.useState(false);
@@ -298,13 +306,11 @@ const Generator: React.FC<GeneratorProps> = ({
               title={
                 planLevel === "premium"
                   ? "Modo Regional Activo"
-                  : "Ubicación detectada (Mejora a Premium para activar el modo regional)"
+                  : getRegionalModeHint(!user)
               }
               onClick={() =>
                 planLevel !== "premium" &&
-                triggerUpsell(
-                  "Mejora a Premium para activar el Tono Regional y personalizar tus mensajes según tu ciudad.",
-                )
+                triggerUpsell(getRegionalModeUpsell(!user))
               }
             >
               <svg
@@ -487,6 +493,7 @@ const Generator: React.FC<GeneratorProps> = ({
                 isPensamiento={isPensamiento}
                 occasionId={occasion.id}
                 tone={tone as string}
+                isGuest={!user}
                 isContextLocked={isContextLocked}
                 maxContext={MAX_CONTEXT}
                 currentWord={currentWord}

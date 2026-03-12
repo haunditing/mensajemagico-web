@@ -33,14 +33,23 @@ const QUICK_OCCASIONS = [
   { id: 'perdoname', label: 'Perdóname', icon: '🙏' },
 ];
 
-// Mapeo de IDs a slugs reales de ocasiones
-const OCCASION_ID_TO_SLUG: Record<string, string> = {
-  'pensamiento': 'pensamiento',
-  'responder': 'responder',
-  'amor': 'amor',
-  'birthday': 'birthday',
-  'anniversary': 'anniversary',
-  'perdoname': 'perdoname',
+// IDs internos para generación (backend) y slugs para navegación (frontend)
+const OCCASION_ID_TO_GENERATION_ID: Record<string, string> = {
+  pensamiento: 'pensamiento',
+  responder: 'responder',
+  amor: 'amor',
+  birthday: 'birthday',
+  anniversary: 'anniversary',
+  perdoname: 'perdoname',
+};
+
+const OCCASION_ID_TO_ROUTE_SLUG: Record<string, string> = {
+  pensamiento: 'pensamiento-del-dia',
+  responder: 'responder-un-mensaje',
+  amor: 'amor',
+  birthday: 'cumpleanos',
+  anniversary: 'anniversary',
+  perdoname: 'perdoname',
 };
 
 const QUICK_TONES = [
@@ -188,10 +197,10 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ isOpen, onClose, onCo
     setGeneratedMessage(''); // Limpiar mensaje previo
 
     try {
-      // Mapear ID de ocasión a slug
-      const occasionSlug = OCCASION_ID_TO_SLUG[finalConfig.occasion];
+      // Mapear ID de ocasión a ID interno para backend
+      const occasionId = OCCASION_ID_TO_GENERATION_ID[finalConfig.occasion];
       
-      if (!occasionSlug) {
+      if (!occasionId) {
         throw new Error(`Ocasión inválida: ${finalConfig.occasion}`);
       }
 
@@ -203,7 +212,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ isOpen, onClose, onCo
       }
 
       const messageConfig: MessageConfig = {
-        occasion: occasionSlug,
+        occasion: occasionId,
         relationship: finalConfig.relationship,
         tone: toneEnum,
         contextWords: [],
@@ -313,7 +322,12 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ isOpen, onClose, onCo
     window.dispatchEvent(new CustomEvent('quickstart_completed'));
     
     onComplete(finalConfig);
+    const routeSlug = OCCASION_ID_TO_ROUTE_SLUG[finalConfig.occasion];
     onClose();
+
+    if (routeSlug) {
+      navigate(`/mensajes/${routeSlug}`);
+    }
   };
 
   const handleBack = () => {

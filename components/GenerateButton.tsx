@@ -1,5 +1,6 @@
 import React, { useMemo } from "react";
 import LoadingSpinner from "./LoadingSpinner";
+import { getLockedOccasionLabel } from "../services/accessCopy";
 
 interface GenerateButtonProps {
   onClick: () => void;
@@ -88,7 +89,7 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
           {safetyError
             ? "Contenido bloqueado"
             : isOccasionLocked
-              ? "Ocasión Premium 🔒"
+              ? getLockedOccasionLabel(!user)
               : !hasCredits
                 ? "Sin créditos hoy"
                 : disabled && disabledLabel

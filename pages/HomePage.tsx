@@ -13,6 +13,7 @@ import { isOccasionActive } from "../services/holidayService.ts";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useOnboarding } from "../context/OnboardingContext";
 import QuickStartModal, { QuickStartConfig } from "../components/QuickStartModal";
+import { getLockedOccasionBadge } from "../services/accessCopy";
 
 const FallingParticles = React.lazy(() => import("../components/FallingParticles"));
 const ValentineCountdown = React.lazy(() => import("../components/ValentineCountdown"));
@@ -290,7 +291,7 @@ const HomePage: React.FC = () => {
                     )}
                     {isGreeting && (
                       <span className="ml-2 text-[10px] bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full uppercase tracking-tighter flex items-center gap-1">
-                        <span>💎</span> Premium
+                        <span>{user ? "💎" : "🔒"}</span> {getLockedOccasionBadge(!user)}
                       </span>
                     )}
                   </h3>
