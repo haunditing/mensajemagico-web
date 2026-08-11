@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Backend: symlink a un repo separado (no pertenece al frontend)
+/mensajemagico-web-backend
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -31,3 +34,4 @@ dist-ssr
 *.md
 *-actual.png
 *-diff.png
+mensajemagico-web-backend/

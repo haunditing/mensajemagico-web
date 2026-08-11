@@ -3,14 +3,10 @@ import { ExtendedGeneratedMessage } from "../hooks/useGenerator";
 import { Occasion, SharePlatform } from "../types";
 import { AI_ERROR_FALLBACK } from "../services/geminiService";
 import ShareBar from "./ShareBar";
-import GuardianInsight from "./GuardianInsight";
-import GiftRecommendations from "./GiftRecommendations";
 
 interface GeneratedMessagesListProps {
   messages: ExtendedGeneratedMessage[];
   isLoading: boolean;
-  showGifts: boolean;
-  country: string;
   isPensamiento: boolean;
   occasion: Occasion;
   shareParam: string | null;
@@ -27,8 +23,6 @@ interface GeneratedMessagesListProps {
 const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
   messages,
   isLoading,
-  showGifts,
-  country,
   isPensamiento,
   occasion,
   shareParam,
@@ -126,10 +120,6 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
       id="results-section"
       className="mt-6 space-y-6 relative group/carousel"
     >
-      {isLoading && showGifts && (
-        <GiftRecommendations gifts={[]} country={country} isLoading={true} />
-      )}
-
       {/* Carrusel de Mensajes */}
       {messages.length > 0 && (
         <div className="relative">
@@ -318,19 +308,6 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
                           envío.
                         </p>
                       </div>
-                    )}
-
-                    {/* Guardian Insight Component */}
-                    {msg.guardianInsight && (
-                      <GuardianInsight insight={msg.guardianInsight} />
-                    )}
-
-                    {/* Sección de Regalos */}
-                    {msg.gifts && msg.gifts.length > 0 && (
-                      <GiftRecommendations
-                        gifts={msg.gifts}
-                        country={country}
-                      />
                     )}
                   </div>
                 </div>

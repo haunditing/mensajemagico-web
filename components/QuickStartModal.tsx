@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createPortal } from 'react-dom';
-import { OCCASIONS, TONES, RELATIONSHIPS } from '../constants';
-import { Sparkles, Users, Calendar, MessageCircle, ArrowRight, X, Copy, Send, RefreshCw, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { Sparkles, Users, Calendar, MessageCircle, X, Copy, Send, RefreshCw, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { generateMessageStream } from '../services/geminiService';
+import { getStreamDisplay, getFinalContent } from '../services/messageParser';
 import type { MessageConfig } from '../types';
 import { Tone } from '../types';
 
@@ -63,76 +63,6 @@ const TONE_ID_TO_ENUM: Record<string, Tone> = {
   'profundo': Tone.PROFOUND,
   'formal': Tone.FORMAL,
   'divertido': Tone.FUNNY,
-};
-
-const getDisplayContentFromStream = (rawStream: string) => {
-  const effectiveStream = rawStream.trimStart();
-  let displayContent = '';
-
-  const contentMatch = effectiveStream.match(
-    /"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/,
-  );
-
-  if (contentMatch && contentMatch[1]) {
-    displayContent = contentMatch[1]
-      .replace(/\\n/g, '\n')
-      .replace(/\\"/g, '"')
-      .replace(/\\t/g, '\t');
-  } else if (
-    effectiveStream.includes('{') ||
-    effectiveStream.includes('[') ||
-    effectiveStream.includes('generated_messages') ||
-    effectiveStream.includes('```') ||
-    effectiveStream.includes('guardian_insight')
-  ) {
-    displayContent = 'Escribiendo...';
-  } else {
-    displayContent = effectiveStream;
-  }
-
-  return displayContent;
-};
-
-const getFinalContentFromResponse = (content: string) => {
-  let finalContent = content;
-
-  try {
-    const cleanJson = finalContent.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(cleanJson);
-
-    if (parsed.generated_messages && Array.isArray(parsed.generated_messages)) {
-      const standardMsg =
-        parsed.generated_messages.find((m: any) =>
-          m?.tone?.toLowerCase?.().includes('estándar'),
-        ) || parsed.generated_messages[0];
-
-      finalContent = standardMsg?.content || standardMsg?.message || finalContent;
-    } else if (parsed.message) {
-      finalContent = parsed.message;
-    } else if (parsed.content) {
-      finalContent = parsed.content;
-    }
-  } catch {
-    const lastResort = finalContent.match(
-      /"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/,
-    );
-
-    if (lastResort) {
-      finalContent = lastResort[1]
-        .replace(/\\n/g, '\n')
-        .replace(/\\"/g, '"')
-        .replace(/\\t/g, '\t');
-    } else if (
-      finalContent.trim().startsWith('{') ||
-      finalContent.includes('generated_messages') ||
-      finalContent.includes('```')
-    ) {
-      finalContent =
-        'Lo siento, hubo un pequeño error técnico al procesar el mensaje. Por favor intenta de nuevo.';
-    }
-  }
-
-  return finalContent;
 };
 
 const QuickStartModal: React.FC<QuickStartModalProps> = ({ isOpen, onClose, onComplete }) => {
@@ -226,11 +156,11 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ isOpen, onClose, onCo
         messageConfig,
         (token) => {
           rawStreamContent += token;
-          setGeneratedMessage(getDisplayContentFromStream(rawStreamContent));
+          setGeneratedMessage(getStreamDisplay(rawStreamContent));
         }
       );
 
-      setGeneratedMessage(getFinalContentFromResponse(content || rawStreamContent));
+      setGeneratedMessage(getFinalContent(content || rawStreamContent));
 
       // Track generation success
       if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -355,11 +285,7 @@ const QuickStartModal: React.FC<QuickStartModalProps> = ({ isOpen, onClose, onCo
   const totalSteps = 4;
   const progress = (step / totalSteps) * 100;
 
-  // FORCE RENDER FOR TESTING - REMOVE LATER
-  const forceRender = new URLSearchParams(window.location.search).has('force-quickstart');
-  const shouldRender = isOpen || forceRender;
-
-  const content = shouldRender && (
+  const content = (
     <>
       {/* Backdrop */}
       <div 

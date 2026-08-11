@@ -3,7 +3,7 @@ import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { api } from './api';
 
-export interface FavoriteItem {
+interface FavoriteItem {
   _id: string;
   content: string;
   occasion: string;

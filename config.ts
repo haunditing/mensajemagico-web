@@ -2,20 +2,12 @@
  * Hub Central de Configuración - MensajeMágico
  */
 
-import { get } from "http";
-
 const getEnv = (key: string, defaultValue: any) => {
   // En Vite, usamos import.meta.env en lugar de process.env
   // @ts-ignore
   const value = import.meta.env[`VITE_${key}`] || import.meta.env[key];
   if (value === undefined || value === "") return defaultValue;
   return value;
-};
-
-const isTruthy = (val: any): boolean => {
-  if (val === undefined || val === null) return false;
-  const s = String(val).toLowerCase().trim();
-  return s === "true" || s === "1" || s === "yes" || s === "on";
 };
 
 const VALENTINE_SEASON = {
@@ -89,29 +81,6 @@ export const CONFIG = {
     MODEL: getEnv("AI_MODEL", "gemini-2.5-flash"),
     TEMPERATURE: Number(getEnv("AI_TEMP", 0.7)),
     MAX_TOKENS: Number(getEnv("AI_MAX_TOKENS", 300)),
-  },
-
-  // --- AMAZON AFILIADOS ---
-  AMAZON: {
-    STORE_ID: getEnv("AMAZON_STORE_ID", "mensajemagico-20"),
-    DISCLAIMER:
-      "Como Afiliado de Amazon, percibo dinero con las compras elegibles.",
-  },
-
-  // --- MONETIZACIÓN (GOOGLE ADSENSE) ---
-  ADSENSE: {
-    IS_ACTIVE:
-      isTruthy(getEnv("ADSENSE_ACTIVE", "false")) ||
-      window.location.search.includes("ads=true"),
-    CLIENT_ID: getEnv("ADSENSE_CLIENT_ID", "ca-pub-0000000000000000"),
-    DEBUG_MODE:
-      // @ts-ignore
-      import.meta.env.DEV || window.location.search.includes("debug=true"),
-    SLOTS: {
-      TOP: getEnv("ADS_SLOT_TOP", "0000000001"),
-      MIDDLE: getEnv("ADS_SLOT_MIDDLE", "0000000002"),
-      BOTTOM: getEnv("ADS_SLOT_BOTTOM", "0000000003"),
-    },
   },
 
   // --- LÍMITES DE USO ---

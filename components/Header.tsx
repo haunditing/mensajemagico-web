@@ -33,7 +33,7 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ isValentine, isChristmas, isValentineDay }) => {
   const siteName = CONFIG.APP_NAME;
-  const clickTimeoutRef = useRef<NodeJS.Timeout>();
+  const clickTimeoutRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const location = useLocation();
 
   const {

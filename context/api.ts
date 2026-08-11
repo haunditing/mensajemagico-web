@@ -79,4 +79,3 @@ export const api = {
   },
 };
 
-console.log('TOKEN ACTUAL:', localStorage.getItem('token'));

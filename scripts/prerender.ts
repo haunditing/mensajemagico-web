@@ -23,7 +23,6 @@ const BLOCKED_PATTERNS = [
   /googletagmanager/,
   /gtag/,
   /pagead2/,
-  /adsbygoogle/,
   /doubleclick/,
   /fonts\.googleapis/,
   /fonts\.gstatic/,

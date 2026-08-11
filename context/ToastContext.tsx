@@ -6,7 +6,7 @@ import React, {
   ReactNode,
 } from "react";
 
-export type ToastType = "success" | "error" | "info";
+type ToastType = "success" | "error" | "info" | "payment_error";
 
 interface ToastContextType {
   isVisible: boolean;

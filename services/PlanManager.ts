@@ -1,4 +1,4 @@
-import { User, PlanLevel } from "../context/AuthContext";
+import { PlanLevel } from "../context/AuthContext";
 
 class PlanManager {
   private static plans: any = {};
@@ -20,24 +20,6 @@ class PlanManager {
           obj && obj[key] !== undefined ? obj[key] : undefined,
         plan,
       );
-  }
-
-  static validateDailyLimit(
-    user: User & { checkDailyReset?: () => void },
-  ): any {
-    if (user.checkDailyReset) {
-      user.checkDailyReset();
-    }
-
-    const dailyLimit = this.getPlanFeature(
-      user.planLevel,
-      "access.daily_limit",
-    );
-
-    if (user.usage.generationsCount >= dailyLimit) {
-      return this.upsellTriggers.on_limit_reached;
-    }
-    return null;
   }
 
   static getUpsellMessage(triggerKey: string): string {

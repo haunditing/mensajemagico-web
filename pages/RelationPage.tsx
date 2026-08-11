@@ -4,7 +4,6 @@ import { OCCASIONS, RELATIONSHIPS } from "../constants";
 import { updateSeoTags } from "../services/seoService.ts";
 import { getLocalizedOccasion } from "../services/localizationService";
 import Generator from "../components/Generator";
-import AdBanner from "../components/AdBanner";
 import { LocalizedContent } from "../types";
 import { useLocalization } from "../context/LocalizationContext";
 
@@ -64,7 +63,6 @@ const RelationPage: React.FC = () => {
         </p>
       </header>
 
-      {/*<AdBanner position="top" />*/}
 
       <Generator
         occasion={{ ...rawOccasion, name: localized.name }}
@@ -100,7 +98,6 @@ const RelationPage: React.FC = () => {
         </div>
       </section>
 
-      {/*<AdBanner position="bottom" />*/}
     </div>
   );
 };

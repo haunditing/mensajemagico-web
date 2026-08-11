@@ -57,7 +57,6 @@ const TrialBanner: React.FC = () => {
           ...eventData,
         });
       }
-      console.log(`📊 Trial Banner: ${eventName}`, { daysRemaining: trialInfo?.daysRemaining, ...eventData });
     } catch (error) {
       console.warn("Analytics error:", error);
     }

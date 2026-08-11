@@ -16,7 +16,7 @@ export const isNativeShareSupported = (): boolean => {
 /**
  * Ejecuta la compartición nativa.
  */
-export const shareNative = async (options: ShareOptions): Promise<boolean> => {
+const shareNative = async (options: ShareOptions): Promise<boolean> => {
   if (isNativeShareSupported()) {
     try {
       await navigator.share({
@@ -34,7 +34,7 @@ export const shareNative = async (options: ShareOptions): Promise<boolean> => {
 /**
  * Lógica para copiar al portapapeles con fallback.
  */
-export const copyToClipboard = async (text: string): Promise<boolean> => {
+const copyToClipboard = async (text: string): Promise<boolean> => {
   try {
     await navigator.clipboard.writeText(text);
     return true;

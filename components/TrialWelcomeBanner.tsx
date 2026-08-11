@@ -66,7 +66,6 @@ const TrialWelcomeBanner: React.FC = () => {
           ...eventData,
         });
       }
-      console.log(`📊 Analytics: ${eventName}`, eventData);
     } catch (error) {
       console.warn("Analytics error:", error);
     }

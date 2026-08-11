@@ -4,9 +4,6 @@ export interface GuardianPromptOptions {
   relationshipId?: string;
   isPensamiento: boolean;
   isForPost: boolean;
-  showGifts: boolean;
-  giftBudget?: string;
-  country: string;
 }
 
 export interface GuardianPromptResult {
@@ -22,9 +19,6 @@ export const buildGuardianPrompt = ({
   relationshipId,
   isPensamiento,
   isForPost,
-  showGifts,
-  giftBudget = "medium",
-  country,
 }: GuardianPromptOptions): GuardianPromptResult => {
   let styleInstructions = "";
   let creativityLevel = "balanced";
@@ -174,67 +168,11 @@ export const buildGuardianPrompt = ({
     }
   }
 
-  // Determinar si realmente pedimos regalos (Desactivar para cualquier Pensamiento)
-  const shouldIncludeGifts = showGifts && !isPensamiento;
-
-  // Inyectamos instrucción para formato JSON y regalos si está activo
-  const currencyMap: Record<string, string> = {
-    CO: "Pesos Colombianos",
-    MX: "Pesos Mexicanos",
-    AR: "Pesos Argentinos",
-    CL: "Pesos Chilenos",
-    PE: "Soles",
-    UY: "Pesos Uruguayos",
-    VE: "Bolívares",
-  };
-  const localCurrency = currencyMap[country] || "Dólares";
-
-  let contactGender = selectedContact?.grammaticalGender || "neutral";
-  if (contactGender === "neutral" && !selectedContact && relationshipId) {
-    if (relationshipId === "mother") contactGender = "female";
-    if (relationshipId === "father") contactGender = "male";
-  }
-
-  // Inferencia de estilo de regalo según la relación para mejorar la relevancia
-  let giftStyle = "tendencia general";
-  if (relationshipId === "boss")
-    giftStyle = "profesional, elegante y de oficina";
-  if (relationshipId === "couple")
-    giftStyle = "romántico, significativo o de pareja";
-  if (relationshipId === "friend")
-    giftStyle = "divertido, original o tecnológico";
-  if (relationshipId === "mother")
-    giftStyle = "cuidado personal, hogar o emotivo";
-  if (relationshipId === "father")
-    giftStyle = "tecnología, herramientas o accesorios";
-  if (relationshipId === "ligue")
-    giftStyle = "detalle pequeño, coqueto pero no intenso";
-
-  const budgetMap: Record<string, string> = {
-    low: "económico / detalle pequeño",
-    medium: "precio medio / estándar",
-    high: "premium / lujo / alta gama",
-  };
-  const budgetDesc = budgetMap[giftBudget] || "precio medio";
-
-  const formatInstruction = `[SYSTEM: Devuelve JSON válido con esta estructura: {
-      "selected_strategy": "string",
-      "generated_messages": [{ "tone": "string", "content": "string", "locked": boolean }],
-      "guardian_insight": "string (${
-        isPensamiento
-          ? "Explica por qué esta reflexión es potente para un creador"
-          : "Explica qué elemento nuevo usaste para no sonar repetitivo"
-      })"${
-        shouldIncludeGifts
-          ? `,
-      "gift_recommendations": [{ "title": "string", "search_term": "string", "reason": "string", "price_range": "rango de precio en ${localCurrency}", "image_url": "url_imagen_opcional" }]`
-          : ""
-      }
-    }. ${
-      shouldIncludeGifts
-        ? `Máximo 2 regalos. Para regalos, considera País (${country}), Género (${contactGender}), Estilo (${giftStyle}) y Presupuesto (${budgetDesc}) sin romper la coherencia del mensaje.`
-        : "NO incluyas regalos."
-    } Si no puedes generar JSON, devuelve solo el texto del mensaje.]`;
+  // El streaming del backend fuerza texto plano (ver magic.js), pero enviamos
+  // aquí el mismo contrato para no desperdiciar tokens de entrada y para que el
+  // modelo nunca intente devolver JSON (generated_messages/guardian_insight)
+  // que duplicaba el mensaje y se cortaba a mitad consumiendo el max_tokens.
+  const formatInstruction = `[SYSTEM: Devuelve ÚNICAMENTE el texto del mensaje final, listo para enviar. Sin JSON, sin bloques de código, sin preámbulos, sin notas, sin metacomentarios ni explicaciones sobre el formato. Un solo mensaje completo.]`;
 
   return {
     styleInstructions,

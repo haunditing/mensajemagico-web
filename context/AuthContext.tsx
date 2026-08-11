@@ -16,19 +16,19 @@ import PlanManager from "../services/PlanManager";
 // Definición de tipos alineada con el backend (plans.js)
 export type PlanLevel = "guest" | "freemium" | "premium";
 
-export interface MonetizationConfig {
+interface MonetizationConfig {
   show_ads: boolean;
   watermark: boolean;
 }
 
-export interface PlanAccess {
+interface PlanAccess {
   daily_limit: number;
   exclusive_tones: boolean | string[];
   occasions: string[] | "all";
   context_words_limit: number;
 }
 
-export interface PlanStrategy {
+interface PlanStrategy {
   access: PlanAccess;
   monetization: MonetizationConfig;
   ai_config?: any;
@@ -37,6 +37,7 @@ export interface PlanStrategy {
 export interface User {
   _id: string;
   email: string;
+  role: string;
   planLevel: PlanLevel;
   usage: {
     generationsCount: number;

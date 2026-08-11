@@ -27,15 +27,14 @@ import {
 import { canGenerate, recordGeneration } from "../services/usageControlService";
 import { incrementGlobalCounter } from "../services/metricsService";
 import { useAuth } from "../context/AuthContext";
-import { useLocalization } from "../context/LocalizationContext";
 import { useUpsell } from "../context/UpsellContext";
 import { useFavorites } from "../context/FavoritesContext";
 import { getUserLocation } from "../services/locationService";
 import { api } from "../context/api";
 import { useToast } from "../context/ToastContext";
 import { useFeature } from "./useFeature";
-import { GiftSuggestion } from "../components/GiftRecommendations";
 import { buildGuardianPrompt } from "../services/guardianPromptUtils";
+import { getStreamDisplay, getFinalContent } from "../services/messageParser";
 import { useConfirm } from "../context/ConfirmContext";
 import {
   GUARDIAN_WARNINGS,
@@ -43,10 +42,8 @@ import {
 } from "../services/guardianRules";
 
 export interface ExtendedGeneratedMessage extends GeneratedMessage {
-  gifts?: GiftSuggestion[];
   occasionName?: string;
   toneLabel?: string;
-  guardianInsight?: string;
   usedLexicalDNA?: boolean;
   isStreaming?: boolean;
   isError?: boolean;
@@ -69,7 +66,6 @@ export const useGenerator = (
 ) => {
   const { user, updateCredits, planLevel } = useAuth();
   const { showToast } = useToast();
-  const { country } = useLocalization();
   const { triggerUpsell } = useUpsell();
   const { addFavorite, isFavorite } = useFavorites();
   const { confirm } = useConfirm();
@@ -198,8 +194,6 @@ export const useGenerator = (
   const [isLoading, setIsLoading] = useState(false);
   const [safetyError, setSafetyError] = useState<string | null>(null);
   const [usageMessage, setUsageMessage] = useState<string | null>(null);
-  const [showGifts, setShowGifts] = useState(true);
-  const [giftBudget, setGiftBudget] = useState<"low" | "medium" | "high">("medium");
   const [isForPost, setIsForPost] = useState(false);
   const [userLocation, setUserLocation] = useState<string | undefined>(
     undefined,
@@ -386,7 +380,6 @@ export const useGenerator = (
       overrideConfig?.greetingMoment ?? greetingMoment;
     const effectiveApologyReason =
       overrideConfig?.apologyReason ?? apologyReason;
-    const effectiveGiftBudget = overrideConfig?.giftBudget ?? giftBudget;
 
     if (isResponder && !effectiveReceivedText.trim()) {
       showToast(
@@ -443,9 +436,6 @@ export const useGenerator = (
       relationshipId: effectiveRelationshipId,
       isPensamiento,
       isForPost,
-      showGifts,
-      giftBudget: effectiveGiftBudget,
-      country,
     });
 
     const tempId = Math.random().toString(36).substr(2, 9);
@@ -459,7 +449,6 @@ export const useGenerator = (
       greetingMoment: effectiveGreetingMoment,
       apologyReason: effectiveApologyReason,
       contextWords: finalContextWords,
-      giftBudget: effectiveGiftBudget,
       styleSample,
     };
 
@@ -525,48 +514,14 @@ export const useGenerator = (
                         },
                         (token) => {
                           rawStream += token;
-                          // Ignorar padding inicial (espacios en blanco) que envía el backend para Safari
-                          const effectiveStream = rawStream.trimStart();          let displayContent = "";
+                          const displayContent = getStreamDisplay(rawStream);
 
-          // 1. Intentar extraer el contenido del mensaje (prioridad máxima)
-          // Buscamos "content": "..." incluso si el JSON no está completo
-          // MEJORA: Soportar también "message" por si el modelo varía la clave
-          const contentMatch = effectiveStream.match(
-            /"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/,
-          );
-
-          if (contentMatch && contentMatch[1]) {
-            displayContent = contentMatch[1]
-              .replace(/\\n/g, "\n")
-              .replace(/\\"/g, '"')
-              .replace(/\\t/g, "\t");
-          } else if (
-            // 2. DETECCIÓN AGRESIVA DE JSON/RUIDO
-            // Si contiene cualquier indicio de estructura técnica y no hemos encontrado el contenido, ocultamos todo.
-            effectiveStream.includes("{") ||
-            effectiveStream.includes("[") ||
-            effectiveStream.includes("generated_messages") ||
-            effectiveStream.includes("```") ||
-            effectiveStream.includes("guardian_insight")
-          ) {
-            displayContent = "Escribiendo...";
-          } else {
-            // 3. Fallback: evitar mostrar instrucciones del sistema/Guardian
-            const looksLikeInstruction =
-              /guardian|instrucci|contrato|formato|reglas|sistema/i.test(
-                effectiveStream,
-              );
-            displayContent = looksLikeInstruction
-              ? "Escribiendo..."
-              : effectiveStream;
-          }
-
-          setMessages((prev) =>
-            prev.map((msg) =>
-              msg.id === tempId ? { ...msg, content: displayContent } : msg,
-            ),
-          );
-        },
+                          setMessages((prev) =>
+                            prev.map((msg) =>
+                              msg.id === tempId ? { ...msg, content: displayContent } : msg,
+                            ),
+                          );
+                        },
         user?._id,
         userLocation,
         effectiveSelectedContact?._id,
@@ -578,56 +533,8 @@ export const useGenerator = (
       if (response.remainingCredits !== undefined && updateCredits)
         updateCredits(response.remainingCredits);
 
-      // Procesamiento final del JSON completo
-      let finalContent = response.content;
-      let gifts: GiftSuggestion[] = [];
-      let guardianInsight = "";
-
-      try {
-        const cleanJson = finalContent.replace(/```json|```/g, "").trim();
-        const parsed = JSON.parse(cleanJson);
-        if (
-          parsed.generated_messages &&
-          Array.isArray(parsed.generated_messages)
-        ) {
-          const premiumMsg = parsed.generated_messages.find(
-            (m: any) =>
-              m.tone.toLowerCase().includes("premium") ||
-              m.tone.toLowerCase().includes("regional"),
-          );
-          const standardMsg =
-            parsed.generated_messages.find((m: any) =>
-              m.tone.toLowerCase().includes("estándar"),
-            ) || parsed.generated_messages[0];
-          finalContent =
-            planLevel === "premium" && premiumMsg
-              ? premiumMsg.content
-              : standardMsg.content;
-          gifts = parsed.gift_recommendations || [];
-          guardianInsight = parsed.guardian_insight || "";
-        }
-      } catch (e) {
-        // Fallback si el parseo falla: intentar extraer el content con Regex
-        // Usamos la misma regex robusta que en el streaming para manejar comillas escapadas
-        const lastResort = finalContent.match(
-          /"(?:content|message)"\s*:\s*"((?:[^"\\]|\\.)*)/,
-        );
-        if (lastResort) {
-          finalContent = lastResort[1]
-            .replace(/\\n/g, "\n")
-            .replace(/\\"/g, '"')
-            .replace(/\\t/g, "\t");
-        } else if (
-          finalContent.trim().startsWith("{") ||
-          finalContent.includes("generated_messages") ||
-          finalContent.includes("```")
-        ) {
-          // Si parece JSON pero no pudimos extraer nada válido (ej. corte de conexión),
-          // mostramos un error amigable en lugar de mostrar la estructura técnica al usuario.
-          finalContent =
-            "Lo siento, hubo un pequeño error técnico al procesar el mensaje. Por favor intenta de nuevo.";
-        }
-      }
+      // Procesamiento final del contenido (texto plano)
+      const finalContent = getFinalContent(response.content);
 
       setMessages((prev) =>
         prev.map((msg) =>
@@ -636,8 +543,6 @@ export const useGenerator = (
                 ...msg,
                 content: finalContent,
                 originalContent: finalContent,
-                gifts,
-                guardianInsight,
                 isStreaming: false,
                 usedLexicalDNA:
                   !!effectiveSelectedContact?.guardianMetadata?.preferredLexicon
@@ -687,16 +592,13 @@ export const useGenerator = (
     relationshipId,
     greetingMoment,
     apologyReason,
-    giftBudget,
     contextWords,
     currentWord,
     contacts,
     styleSample,
     receivedMessageType,
     applyEssence,
-    country,
     isForPost,
-    showGifts,
     safetyError,
     isLoading,
     isOccasionLocked,
@@ -767,7 +669,6 @@ export const useGenerator = (
     }
     if (msg.config.greetingMoment) setGreetingMoment(msg.config.greetingMoment);
     if (msg.config.apologyReason) setApologyReason(msg.config.apologyReason);
-    if (msg.config.giftBudget) setGiftBudget(msg.config.giftBudget);
     if (msg.config.styleSample !== undefined) setStyleSample(msg.config.styleSample);
 
     handleGenerate(msg.config);
@@ -818,10 +719,6 @@ export const useGenerator = (
     setSafetyError,
     usageMessage,
     setUsageMessage,
-    showGifts,
-    setShowGifts,
-    giftBudget,
-    setGiftBudget,
     isForPost,
     setIsForPost,
     userLocation,

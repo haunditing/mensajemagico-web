@@ -5,7 +5,6 @@ import { CONFIG } from "../config";
 import { updateSeoTags } from "../services/seoService.ts";
 import { getLocalizedOccasion } from "../services/localizationService";
 import Generator from "../components/Generator";
-import AdBanner from "../components/AdBanner";
 import OccasionIcon from "../components/OccasionIcon";
 import FallingParticles from "../components/FallingParticles";
 import { Relationship, LocalizedContent } from "../types";
@@ -160,7 +159,6 @@ const OccasionPage: React.FC = () => {
         </div>
       </header>
 
-      {/*<AdBanner position="top" />*/}
 
       <div className="mt-12">
         <Generator
@@ -204,7 +202,6 @@ const OccasionPage: React.FC = () => {
         </div>
       </section>
 
-      {/*<AdBanner position="bottom" />*/}
     </div>
   );
 };

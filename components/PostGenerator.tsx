@@ -382,7 +382,6 @@ const PostGenerator: React.FC = () => {
       tone,
       intention,
       userContext: {
-        planLevel: planLevel || 'guest',
         location: (user as any)?.location,
         essenceProfile: (user as any)?.essenceProfile,
       }

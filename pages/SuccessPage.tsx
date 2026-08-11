@@ -73,7 +73,7 @@ const SuccessPage: React.FC = () => {
     };
 
     verifyPayment();
-  }, [sessionId, paymentId, statusMP, refreshUser, navigate]);
+  }, [paymentId, statusMP, refreshUser, navigate]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 p-4 animate-fade-in-up">

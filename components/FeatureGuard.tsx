@@ -57,8 +57,13 @@ const FeatureGuard: React.FC<FeatureGuardProps> = ({
   }
 
   const handleAction = (e: React.MouseEvent) => {
+    const onClick = (
+      children.props as React.DOMAttributes<HTMLElement> & {
+        onClick?: (ev: React.MouseEvent) => void;
+      }
+    ).onClick;
     if (isAllowed) {
-      children.props.onClick?.(e);
+      onClick?.(e);
     } else {
       e.preventDefault();
       e.stopPropagation();
@@ -67,7 +72,10 @@ const FeatureGuard: React.FC<FeatureGuardProps> = ({
     }
   };
 
-  const child = cloneElement(children, { onClick: handleAction });
+  const child = cloneElement(
+    children as React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>,
+    { onClick: handleAction },
+  );
 
   if (isAllowed) return child;
 

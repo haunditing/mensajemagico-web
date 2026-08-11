@@ -26,12 +26,6 @@ export const PENSAMIENTO_THEMES = [
   { id: "nostalgia", label: "Nostalgia" },
 ];
 
-export const PENSAMIENTO_LENGTHS = [
-  { id: "corto", label: "Corto (para Twitter/Estado)" },
-  { id: "mediano", label: "Mediano (para Instagram/Facebook)" },
-  { id: "poetico", label: "Poético (más elaborado)" },
-];
-
 export const EMOTIONAL_STATES = [
   { id: "tranquilo", label: "Tranquilo/a" },
   { id: "reflexivo", label: "Reflexivo/a" },

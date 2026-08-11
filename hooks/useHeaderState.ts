@@ -8,15 +8,12 @@ import { isOccasionActive } from '../services/holidayService';
  * Hook para gestionar el estado y lógica del header
  * Responsabilidades:
  * - Filtrado dinámico de ocasiones
- * - Detección responsive
  * - State del easter egg
  */
 export const useHeaderState = () => {
   const location = useLocation();
   const { country: currentCountry } = useLocalization();
   const [logoClicks, setLogoClicks] = useState(0);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [hasScrolled, setHasScrolled] = useState(false);
 
   // Ocasiones activas memoizadas para evitar recálculos innecesarios
   const activeOccasions = useMemo(
@@ -39,19 +36,9 @@ export const useHeaderState = () => {
     [location.pathname],
   );
 
-  // Detectar scroll para cambios en el header
-  const handleScroll = useCallback(() => {
-    setHasScrolled(window.scrollY > 10);
-  }, []);
-
   return {
     logoClicks,
     setLogoClicks,
-    isMobileMenuOpen,
-    setIsMobileMenuOpen,
-    hasScrolled,
-    handleScroll,
-    activeOccasions,
     desktopOccasions,
     isRouteActive,
     currentCountry,

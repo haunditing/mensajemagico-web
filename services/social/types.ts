@@ -7,7 +7,6 @@ export interface PostCreationPayload {
   intention: string; // "Generar Debate", "Contar una Historia", etc.
   contextWords?: string[];
   userContext: {
-    planLevel: 'guest' | 'free' | 'premium' | 'premium_lite';
     location?: string;
     essenceProfile?: any; // Perfil de estilo del usuario
   };

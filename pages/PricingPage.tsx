@@ -361,7 +361,7 @@ const PricingPage: React.FC = () => {
       if (error.response?.data?.details)
         errorMsg += `: ${error.response.data.details}`;
 
-      showToast(errorMsg, "payment_error" as any);
+      showToast(errorMsg, "payment_error");
     }
   };
 

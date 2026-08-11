@@ -99,10 +99,7 @@ const ProfilePage: React.FC = () => {
 
       // Cargar información del trial si existe
       if ((user as any).trial) {
-        console.log('🎁 Trial info found:', (user as any).trial);
         setTrialInfo((user as any).trial);
-      } else {
-        console.log('❌ No trial info in user object. User:', (user as any));
       }
 
       // Cargar color o derivar del género si no existe

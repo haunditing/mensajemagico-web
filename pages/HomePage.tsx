@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { OCCASIONS } from "../constants";
 import { CONFIG } from "../config";
 import { updateSeoTags } from "../services/seoService.ts";
-import AdBanner from "../components/AdBanner";
 import OccasionIcon from "../components/OccasionIcon";
 import { useAuth } from "../context/AuthContext";
 import { useUpsell } from "../context/UpsellContext";
@@ -236,8 +235,6 @@ const HomePage: React.FC = () => {
         )}
       </section>
 
-      {/*<AdBanner position="top" />*/}
-
       {/* Grid de Ocasiones */}
       <section className="mt-16">
         <div className="flex items-center justify-between mb-8">
@@ -309,10 +306,6 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/*<div className="my-16">
-        <AdBanner position="middle" />
-      </div>*/}
-
       {/* Feature Section */}
       <section className="bg-slate-900 rounded-3xl p-8 md:p-16 text-white text-center relative overflow-hidden mt-16 dark:border dark:border-slate-800">
         <div className="relative z-10 max-w-xl mx-auto">
@@ -339,10 +332,6 @@ const HomePage: React.FC = () => {
       <Suspense fallback={<div className="py-20 flex justify-center"><LoadingSpinner /></div>}>
         <FaqSection />
       </Suspense>
-
-      {/*<div className="mt-16">
-        <AdBanner position="bottom" />
-      </div>*/}
     </main>
   );
 };

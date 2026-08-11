@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import CreateContactModal from "../components/CreateContactModal";
 import { useToast } from "../context/ToastContext";
 import { useConfirm } from "../context/ConfirmContext";
+import { parseGeneration } from "../services/messageParser";
 
 interface Contact {
   _id: string;
@@ -148,34 +149,11 @@ const ContactsPage: React.FC = () => {
     if (!content) return "";
 
     // Asegurar que trabajamos con string
-    let textToParse =
+    const textToParse =
       typeof content === "string" ? content : JSON.stringify(content);
 
-    try {
-      // Limpiar markdown que la IA suele añadir
-      const cleanText = textToParse
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
-
-      if (cleanText.startsWith("{")) {
-        const parsed = JSON.parse(cleanText);
-        if (
-          parsed.generated_messages &&
-          Array.isArray(parsed.generated_messages)
-        ) {
-          const msg =
-            parsed.generated_messages.find((m: any) =>
-              m.tone?.includes("Premium"),
-            ) || parsed.generated_messages[0];
-          return msg ? msg.content : "Mensaje generado";
-        }
-        if (parsed.message) return parsed.message;
-      }
-      return cleanText;
-    } catch (e) {
-      return textToParse;
-    }
+    const parsed = parseGeneration(textToParse);
+    return parsed.content || textToParse;
   };
 
   const timeAgo = (dateString: string) => {

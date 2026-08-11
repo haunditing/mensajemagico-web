@@ -1,7 +1,6 @@
 import React from "react";
 import { Occasion, Relationship } from "../types";
 import { APOLOGY_REASONS, PENSAMIENTO_THEMES } from "../constants";
-import { useLocalization } from "../context/LocalizationContext";
 import { useAuth } from "../context/AuthContext";
 import { useUpsell } from "../context/UpsellContext";
 import { useFavorites } from "../context/FavoritesContext";
@@ -47,7 +46,6 @@ const Generator: React.FC<GeneratorProps> = ({
   const { triggerUpsell } = useUpsell();
   const { isFavorite } = useFavorites();
   const { showToast } = useToast();
-  const { country } = useLocalization(); // Necesario para pasar a GeneratedMessagesList
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
   const isGreeting = occasion.id === "saludo";
@@ -99,10 +97,6 @@ const Generator: React.FC<GeneratorProps> = ({
     setSafetyError,
     usageMessage,
     setUsageMessage,
-    showGifts,
-    setShowGifts,
-    giftBudget,
-    setGiftBudget,
     isForPost,
     setIsForPost,
     userLocation,
@@ -572,65 +566,6 @@ const Generator: React.FC<GeneratorProps> = ({
           )}
         </div>
 
-        {/* Toggle Regalos */}
-        {isLastStep && !isPensamiento && (
-          <div className="mb-6 flex flex-col sm:flex-row sm:items-center gap-4">
-            <div
-              className="flex items-center gap-3 cursor-pointer group w-fit"
-              onClick={() => setShowGifts(!showGifts)}
-            >
-              <div
-                className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all duration-200 ${showGifts ? "bg-blue-600 border-blue-600" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 group-hover:border-blue-400 dark:group-hover:border-blue-500"}`}
-              >
-                {showGifts && (
-                  <svg
-                    className="w-3.5 h-3.5 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                )}
-              </div>
-              <span className="text-sm font-bold text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors select-none flex items-center gap-2">
-                🎁 Ver sugerencias de regalos
-              </span>
-            </div>
-
-            {showGifts && (
-              <div className="flex items-center gap-2 animate-fade-in pl-8 sm:pl-0">
-                <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                  Presupuesto:
-                </span>
-                <div className="flex bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
-                  {(["low", "medium", "high"] as const).map((b) => (
-                    <button
-                      key={b}
-                      onClick={() => setGiftBudget(b)}
-                      className={`px-3 py-1 rounded-md text-[10px] font-bold transition-all ${giftBudget === b ? "bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"}`}
-                      title={
-                        b === "low"
-                          ? "Económico"
-                          : b === "medium"
-                            ? "Estándar"
-                            : "Lujo"
-                      }
-                    >
-                      {b === "low" ? "$" : b === "medium" ? "$$" : "$$$"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-
         {safetyError && (
           <div
             role="alert"
@@ -695,7 +630,7 @@ const Generator: React.FC<GeneratorProps> = ({
                 isGreeting={isGreeting}
                 disabled={isGenerationDisabled}
                 disabledLabel="Falta el mensaje a responder"
-                isPremium={planLevel === "premium" || planLevel === "premium_lite"}
+                isPremium={planLevel === "premium"}
               />
             </div>
           ) : (
@@ -756,8 +691,6 @@ const Generator: React.FC<GeneratorProps> = ({
       <GeneratedMessagesList
         messages={messages}
         isLoading={isLoading && messages.length === 0}
-        showGifts={showGifts}
-        country={country}
         isPensamiento={isPensamiento}
         occasion={occasion}
         shareParam={shareParam}
