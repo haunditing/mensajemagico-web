@@ -33,14 +33,9 @@ const HomePage: React.FC = () => {
       "@context": "https://schema.org",
       "@type": "SoftwareApplication",
       name: CONFIG.SEO.BASE_TITLE,
-      image: "https://mensajemagico.com/favicon.ico",
+      image: "https://mensajemagico.com/android-chrome-512x512.png",
       operatingSystem: "WEB",
       applicationCategory: "CommunicationApplication",
-      aggregateRating: {
-        "@type": "AggregateRating",
-        ratingValue: "4.8",
-        ratingCount: "250",
-      },
       offers: {
         "@type": "Offer",
         price: "0",

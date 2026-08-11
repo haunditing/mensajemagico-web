@@ -3,7 +3,25 @@ Allow: /
 Allow: /manifest.webmanifest
 Allow: /service-worker.js
 Allow: /assets/
+Allow: /mensajes/
+Allow: /pricing
+Allow: /faq
+Allow: /esencia
+Allow: /privacidad
+Allow: /terminos
+Allow: /contacto
 Disallow: /api/
 Disallow: /success
+Disallow: /payment-error
+Disallow: /login
+Disallow: /signup
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /perfil
+Disallow: /recordatorios
+Disallow: /configuracion
+Disallow: /contactos
+Disallow: /favoritos
+Disallow: /admin
 
 Sitemap: https://mensajemagico.com/sitemap.xml

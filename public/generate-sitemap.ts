@@ -7,12 +7,13 @@ import { OCCASIONS, RELATIONSHIPS } from "../constants";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const BASE_URL = "https://www.mensajemagico.com";
+const BASE_URL = "https://mensajemagico.com";
 
 const staticPages = [
   { url: "/", changefreq: "daily", priority: "1.0" },
   { url: "/pricing", changefreq: "weekly", priority: "0.9" },
   { url: "/faq", changefreq: "weekly", priority: "0.8" },
+  { url: "/esencia", changefreq: "weekly", priority: "0.7" },
   { url: "/login", changefreq: "monthly", priority: "0.5" },
   { url: "/signup", changefreq: "monthly", priority: "0.6" },
   { url: "/contacto", changefreq: "monthly", priority: "0.4" },

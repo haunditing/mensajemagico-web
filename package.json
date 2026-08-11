@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npx tsx public/generate-sitemap.ts && vite build",
+    "generate:sitemap": "npx tsx public/generate-sitemap.ts",
+    "prerender": "npx tsx scripts/prerender.ts",
+    "build": "npm run generate:sitemap && vite build && npm run prerender",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -27,7 +29,9 @@
     "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.24",
     "postcss": "^8.5.6",
+    "puppeteer": "^25.5.0",
     "tailwindcss": "^4.1.18",
+    "tsx": "^4.23.12",
     "typescript": "~5.8.2",
     "vite": "^6.2.0"
   }
