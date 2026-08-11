@@ -1,12 +1,11 @@
 import React, { useRef, useState, useEffect } from "react";
 import { ExtendedGeneratedMessage } from "../hooks/useGenerator";
 import { Occasion, SharePlatform } from "../types";
-import { AI_ERROR_FALLBACK } from "../services/geminiService";
 import ShareBar from "./ShareBar";
 
 interface GeneratedMessagesListProps {
   messages: ExtendedGeneratedMessage[];
-  isLoading: boolean;
+  isStreaming: boolean;
   isPensamiento: boolean;
   occasion: Occasion;
   shareParam: string | null;
@@ -22,7 +21,7 @@ interface GeneratedMessagesListProps {
 
 const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
   messages,
-  isLoading,
+  isStreaming,
   isPensamiento,
   occasion,
   shareParam,
@@ -144,7 +143,7 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
             className={`flex overflow-x-auto gap-4 pb-8 no-scrollbar -mx-6 px-6 md:-mx-10 md:px-10 items-start ${isDragging ? "cursor-grabbing snap-none select-none" : "cursor-grab snap-x active:cursor-grabbing"}`}
           >
             {messages.map((msg) => {
-              const isError = msg.content === AI_ERROR_FALLBACK;
+              const isError = !!msg.isError;
               const isFav = isFavorite(msg.content);
 
               return (
@@ -181,6 +180,8 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
                       </div>
                     )}
                     <p
+                      role={msg.isStreaming ? "status" : undefined}
+                      aria-live={msg.isStreaming ? "polite" : undefined}
                       className={`text-slate-800 dark:text-slate-200 leading-relaxed font-medium whitespace-pre-wrap break-words ${
                         isPensamiento
                           ? "text-xl md:text-2xl italic text-center"
@@ -213,6 +214,32 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
                         </div>
                       )}
                     </div>
+
+                    {/* Botón Reintentar cuando hubo un error de conexión */}
+                    {isError && onRegenerate && (
+                      <div className="mt-3">
+                        <button
+                          onClick={() => onRegenerate(msg)}
+                          className="text-[10px] font-bold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 flex items-center gap-1 transition-colors"
+                          title="Reintentar la generación con los mismos datos."
+                        >
+                          <svg
+                            className="w-3 h-3"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                            />
+                          </svg>
+                          Reintentar
+                        </button>
+                      </div>
+                    )}
 
                     {/* Botón Regenerar */}
                     {!isError && !msg.isStreaming && onRegenerate && (
@@ -272,7 +299,7 @@ const GeneratedMessagesList: React.FC<GeneratedMessagesListProps> = ({
                           if (onMarkAsUsed) onMarkAsUsed(msg);
                           return onShareAction(platform);
                         }}
-                        disabled={isError || isLoading || !!msg.isStreaming}
+                        disabled={isError || isStreaming || !!msg.isStreaming}
                         className="animate-fade-in-up flex-1"
                         highlightedPlatform={shareParam}
                       />

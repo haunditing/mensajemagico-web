@@ -18,6 +18,14 @@ const OccasionPage: React.FC = () => {
     undefined,
   );
   const [localized, setLocalized] = useState<LocalizedContent | null>(null);
+  const [activity, setActivity] = useState<"idle" | "focused" | "streaming">(
+    "idle",
+  );
+
+  // Modo foco: el formulario es el protagonista. El hero colapsa a una barra
+  // de contexto y el contenido de descubrimiento se retira durante la creación.
+  const isFocused = activity !== "idle";
+  const isStreaming = activity === "streaming";
 
   const isValentine = CONFIG.THEME.IS_VALENTINE;
   const isChristmas = CONFIG.THEME.IS_CHRISTMAS;
@@ -91,8 +99,8 @@ const OccasionPage: React.FC = () => {
         <span className="text-slate-900 dark:text-white">{localized.name}</span>
       </nav>
 
-      <header className="mb-12 relative">
-        {(isValentine || isChristmas) && (
+      <header className={`occ-hero relative ${isFocused ? "mb-6" : "mb-12"}`}>
+        {!isFocused && (isValentine || isChristmas) && (
           <FallingParticles
             count={20}
             emojis={
@@ -104,23 +112,23 @@ const OccasionPage: React.FC = () => {
           />
         )}
 
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 md:gap-8 mb-8">
-          <div className="relative group">
+        <div className={`flex items-center gap-4 md:gap-6 ${isFocused ? "" : "md:gap-8 mb-8"}`}>
+          <div className="relative group shrink-0">
             <div
               className={`absolute -inset-2 rounded-3xl blur opacity-20 group-hover:opacity-40 transition duration-500 ${isVisto ? "bg-green-500" : "bg-gradient-to-tr from-blue-500 to-indigo-500"}`}
             ></div>
             <div
-              className={`relative bg-white dark:bg-slate-900 shadow-xl border border-slate-100 dark:border-slate-800 w-20 h-20 md:w-24 md:h-24 rounded-[2rem] flex items-center justify-center transform -rotate-3 hover:rotate-0 transition-all cursor-default ${isVisto ? "text-green-600 dark:text-green-400 shadow-green-500/10" : "shadow-blue-500/10"}`}
+              className={`relative bg-white dark:bg-slate-900 shadow-xl border border-slate-100 dark:border-slate-800 flex items-center justify-center transform -rotate-3 hover:rotate-0 transition-transform cursor-default ${isVisto ? "text-green-600 dark:text-green-400 shadow-green-500/10" : "shadow-blue-500/10"} ${isFocused ? "w-10 h-10 md:w-12 md:h-12 rounded-xl" : "w-20 h-20 md:w-24 md:h-24 rounded-[2rem]"}`}
             >
               <OccasionIcon
                 slug={rawOccasion.slug}
                 icon={rawOccasion.icon}
-                isLarge
+                isLarge={!isFocused}
               />
             </div>
           </div>
-          <div className="flex-1">
-            <h1 className="text-4xl md:text-7xl font-[800] text-slate-900 dark:text-white tracking-tight leading-[1.1] mb-4">
+          <div className="flex-1 min-w-0">
+            <h1 className={`tracking-tight leading-[1.1] text-slate-900 dark:text-white ${isFocused ? "text-xl md:text-2xl font-bold" : "text-4xl md:text-7xl font-[800] mb-4"}`}>
               {dynamicH1.split(" ").map((word, i, arr) => {
                 const isLastWord = i === arr.length - 1;
                 const isVistoWord = isVisto && word.toLowerCase() === "visto";
@@ -145,7 +153,11 @@ const OccasionPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative pl-8 md:pl-10">
+        <div
+          className={`relative pl-8 md:pl-10 overflow-hidden ${
+            isFocused ? "max-h-0 opacity-0" : "max-h-64 opacity-100"
+          }`}
+        >
           <div
             className={`absolute left-0 top-0 bottom-0 w-1.5 rounded-full ${isVisto ? "bg-green-500" : "bg-gradient-to-b from-blue-500 to-indigo-600"}`}
           ></div>
@@ -166,10 +178,11 @@ const OccasionPage: React.FC = () => {
           occasion={{ ...rawOccasion, name: localized.name }}
           onRelationshipChange={handleRelationshipChange}
           initialRelationship={fixedRel}
+          onActivityChange={setActivity}
         />
       </div>
 
-      <section className="mt-24">
+      <section className={`mt-24 ${isStreaming ? "hidden" : ""}`}>
         <div className="flex items-center gap-6 mb-10">
           <h2 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
             Explora más categorías

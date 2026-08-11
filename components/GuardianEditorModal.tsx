@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { api } from "../context/api";
 import { useToast } from "../context/ToastContext";
+import Button from "./ui/Button";
 
 interface GuardianEditorModalProps {
   isOpen: boolean;
@@ -32,6 +33,16 @@ const GuardianEditorModal: React.FC<GuardianEditorModalProps> = ({
   useEffect(() => {
     if (isOpen) setText(initialText);
   }, [isOpen, initialText]);
+
+  // Modo protagonista: bloquea el scroll del fondo mientras el editor está abierto
+  useEffect(() => {
+    if (!isOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
 
   // Manejo de Foco (Trap Focus) y Tecla Escape
   useEffect(() => {
@@ -108,24 +119,38 @@ const GuardianEditorModal: React.FC<GuardianEditorModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-0 sm:p-6 bg-black/70 backdrop-blur-md animate-fade-in" onClick={onClose}>
       <div 
         ref={modalRef}
         role="dialog"
         aria-modal="true"
-        className={`bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-lg w-full p-6 relative overflow-hidden flex flex-col max-h-[90vh] ${isRisky ? "border-2 border-orange-200 dark:border-orange-900/50" : ""}`} 
+        aria-label="Editor Mágico"
+        className={`bg-white dark:bg-slate-900 rounded-none sm:rounded-2xl shadow-2xl max-w-3xl w-full p-5 sm:p-8 relative overflow-hidden flex flex-col h-full sm:h-auto sm:max-h-[92vh] ${isRisky ? "border-2 border-orange-200 dark:border-orange-900/50" : ""}`} 
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-bold text-slate-900 dark:text-white">Editar Mensaje</h3>
-          <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors">✕</button>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
+              <span>✨</span> Editor Mágico
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              Pule tu texto aquí. Al guardar, la IA aprende tu estilo y lo aplica en futuros mensajes.
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors w-9 h-9 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-center shrink-0"
+            aria-label="Cerrar editor"
+          >
+            ✕
+          </button>
         </div>
 
         <div className="relative flex-grow">
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
-            className="w-full h-full min-h-[200px] p-4 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 dark:text-slate-200 leading-relaxed font-medium text-base resize-none bg-slate-50 dark:bg-slate-800 pb-8"
+            className="w-full h-full min-h-[40vh] sm:min-h-[260px] p-4 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-400 focus:border-brand-400 outline-none text-slate-800 dark:text-slate-200 leading-relaxed font-medium text-base resize-none bg-slate-50 dark:bg-slate-800 pb-8"
             placeholder="Escribe tu mensaje aquí..."
             autoFocus
           />
@@ -140,11 +165,28 @@ const GuardianEditorModal: React.FC<GuardianEditorModalProps> = ({
           </div>
         )}
 
-        <div className="mt-6 flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800">
-          <button onClick={handleRestore} className="text-slate-500 dark:text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 text-xs font-bold transition-colors flex items-center gap-1" disabled={text === initialText}>
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg> Restaurar original
-          </button>
-          <button onClick={handleFinalize} disabled={isSaving} className="bg-slate-900 dark:bg-slate-700 text-white px-6 py-2 rounded-xl font-bold text-sm hover:bg-slate-800 dark:hover:bg-slate-600 transition-colors shadow-lg shadow-slate-900/20 dark:shadow-none disabled:opacity-50">{isSaving ? "Guardando..." : "Guardar Cambios"}</button>
+        <div className="mt-6 flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800 gap-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleRestore}
+            disabled={text === initialText}
+            leftIcon={
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+              </svg>
+            }
+          >
+            Restaurar original
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={handleFinalize}
+            disabled={isSaving}
+          >
+            {isSaving ? "Guardando..." : "Guardar Cambios"}
+          </Button>
         </div>
       </div>
     </div>

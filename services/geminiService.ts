@@ -30,6 +30,7 @@ export const generateMessageStream = async (
   styleInstructions?: string,
   creativityLevel?: string,
   avoidTopics?: string,
+  signal?: AbortSignal,
 ): Promise<GenerationResponse> => {
   const cacheKey =
     `${config.occasion}-${config.relationship}-${config.tone}-${config.contextWords?.join("")}-${config.styleSample || ""}-${styleInstructions || ""}-${creativityLevel || ""}-${avoidTopics || ""}`
@@ -80,6 +81,7 @@ export const generateMessageStream = async (
         greetingMoment: config.greetingMoment,
         apologyReason: config.apologyReason,
       }),
+      signal,
     });
 
     // 1. Manejo explícito de errores HTTP (como 429 o 500)
@@ -110,13 +112,22 @@ export const generateMessageStream = async (
     const decoder = new TextDecoder();
     let fullText = "";
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value, { stream: true });
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
 
-      onToken(chunk);
-      fullText += chunk;
+        onToken(chunk);
+        fullText += chunk;
+      }
+    } catch (error) {
+      // Cancelación por el usuario: devolvemos lo generado hasta ahora para
+      // que el llamador decida si conserva el texto parcial.
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return { content: fullText.trim() };
+      }
+      throw error;
     }
 
     if (!generationCache[cacheKey]) generationCache[cacheKey] = [];

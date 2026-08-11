@@ -4,12 +4,12 @@ import { APOLOGY_REASONS, PENSAMIENTO_THEMES } from "../constants";
 import { useAuth } from "../context/AuthContext";
 import { useUpsell } from "../context/UpsellContext";
 import { useFavorites } from "../context/FavoritesContext";
-import { useToast } from "../context/ToastContext";
 import UsageBar from "./UsageBar";
 import { Link } from "react-router-dom";
 import CreateContactModal from "./CreateContactModal";
 import GuardianEditorModal from "./GuardianEditorModal";
 import { useGenerator } from "../hooks/useGenerator";
+import { useGeneratorStepper } from "../hooks/useGeneratorStepper";
 import ContextInputSection from "./ContextInputSection";
 import { getRegionalModeHint, getRegionalModeUpsell } from "../services/accessCopy";
 import ToneSelector from "./ToneSelector";
@@ -21,6 +21,7 @@ import GreetingSelector from "./GreetingSelector";
 import GuardianObjectiveSelector from "./GuardianObjectiveSelector";
 import ReceivedMessageInput from "./ReceivedMessageInput";
 import GenerateButton from "./GenerateButton";
+import Button from "./ui/Button";
 import { markOccasionVisited } from "../services/usageControlService";
 import EssenceToggle from "./EssenceToggle";
 import PostGenerator from "./PostGenerator";
@@ -30,12 +31,14 @@ interface GeneratorProps {
   occasion: Occasion;
   initialRelationship?: Relationship;
   onRelationshipChange?: (relId: string) => void;
+  onActivityChange?: (status: "idle" | "focused" | "streaming") => void;
 }
 
 const Generator: React.FC<GeneratorProps> = ({
   occasion,
   initialRelationship,
   onRelationshipChange,
+  onActivityChange,
 }) => {
   // --- Integration Point for the new PostGenerator ---
   if (occasion.id === 'pensamiento') {
@@ -45,7 +48,6 @@ const Generator: React.FC<GeneratorProps> = ({
   const { user, remainingCredits, planLevel } = useAuth();
   const { triggerUpsell } = useUpsell();
   const { isFavorite } = useFavorites();
-  const { showToast } = useToast();
   const isPensamiento = occasion.id === "pensamiento";
   const isResponder = occasion.id === "responder";
   const isGreeting = occasion.id === "saludo";
@@ -91,8 +93,8 @@ const Generator: React.FC<GeneratorProps> = ({
     setManualIntentionOverride,
     messages,
     setMessages,
-    isLoading,
-    setIsLoading,
+    isStreaming,
+    cancelGeneration,
     safetyError,
     setSafetyError,
     usageMessage,
@@ -128,34 +130,49 @@ const Generator: React.FC<GeneratorProps> = ({
   } = useGenerator(occasion, initialRelationship, onRelationshipChange);
 
   // --- STEPPER LOGIC (Progressive Disclosure) ---
-  const [currentStep, setCurrentStep] = React.useState(1);
-
-  const steps = React.useMemo(() => {
-    if (isPensamiento) {
-      return [
-        { id: 1, label: "Formato" },
-        { id: 2, label: "Contexto" },
-        { id: 3, label: "Estilo" },
-      ];
-    }
-    return [
-      { id: 1, label: "Destinatario" },
-      { id: 2, label: "Contexto" },
-      { id: 3, label: "Estilo" },
-    ];
-  }, [isPensamiento]);
-
-  const totalSteps = steps.length;
-  const isLastStep = currentStep === totalSteps;
-
-  // Lógica para deshabilitar el botón de generación si faltan datos clave
-  const isGenerationDisabled =
-    isOccasionLocked || (isResponder && receivedText.trim().length === 0);
-
   const [showGuardianOnboarding, setShowGuardianOnboarding] =
     React.useState(false);
+
+  const handleGenerated = React.useCallback(() => {
+    if (!localStorage.getItem("guardian_onboarding_seen")) {
+      localStorage.setItem("guardian_onboarding_seen", "true");
+      setShowGuardianOnboarding(true);
+    }
+  }, []);
+
+  const {
+    steps,
+    currentStep,
+    isLastStep,
+    canAdvance,
+    isShaking,
+    handleNext,
+    handleBack,
+    handleGenerateAndReset,
+    resetStep,
+  } = useGeneratorStepper({
+    isPensamiento,
+    isResponder,
+    receivedText,
+    safetyError,
+    onGenerate: handleGenerate,
+    onReset: resetForm,
+    onGenerated: handleGenerated,
+  });
+
   // Resetear paso al cambiar de ocasión
   const prevOccasionId = React.useRef(occasion.id);
+
+  // Modo foco: el formulario es el protagonista al avanzar en el stepper o generar
+  const isFocused = currentStep > 1 || isStreaming;
+
+  // Reportar la actividad de la página para que el layout colapse el chrome
+  React.useEffect(() => {
+    if (!onActivityChange) return;
+    const status = isStreaming ? "streaming" : isFocused ? "focused" : "idle";
+    onActivityChange(status);
+  }, [isStreaming, isFocused, onActivityChange]);
+
   React.useEffect(() => {
     // Marcar ocasión como visitada para ocultar el badge "Nuevo" en el futuro
     if (occasion.badge) {
@@ -163,79 +180,20 @@ const Generator: React.FC<GeneratorProps> = ({
     }
 
     if (prevOccasionId.current !== occasion.id) {
-      setCurrentStep(1);
+      resetStep();
       prevOccasionId.current = occasion.id;
     }
-  }, [occasion.id, occasion.badge]);
+  }, [occasion.id, occasion.badge, resetStep]);
 
-  const canAdvance = React.useMemo(() => {
-    if (safetyError) return false;
-    if (!isPensamiento && currentStep === 2 && isResponder) {
-      return receivedText.trim().length > 0;
-    }
-    return true;
-  }, [safetyError, isPensamiento, currentStep, isResponder, receivedText]);
-
-  // Estado para la animación de sacudida
-  const [isShaking, setIsShaking] = React.useState(false);
-
-  const handleNext = () => {
-    // Validaciones antes de avanzar
-    if (!canAdvance) {
-      setIsShaking(true);
-      setTimeout(() => setIsShaking(false), 500);
-
-      // Feedback específico
-      if (safetyError) {
-        showToast(
-          "Hay una advertencia de seguridad pendiente. Por favor revísala.",
-          "error",
-        );
-      } else if (
-        !isPensamiento &&
-        currentStep === 2 &&
-        isResponder &&
-        !receivedText.trim()
-      ) {
-        showToast(
-          "Por favor, escribe el mensaje que recibiste para continuar.",
-          "error",
-        );
-      }
-      return;
-    }
-
-    setCurrentStep((prev) => Math.min(prev + 1, totalSteps));
-    // Scroll suave al inicio del contenedor para mantener el foco
-    document
-      .getElementById("generator-card")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  const handleBack = () => {
-    const prevStep = Math.max(currentStep - 1, 1);
-    setCurrentStep(prevStep);
-  };
-
-  const handleGenerateAndReset = async () => {
-    const success = await handleGenerate();
-    if (success) {
-      setCurrentStep(1);
-      resetForm();
-
-      // Mostrar onboarding del Guardián si es la primera vez
-      if (!localStorage.getItem("guardian_onboarding_seen")) {
-        setShowGuardianOnboarding(true);
-        localStorage.setItem("guardian_onboarding_seen", "true");
-      }
-    }
-  };
+  // Lógica para deshabilitar el botón de generación si faltan datos clave
+  const isGenerationDisabled =
+    isOccasionLocked || (isResponder && receivedText.trim().length === 0);
 
   // Botón flotante para seguir la escritura si el usuario hace scroll hacia arriba
   const [showScrollButton, setShowScrollButton] = React.useState(false);
 
   React.useEffect(() => {
-    if (!isLoading) {
+    if (!isStreaming) {
       setShowScrollButton(false);
       return;
     }
@@ -249,7 +207,23 @@ const Generator: React.FC<GeneratorProps> = ({
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isLoading]);
+  }, [isStreaming]);
+
+  // Seguir la escritura: mientras el usuario permanezca cerca del final de la
+  // página, el scroll acompaña a la tarjeta en streaming (patrón ChatGPT).
+  // Si el usuario se desplaza hacia arriba, deja de seguirlo y aparece el botón flotante.
+  React.useEffect(() => {
+    if (!isStreaming) return;
+    const distanceToBottom =
+      document.documentElement.scrollHeight -
+      (window.innerHeight + window.scrollY);
+    if (distanceToBottom < 200) {
+      window.scrollTo({
+        top: document.documentElement.scrollHeight,
+        behavior: "auto",
+      });
+    }
+  }, [messages, isStreaming]);
 
   // Estado para controlar qué contacto se está editando
   const [contactToEdit, setContactToEdit] = React.useState<any>(null);
@@ -274,18 +248,8 @@ const Generator: React.FC<GeneratorProps> = ({
     <div className={`w-full ${isPensamiento ? "max-w-3xl mx-auto" : ""}`}>
       <div
         id="generator-card"
-        className={`bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2rem] border border-slate-200 dark:border-slate-800 p-6 md:p-10 shadow-sm ${isPensamiento ? "border-blue-100 dark:border-blue-900/30 bg-blue-50/10 dark:bg-blue-900/10" : ""}`}
+        className={`bg-white dark:bg-slate-900 rounded-2xl md:rounded-[2rem] border border-slate-200 dark:border-slate-800 p-6 md:p-10 shadow-soft ${isPensamiento ? "border-blue-100 dark:border-blue-900/30 bg-blue-50/10 dark:bg-blue-900/10" : ""}`}
       >
-        <style>{`
-          @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-          }
-          .animate-shake {
-            animation: shake 0.4s ease-in-out;
-          }
-        `}</style>
         {/* Barra de Uso de Créditos */}
         <UsageBar />
 
@@ -480,7 +444,7 @@ const Generator: React.FC<GeneratorProps> = ({
                   setReceivedText={setReceivedText}
                   maxChars={MAX_CHARS}
                   safetyError={safetyError}
-                  disabled={isLoading}
+                  disabled={isStreaming}
                 />
               )}
 
@@ -509,6 +473,7 @@ const Generator: React.FC<GeneratorProps> = ({
             <div className="space-y-6 animate-fade-in">
               {user && (
                 <EssenceToggle
+                  compact={isFocused}
                   essenceProfile={essenceProfile}
                   essenceCompleted={essenceCompleted}
                   applyEssence={applyEssence}
@@ -535,7 +500,7 @@ const Generator: React.FC<GeneratorProps> = ({
                       onChange={(e) =>
                         setStyleSample(e.target.value.slice(0, STYLE_SAMPLE_MAX))
                       }
-                      className="w-full min-h-[96px] p-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-slate-800 dark:text-slate-200 leading-relaxed text-sm bg-white dark:bg-slate-900"
+                      className="w-full min-h-[96px] p-3 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-400 focus:border-brand-400 outline-none text-slate-800 dark:text-slate-200 leading-relaxed text-sm bg-white dark:bg-slate-900"
                       placeholder="Ej: ey, me acordé de ti... ¿todo bien? jaja"
                     />
                     <div className={`absolute bottom-2 right-3 text-[10px] font-bold ${styleSample.length >= STYLE_SAMPLE_MAX ? "text-red-500" : "text-slate-400"}`}>
@@ -595,68 +560,96 @@ const Generator: React.FC<GeneratorProps> = ({
         {/* --- NAVEGACIÓN DEL STEPPER --- */}
         <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
           {currentStep > 1 && (
-            <button
+            <Button
+              variant="secondary"
+              size="md"
               onClick={handleBack}
-              className="flex-none w-14 h-14 md:w-auto md:h-auto md:px-6 md:py-3 rounded-xl font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex items-center justify-center border border-slate-200 dark:border-slate-700 md:border-0"
+              className="flex-none md:px-6"
               aria-label="Volver al paso anterior"
+              leftIcon={
+                <svg
+                  className="w-5 h-5 md:hidden"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+              }
             >
-              <svg
-                className="w-5 h-5 md:hidden"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
               <span className="hidden md:inline">Atrás</span>
-            </button>
+            </Button>
           )}
 
           {isLastStep ? (
-            <div className="flex-1">
-              <GenerateButton
-                onClick={handleGenerateAndReset}
-                isLoading={isLoading}
-                safetyError={safetyError}
-                user={user}
-                remainingCredits={remainingCredits}
-                isOccasionLocked={isOccasionLocked}
-                isPensamiento={isPensamiento}
-                isGreeting={isGreeting}
-                disabled={isGenerationDisabled}
-                disabledLabel="Falta el mensaje a responder"
-                isPremium={planLevel === "premium"}
-              />
+            <div className="flex-1 flex gap-3">
+              <div className="flex-1">
+                <GenerateButton
+                  onClick={handleGenerateAndReset}
+                  isLoading={isStreaming}
+                  safetyError={safetyError}
+                  user={user}
+                  remainingCredits={remainingCredits}
+                  isOccasionLocked={isOccasionLocked}
+                  isPensamiento={isPensamiento}
+                  isGreeting={isGreeting}
+                  disabled={isGenerationDisabled}
+                  disabledLabel="Falta el mensaje a responder"
+                  isPremium={planLevel === "premium"}
+                />
+              </div>
+
+              {/* Cancelación del stream en curso (patrón ChatGPT/Claude) */}
+              {isStreaming && (
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  onClick={cancelGeneration}
+                  className="flex-none w-14 md:w-auto md:px-5"
+                  aria-label="Detener la generación"
+                  leftIcon={
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <rect x="6" y="6" width="12" height="12" rx="2" />
+                    </svg>
+                  }
+                >
+                  <span className="hidden md:inline">Detener</span>
+                </Button>
+              )}
             </div>
           ) : (
-            <button
+            <Button
+              variant={canAdvance ? "primary" : "secondary"}
+              size="md"
               onClick={handleNext}
-              className={`flex-1 h-14 md:h-auto md:py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${
-                !canAdvance
-                  ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed"
-                  : "bg-slate-900 dark:bg-slate-700 text-white hover:bg-slate-800 dark:hover:bg-slate-600 shadow-lg active:scale-95"
-              } ${isShaking ? "animate-shake" : ""}`}
+              className={`flex-1 ${!canAdvance ? "cursor-not-allowed opacity-70" : ""} ${isShaking ? "animate-shake" : ""}`}
+              rightIcon={
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              }
             >
-              <span>Siguiente</span>
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
+              Siguiente
+            </Button>
           )}
         </div>
       </div>
@@ -690,7 +683,7 @@ const Generator: React.FC<GeneratorProps> = ({
 
       <GeneratedMessagesList
         messages={messages}
-        isLoading={isLoading && messages.length === 0}
+        isStreaming={isStreaming}
         isPensamiento={isPensamiento}
         occasion={occasion}
         shareParam={shareParam}

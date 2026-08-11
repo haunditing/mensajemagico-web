@@ -62,11 +62,11 @@ const RelationshipSelector: React.FC<RelationshipSelectorProps> = ({
       <select
         value={relationshipId}
         onChange={onRelationshipChange}
-        className="w-full h-12 md:h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-4 pr-10 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all appearance-none cursor-pointer"
+        className="w-full h-12 md:h-14 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl pl-4 pr-10 font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-brand-400 focus:border-brand-400 outline-none transition-all appearance-none cursor-pointer"
       >
         <option
           value="new_contact"
-          className="font-bold text-blue-600 dark:text-blue-400"
+          className="font-bold text-brand-600 dark:text-brand-400"
         >
           + Nuevo Contacto
         </option>

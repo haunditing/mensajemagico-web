@@ -93,6 +93,17 @@ export const useGenerator = (
   const [guardianWarning, setGuardianWarning] = useState<string | null>(null);
   const isGeneratingRef = useRef(false);
 
+  // --- Máquina de estados de la generación ---
+  // "idle" | "streaming" | "error" define el ciclo de vida de una generación:
+  // evita dobles envíos, permite cancelar el stream y diferencia errores reales.
+  type GenerationStatus = "idle" | "streaming" | "error";
+  const [generationStatus, setGenerationStatus] =
+    useState<GenerationStatus>("idle");
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const activeMessageIdRef = useRef<string | null>(null);
+  const rawStreamRef = useRef("");
+  const isStreaming = generationStatus === "streaming";
+
   const [essenceProfile, setEssenceProfile] = useState<EssenceProfile | null>(null);
   const [essenceCompleted, setEssenceCompleted] = useState<boolean>(false);
   const [applyEssence, setApplyEssence] = useState<boolean>(true);
@@ -191,7 +202,6 @@ export const useGenerator = (
     }
   });
 
-  const [isLoading, setIsLoading] = useState(false);
   const [safetyError, setSafetyError] = useState<string | null>(null);
   const [usageMessage, setUsageMessage] = useState<string | null>(null);
   const [isForPost, setIsForPost] = useState(false);
@@ -366,7 +376,12 @@ export const useGenerator = (
   }, [currentWord, isContextLocked, currentContextCount, contextWords]);
 
   const handleGenerate = useCallback(async (overrideConfig?: any) => {
-    if (safetyError || isLoading || isOccasionLocked || isGeneratingRef.current)
+    if (
+      safetyError ||
+      generationStatus === "streaming" ||
+      isOccasionLocked ||
+      isGeneratingRef.current
+    )
       return false;
     isGeneratingRef.current = true;
 
@@ -399,7 +414,11 @@ export const useGenerator = (
       if (check.delay) delay = check.delay;
     }
 
-    setIsLoading(true);
+    const abortController = new AbortController();
+    abortControllerRef.current = abortController;
+    activeMessageIdRef.current = null;
+    rawStreamRef.current = "";
+    setGenerationStatus("streaming");
     setUsageMessage(null);
     if (delay) await new Promise((res) => setTimeout(res, delay));
 
@@ -439,6 +458,7 @@ export const useGenerator = (
     });
 
     const tempId = Math.random().toString(36).substr(2, 9);
+    activeMessageIdRef.current = tempId;
 
     // Guardar configuración para regeneración futura
     const currentConfig = {
@@ -469,16 +489,14 @@ export const useGenerator = (
       ...prev,
     ]);
 
-    // Scroll imperativo UNA SOLA VEZ al iniciar (Mejor UX en móviles)
-    if (window.innerWidth < 768) {
-      setTimeout(() => {
-        const element = document.getElementById("results-section");
-        if (element) {
-          const y = element.getBoundingClientRect().top + window.scrollY - 100;
-          window.scrollTo({ top: y, behavior: "smooth" });
-        }
-      }, 100);
-    }
+    // Scroll imperativo UNA SOLA VEZ al iniciar para enfocar el mensaje nuevo
+    setTimeout(() => {
+      const element = document.getElementById("results-section");
+      if (element) {
+        const y = element.getBoundingClientRect().top + window.scrollY - 100;
+        window.scrollTo({ top: y, behavior: "smooth" });
+      }
+    }, 100);
 
     let rawStream = "";
 
@@ -510,24 +528,26 @@ export const useGenerator = (
           greetingMoment: isGreeting ? effectiveGreetingMoment : undefined,
           apologyReason: isPerdoname ? effectiveApologyReason : undefined,
           applyEssence: applyEssence && planLevel === 'premium',
-                          styleSample: styleSample.trim() || undefined,
-                        },
-                        (token) => {
-                          rawStream += token;
-                          const displayContent = getStreamDisplay(rawStream);
+          styleSample: styleSample.trim() || undefined,
+        },
+        (token) => {
+          rawStream += token;
+          rawStreamRef.current = rawStream;
+          const displayContent = getStreamDisplay(rawStream);
 
-                          setMessages((prev) =>
-                            prev.map((msg) =>
-                              msg.id === tempId ? { ...msg, content: displayContent } : msg,
-                            ),
-                          );
-                        },
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === tempId ? { ...msg, content: displayContent } : msg,
+            ),
+          );
+        },
         user?._id,
         userLocation,
         effectiveSelectedContact?._id,
         styleInstructions,
         creativityLevel,
         avoidTopics,
+        abortController.signal,
       );
 
       if (response.remainingCredits !== undefined && updateCredits)
@@ -552,13 +572,24 @@ export const useGenerator = (
         ),
       );
 
-      setIsLoading(false);
+      abortControllerRef.current = null;
+      activeMessageIdRef.current = null;
+      setGenerationStatus("idle");
       isGeneratingRef.current = false;
       recordGeneration();
       incrementGlobalCounter();
       setCurrentWord("");
       return true; // Éxito
     } catch (error: any) {
+      // Cancelación del usuario: se conserva lo parcialmente generado
+      if (error?.name === "AbortError" || abortController.signal.aborted) {
+        abortControllerRef.current = null;
+        activeMessageIdRef.current = null;
+        setGenerationStatus("idle");
+        isGeneratingRef.current = false;
+        return false; // Cancelado por el usuario
+      }
+
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === tempId
@@ -571,7 +602,9 @@ export const useGenerator = (
             : msg,
         ),
       );
-      setIsLoading(false);
+      abortControllerRef.current = null;
+      activeMessageIdRef.current = null;
+      setGenerationStatus("error");
       isGeneratingRef.current = false;
       if (error.upsell) triggerUpsell(error.upsell);
       return false; // Fallo
@@ -600,9 +633,42 @@ export const useGenerator = (
     applyEssence,
     isForPost,
     safetyError,
-    isLoading,
+    generationStatus,
     isOccasionLocked,
   ]);
+
+  // Cancela la generación en curso y conserva el texto parcialmente generado.
+  const cancelGeneration = useCallback(() => {
+    if (generationStatus !== "streaming") return;
+    abortControllerRef.current?.abort();
+
+    const id = activeMessageIdRef.current;
+    const partial = rawStreamRef.current.trim();
+
+    if (id && partial) {
+      const displayContent = getStreamDisplay(rawStreamRef.current);
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === id
+            ? {
+                ...msg,
+                content: displayContent,
+                originalContent: displayContent,
+                isStreaming: false,
+              }
+            : msg,
+        ),
+      );
+    } else if (id) {
+      // No llegó ningún token: retiramos la tarjeta vacía.
+      setMessages((prev) => prev.filter((msg) => msg.id !== id));
+    }
+
+    abortControllerRef.current = null;
+    activeMessageIdRef.current = null;
+    setGenerationStatus("idle");
+    isGeneratingRef.current = false;
+  }, [generationStatus]);
 
   // Otros métodos se mantienen igual...
   const handleMessageUpdate = useCallback((id: string, newContent: string) =>
@@ -713,8 +779,9 @@ export const useGenerator = (
     setManualIntentionOverride,
     messages,
     setMessages,
-    isLoading,
-    setIsLoading,
+    isStreaming,
+    generationStatus,
+    cancelGeneration,
     safetyError,
     setSafetyError,
     usageMessage,

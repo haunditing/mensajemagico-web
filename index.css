@@ -3,9 +3,84 @@
 /* Habilitar modo oscuro manual por clase (necesario en Tailwind v4) */
 @variant dark (&:where(.dark, .dark *));
 
+/* ------------------------------------------------------------------
+   DESIGN TOKENS
+   Patrón visual: "Micro-SaaS de generación con IA"
+   - Marca azul → índigo con CTA de gradiente "mágico"
+   - Sombras suaves + glow de marca
+   - Animaciones utilitarias (fade-in*, float, shine, pulse-soft)
+   ------------------------------------------------------------------ */
+@theme {
+  /* Escala de marca (azul → índigo) */
+  --color-brand-50: #eff6ff;
+  --color-brand-100: #dbeafe;
+  --color-brand-200: #bfdbfe;
+  --color-brand-300: #93c5fd;
+  --color-brand-400: #60a5fa;
+  --color-brand-500: #3b82f6;
+  --color-brand-600: #2563eb;
+  --color-brand-700: #1d4ed8;
+  --color-brand-800: #1e40af;
+  --color-brand-900: #1e3a8a;
+
+  /* Gradiente de acción principal ("magia") */
+  --color-magic-from: #2563eb;
+  --color-magic-via: #4f46e5;
+  --color-magic-to: #7c3aed;
+
+  /* Sombras */
+  --shadow-soft: 0 1px 2px 0 rgb(15 23 42 / 0.04), 0 4px 16px -4px rgb(15 23 42 / 0.08);
+  --shadow-magic: 0 10px 30px -8px rgb(79 70 229 / 0.35);
+
+  /* Animaciones utilitarias */
+  --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-fade-in-up: fade-in-up 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  --animate-float: float 5s ease-in-out infinite;
+  --animate-shine: shine 3s linear infinite;
+  --animate-pulse-soft: pulse-soft 2.2s ease-in-out infinite;
+  --animate-shake: shake 0.4s ease-in-out;
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes fade-in-up {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  @keyframes shine {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+  }
+}
+
 @layer base {
   /* Transición suave global para colores, fondos y bordes */
   *, ::before, ::after {
     @apply transition-colors duration-300 ease-in-out;
   }
+}
+
+/* Anclaje de scroll: el hero colapsable no debe ser el nodo ancla del navegador.
+   Así, al colapsar/expandir, el scroll anchoring mantiene fijo el formulario. */
+.occ-hero {
+  overflow-anchor: none;
 }

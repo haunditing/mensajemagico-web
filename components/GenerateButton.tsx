@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import LoadingSpinner from "./LoadingSpinner";
+import Button from "./ui/Button";
 import { getLockedOccasionLabel } from "../services/accessCopy";
 
 interface GenerateButtonProps {
@@ -53,51 +53,38 @@ const GenerateButton: React.FC<GenerateButtonProps> = ({
 
   // Bloqueo "duro": El botón no hace nada (loading, sin créditos, etc.)
   const isDomDisabled = isLoading || !!safetyError || !hasCredits || isOccasionLocked;
-  
+
   // Bloqueo "visual": Incluye el estado 'disabled' (falta texto) para mostrarlo gris.
   const isVisuallyDisabled = isDomDisabled || disabled;
 
-  return (
-    <button
-      onClick={onClick}
-      disabled={isVisuallyDisabled}
-      className={`w-full h-14 md:h-16 rounded-xl font-bold text-sm sm:text-base md:text-lg flex items-center justify-center gap-2 md:gap-3 transition-all relative overflow-hidden group
-        ${isVisuallyDisabled ? "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 cursor-not-allowed border border-slate-200 dark:border-slate-700" : "bg-blue-600 dark:bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500 shadow-lg shadow-blue-600/20 dark:shadow-blue-900/30 active:scale-[0.98]"}`}
-    >
-      <style>{`
-        @keyframes shine {
-          0% { left: -100%; }
-          100% { left: 100%; }
-        }
-        .animate-shine {
-          animation: shine 3s infinite linear;
-        }
-      `}</style>
-      {!isVisuallyDisabled && !isLoading && (
-        <div className="absolute top-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-[-20deg] animate-shine pointer-events-none" />
-      )}
+  const label = safetyError
+    ? "Contenido bloqueado"
+    : isOccasionLocked
+      ? getLockedOccasionLabel(!user)
+      : !hasCredits
+        ? "Sin créditos hoy"
+        : disabled && disabledLabel
+          ? disabledLabel
+          : isLoading
+            ? isPensamiento
+              ? "Mezclando pensamientos..."
+              : isGreeting
+                ? "Creando saludo..."
+                : "Generando magia..."
+            : buttonLabel;
 
-      {isLoading ? (
-        <div className="flex items-center gap-2">
-          <LoadingSpinner size="sm" color="slate" />
-          <span>
-            {isPensamiento ? "Mezclando pensamientos..." : isGreeting ? "Creando saludo..." : "Generando magia..."}
-          </span>
-        </div>
-      ) : (
-        <span>
-          {safetyError
-            ? "Contenido bloqueado"
-            : isOccasionLocked
-              ? getLockedOccasionLabel(!user)
-              : !hasCredits
-                ? "Sin créditos hoy"
-                : disabled && disabledLabel
-                  ? disabledLabel
-                  : buttonLabel}
-        </span>
-      )}
-    </button>
+  return (
+    <Button
+      variant="primary"
+      size="lg"
+      fullWidth
+      onClick={onClick}
+      isLoading={isLoading}
+      disabled={isVisuallyDisabled}
+      className="text-sm sm:text-base md:text-lg"
+    >
+      {label}
+    </Button>
   );
 };
 

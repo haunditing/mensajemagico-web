@@ -143,8 +143,8 @@ const ToneSelector: React.FC<ToneSelectorProps> = ({
                         }}
                         className={`relative px-4 py-2.5 rounded-xl text-sm font-bold transition-all border whitespace-nowrap w-full md:w-auto ${
                           isSelected
-                            ? "bg-blue-600 dark:bg-blue-500 text-white border-blue-600 dark:border-blue-500 shadow-md scale-105"
-                            : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-blue-400 dark:hover:border-blue-500"
+                            ? "bg-gradient-to-r from-brand-600 to-indigo-600 dark:from-brand-600 dark:to-indigo-600 text-white border-transparent shadow-magic scale-105"
+                            : "bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700 hover:border-brand-300 dark:hover:border-brand-500"
                         }`}
                       >
                         {t.label}

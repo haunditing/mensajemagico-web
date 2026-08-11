@@ -9,6 +9,7 @@ interface EssenceToggleProps {
   essenceCompleted: boolean;
   applyEssence: boolean;
   setApplyEssence: (apply: boolean) => void;
+  compact?: boolean;
 }
 
 const EssenceToggle: React.FC<EssenceToggleProps> = ({
@@ -16,6 +17,7 @@ const EssenceToggle: React.FC<EssenceToggleProps> = ({
   essenceCompleted,
   applyEssence,
   setApplyEssence,
+  compact = false,
 }) => {
   const { planLevel } = useAuth();
   const { triggerUpsell } = useUpsell();
@@ -89,6 +91,18 @@ const EssenceToggle: React.FC<EssenceToggleProps> = ({
   };
 
   if (!essenceCompleted) {
+    if (compact) {
+      return (
+        <div className="my-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/30 rounded-xl flex items-center justify-between gap-3">
+          <p className="text-xs font-bold text-blue-800 dark:text-blue-300">
+            ✨ Personaliza tus mensajes con tu Esencia
+          </p>
+          <Link to="/esencia" className="inline-block bg-blue-600 text-white px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-blue-700 transition-colors shadow-sm shadow-blue-600/20 shrink-0">
+            Completar test
+          </Link>
+        </div>
+      );
+    }
     return (
       <div className="my-4 p-5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/30 rounded-2xl text-center">
         <p className="font-bold text-blue-800 dark:text-blue-300 mb-2">¿Quieres que tus mensajes reflejen tu personalidad?</p>
@@ -111,18 +125,28 @@ const EssenceToggle: React.FC<EssenceToggleProps> = ({
   const isActive = applyEssence && planLevel === 'premium';
 
   return (
-    <div className={`my-4 p-5 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl transition-opacity duration-300 ${!isOnline ? 'opacity-75 grayscale-[0.5]' : ''}`}>
+    <div className={`my-4 ${compact ? "p-3" : "p-5"} bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700/50 rounded-2xl transition-opacity duration-300 ${!isOnline ? 'opacity-75 grayscale-[0.5]' : ''}`}>
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1">
-            <div className="flex items-center gap-2">
-                <p className="font-bold text-slate-800 dark:text-white">Tu Esencia</p>
-                {planLevel === 'premium' && (
-                    <span className="text-[10px] bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold border border-indigo-200 dark:border-indigo-800">
-                        PRO
-                    </span>
-                )}
-            </div>
-            {essenceProfile && (
+          <div className="flex items-center gap-2">
+            <p className="font-bold text-slate-800 dark:text-white">Tu Esencia</p>
+            {planLevel === 'premium' && (
+              <span className="text-[10px] bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold border border-indigo-200 dark:border-indigo-800">
+                PRO
+              </span>
+            )}
+            {compact && essenceProfile && (
+              <button
+                onClick={() => setShowExplanation(true)}
+                className="text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 text-sm leading-none transition-colors"
+                title="Ver mi análisis de esencia"
+                aria-label="Ver mi análisis de esencia"
+              >
+                ℹ️
+              </button>
+            )}
+          </div>
+            {!compact && essenceProfile && (
                 <button 
                   onClick={() => setShowExplanation(true)}
                   className="text-left group focus:outline-none"
@@ -152,12 +176,13 @@ const EssenceToggle: React.FC<EssenceToggleProps> = ({
         </button>
       </div>
       
-      {!isOnline ? (
+      {!compact && !isOnline && (
         <div className="mt-3 flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
           <span>📡</span>
           <span>Sin conexión. La esencia requiere internet.</span>
         </div>
-      ) : planLevel !== 'premium' && (
+      )}
+      {!compact && planLevel !== 'premium' && (
         <div className="mt-3 flex items-center gap-2 text-xs text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 p-2 rounded-lg border border-amber-100 dark:border-amber-900/30">
           <span>🔒</span>
           <span>Disponible en Premium. <button onClick={() => triggerUpsell('Desbloquea tu esencia')} className="underline font-bold hover:text-amber-700 dark:hover:text-amber-300">Mejorar plan</button></span>
